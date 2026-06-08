@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Backend Auth Tester</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #0b1020;
+            color: #e7eaf3;
+        }
+
+        .wrap {
+            max-width: 900px;
+            margin: 24px auto;
+            padding: 0 16px 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 1.6rem;
+        }
+
+        p {
+            margin: 0 0 16px;
+            color: #b9c0d4;
+        }
+
+        .card {
+            background: #121933;
+            border: 1px solid #263157;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        label {
+            display: block;
+            margin: 8px 0 6px;
+            font-size: 0.9rem;
+            color: #cbd3ea;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 9px 10px;
+            border-radius: 8px;
+            border: 1px solid #364676;
+            background: #0c1230;
+            color: #e7eaf3;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        button {
+            border: 1px solid #3f61ff;
+            background: #2e4eff;
+            color: #fff;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        button.secondary {
+            border-color: #41517f;
+            background: #1a244b;
+        }
+
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #070b1f;
+            border: 1px solid #24305d;
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 340px;
+            overflow: auto;
+        }
+
+        .token {
+            font-size: 0.85rem;
+            color: #9eb0e8;
+        }
+
+        @media (max-width: 700px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="wrap">
+        <h1>Auth Backend Tester</h1>
+        <p>Quick UI for <code>/auth/register</code>, <code>/auth/login</code>, and <code>/auth/me</code>.</p>
+
+        <section class="card">
+            <label for="baseUrl">Backend Base URL</label>
+            <input id="baseUrl" value="http://localhost:3000" />
+
+            <div class="row">
+                <div>
+                    <label for="email">Email</label>
+                    <input id="email" type="email" placeholder="you@example.com" />
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input id="password" type="password" placeholder="min 8 chars" />
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="registerBtn">Register</button>
+                <button id="loginBtn">Login</button>
+                <button id="meBtn" class="secondary">Get /auth/me</button>
+                <button id="clearBtn" class="secondary">Clear Token</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <label>Saved JWT</label>
+            <div id="token" class="token">(none)</div>
+        </section>
+
+        <section class="card">
+            <label>Response</label>
+            <pre id="output">Ready.</pre>
+        </section>
+    </main>
+
+    <script>
+        const tokenKey = 'auth_test_token';
+
+        const baseUrlInput = document.getElementById('baseUrl');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const output = document.getElementById('output');
+        const tokenEl = document.getElementById('token');
+
+        const registerBtn = document.getElementById('registerBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        const meBtn = document.getElementById('meBtn');
+        const clearBtn = document.getElementById('clearBtn');
+
+        function setOutput(value) {
+            output.textContent = value;
+        }
+
+        function getToken() {
+            return localStorage.getItem(tokenKey) || '';
+        }
+
+        function setToken(token) {
+            if (token) {
+                localStorage.setItem(tokenKey, token);
+            } else {
+                localStorage.removeItem(tokenKey);
+            }
+            renderToken();
+        }
+
+        function renderToken() {
+            const token = getToken();
+            tokenEl.textContent = token || '(none)';
+        }
+
+        async function callApi(path, options = {}) {
+            const base = (baseUrlInput.value || '').trim().replace(/\/$/, '');
+            const url = base + path;
+            const token = getToken();
+
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(options.headers || {}),
+            };
+
+            if (token) {
+                headers.Authorization = 'Bearer ' + token;
+            }
+
+            const response = await fetch(url, {
+                ...options,
+                headers,
+            });
+
+            const text = await response.text();
+            let data;
+
+            try {
+                data = text ? JSON.parse(text) : null;
+            } catch {
+                data = text;
+            }
+
+            return {
+                ok: response.ok,
+                status: response.status,
+                data,
+            };
+        }
+
+        async function handleRegister() {
+            setOutput('Registering...');
+            try {
+                const res = await callApi('/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: emailInput.value.trim(),
+                        password: passwordInput.value,
+                    }),
+                });
+
+                if (res.ok && res.data && res.data.accessToken) {
+                    setToken(res.data.accessToken);
+                }
+
+                setOutput(JSON.stringify(res, null, 2));
+            } catch (err) {
+                setOutput('Request failed: ' + (err && err.message ? err.message : String(err)));
+            }
+        }
+
+        async function handleLogin() {
+            setOutput('Logging in...');
+            try {
+                const res = await callApi('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: emailInput.value.trim(),
+                        password: passwordInput.value,
+                    }),
+                });
+
+                if (res.ok && res.data && res.data.accessToken) {
+                    setToken(res.data.accessToken);
+                }
+
+                setOutput(JSON.stringify(res, null, 2));
+            } catch (err) {
+                setOutput('Request failed: ' + (err && err.message ? err.message : String(err)));
+            }
+        }
+
+        async function handleMe() {
+            setOutput('Fetching /auth/me...');
+            try {
+                const res = await callApi('/auth/me', {
+                    method: 'GET',
+                });
+                setOutput(JSON.stringify(res, null, 2));
+            } catch (err) {
+                setOutput('Request failed: ' + (err && err.message ? err.message : String(err)));
+            }
+        }
+
+        registerBtn.addEventListener('click', handleRegister);
+        loginBtn.addEventListener('click', handleLogin);
+        meBtn.addEventListener('click', handleMe);
+        clearBtn.addEventListener('click', () => {
+            setToken('');
+            setOutput('Token cleared.');
+        });
+
+        renderToken();
+    </script>
+</body>
+
+</html>

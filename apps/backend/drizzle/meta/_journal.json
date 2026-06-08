@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1780915859590,
+      "tag": "0000_puzzling_killraven",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1780919308604,
+      "tag": "0001_dry_eternity",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1780919326322,
+      "tag": "0002_right_firebrand",
+      "breakpoints": true
+    }
+  ]
+}
