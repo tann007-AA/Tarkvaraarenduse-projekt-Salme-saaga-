@@ -2,6 +2,7 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 type CurrentUser = {
   id: string;
+  name: string;
   email: string;
 };
 

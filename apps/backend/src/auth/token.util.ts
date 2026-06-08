@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
 const TOKEN_HEADER = {
   alg: 'HS256',
@@ -8,6 +8,7 @@ const TOKEN_HEADER = {
 export type AuthTokenPayload = {
   sub: string;
   email: string;
+  jti: string; // JWT ID for token tracking/revocation
   iat: number;
   exp: number;
 };
@@ -77,9 +78,14 @@ export function verifyAuthToken(
     throw new Error('Token expired');
   }
 
-  if (!parsedPayload.sub || !parsedPayload.email) {
+  if (!parsedPayload.sub || !parsedPayload.email || !parsedPayload.jti) {
     throw new Error('Invalid token payload');
   }
 
   return parsedPayload;
+}
+
+// Genereerime turvalise juhusliku refresh tokeni
+export function generateRefreshToken(): string {
+  return randomBytes(32).toString('base64url');
 }
