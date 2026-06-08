@@ -1,0 +1,12 @@
+node_modules
+.pnpm-store
+
+# build outputs
+**/dist
+
+# local env files
+.env
+.env.*
+
+# macOS
+.DS_Store

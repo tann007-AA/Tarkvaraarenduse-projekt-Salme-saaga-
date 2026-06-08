@@ -1,0 +1,17 @@
+{
+  "name": "pell-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.20.0",
+  "scripts": {
+    "dev": "pnpm --filter @pell/frontend dev",
+    "start": "pnpm --filter @pell/frontend start",
+    "build": "pnpm -r build",
+    "build:frontend": "pnpm --filter @pell/frontend build"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "6.3.5"
+    }
+  }
+}
