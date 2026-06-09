@@ -8,7 +8,7 @@ COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm --filter backend build
-RUN pnpm deploy --filter=backend --prod /prod/backend
+RUN pnpm deploy --filter=backend --prod /prod/backend --legacy
 
 FROM node:20-slim AS production
 WORKDIR /app
