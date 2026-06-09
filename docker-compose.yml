@@ -11,7 +11,7 @@ services:
       - db_data:/var/lib/mysql
 
   backend:
-    image: ${BACKEND_IMAGE:-pell-backend}
+    image: ghcr.io/tann007-aa/tarkvaraarenduse-projekt-salme-saaga--backend:feat-saves-progression
     restart: always
     environment:
       DATABASE_URL: mysql://root:password@db:3306/pell
@@ -22,10 +22,10 @@ services:
       - "3000:3000"
 
   frontend:
-    image: ${FRONTEND_IMAGE:-pell-frontend}
+    image: ghcr.io/tann007-aa/tarkvaraarenduse-projekt-salme-saaga--frontend:feat-saves-progression
     restart: always
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - backend
 

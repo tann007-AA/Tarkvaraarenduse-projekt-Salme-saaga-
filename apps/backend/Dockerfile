@@ -5,28 +5,25 @@ RUN corepack enable
 
 FROM base AS build
 WORKDIR /usr/src/app
-COPY . .
+# Copy only necessary files for installing dependencies
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/backend/package.json ./apps/backend/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+# Copy the rest of the code and build
+COPY . .
 RUN pnpm --filter backend build
 
 FROM base AS production
 WORKDIR /app
 
-# Copy workspace config and backend package.json
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/backend/package.json ./apps/backend/
+# Copy production dependencies and built files
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/apps/backend/node_modules ./apps/backend/node_modules
+COPY --from=build /usr/src/app/apps/backend/package.json ./apps/backend/package.json
+COPY --from=build /usr/src/app/apps/backend/dist ./apps/backend/dist
 
-# Install only production dependencies
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile --filter backend
-
-# Copy the compiled code from the build stage
-COPY --from=build /usr/src/app/apps/backend/dist ./dist
-
-# Symlink or move node_modules so 'node dist/main' can find them
-RUN ln -s apps/backend/node_modules ./node_modules_backend
-# NestJS/Node will look in ./node_modules and ../node_modules
-# We ensure the app's dependencies are accessible
-RUN cp -r apps/backend/node_modules/* ./node_modules/ || true
-
+# Expose port and start
 EXPOSE 3000
+WORKDIR /app/apps/backend
 CMD [ "node", "dist/main" ]
