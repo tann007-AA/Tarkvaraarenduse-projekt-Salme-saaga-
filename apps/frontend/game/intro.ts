@@ -16,9 +16,9 @@ if (modeText) {
 }
 
 beginJourneyBtn?.addEventListener("click", () => {
-  window.location.href = "game.html";
+  window.location.href = "level.html";
 });
 
 backToMenuBtn?.addEventListener("click", () => {
-  window.location.href = "index.html";
+  window.location.href = "start.html";
 });
