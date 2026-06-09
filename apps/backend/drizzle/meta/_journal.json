@@ -22,6 +22,27 @@
       "when": 1780919326322,
       "tag": "0002_right_firebrand",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1780991773714,
+      "tag": "0003_goofy_starjammers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1780992005093,
+      "tag": "0004_chunky_sinister_six",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1780992194501,
+      "tag": "0005_little_nightcrawler",
+      "breakpoints": true
     }
   ]
 }
