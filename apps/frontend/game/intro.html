@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Viikingi teekond</title>
+
+    <link rel="stylesheet" href="intro.css" />
+    <link rel="stylesheet" href="style.css" />
+
+</head>
+
+<body class="intro-page">
+    <!-- Settings button -->
+    <button id="settingsBtn" class="intro-settings-btn" aria-label="Ava sätted">
+        ⚙
+    </button>
+
+    <!-- Settings dialog -->
+    <dialog id="settingsDialog" class="settings-dialog">
+        <div class="settings-header">
+            <h2>Sätted</h2>
+            <button id="closeSettingsBtn" class="close-btn" aria-label="Close settings">✕</button>
+        </div>
+
+        <div class="settings-content">
+            <p>Lisa sätted hiljem</p>
+
+            <div class="setting-row">
+                <span>Muusika</span>
+                <span>Coming soon</span>
+            </div>
+
+            <div class="setting-row">
+                <span>Raskustase</span>
+                <span>Coming soon</span>
+            </div>
+
+            <div class="setting-row">
+                <span>Keel</span>
+                <span>Coming soon</span>
+            </div>
+        </div>
+    </dialog>
+
+
+    <!-- Intro screen -->
+    <main class="intro-screen">
+        <div class="intro-decor intro-decor-left">⛵</div>
+
+        <h1 class="intro-title">Viikingi teekond</h1>
+        <div class="intro-line"></div>
+        <p class="intro-subtitle">Tekst0</p>
+
+        <section class="story-panel">
+            <div class="story-badge">⛵</div>
+
+            <p class="welcome-text">
+                Teretulemast, <span id="playerNameText">Viiking</span>
+            </p>
+
+            <p class="mode-text"> <!-- Kas vaja? -->
+                Režiim: <span id="modeText">Üksikmängija</span>
+            </p>
+
+            <p>
+                Tekst1
+            </p>
+
+            <p>
+                Tekst2
+            </p>
+
+            <p>
+                Tekst3
+            </p>
+
+            <p class="story-end">Lõpusõna</p>
+
+        </section>
+
+        <section class="intro-stats">
+            <article class="stat-card">
+                <div class="stat-icon">🗺️</div>
+                <h2>4 saart</h2>
+                <p>Tekstsaared</p>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon">❓</div>
+                <h2>40 küsimust</h2>
+                <p>Tekstküs</p>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon">⚔️</div>
+                <h2>5 artefakti</h2>
+                <p>Tekstart</p>
+            </article>
+        </section>
+
+        <button id="beginJourneyBtn" class="begin-journey-btn">
+            ⚓ Alusta oma teekonda ⚓
+        </button>
+
+        <p class="intro-help">Kasuta nooli või WASD, tegelase liigutamiseks</p>
+    </main>
+
+    <script src="settings.js"></script>
+    <script src="intro.js"></script>
+</body>
+
+</html>
