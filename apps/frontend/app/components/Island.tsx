@@ -67,6 +67,8 @@ export function Island({
   const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(null);
   const [showInstructions, setShowInstructions] = useState(true);
   const [nearCauldron, setNearCauldron] = useState(false);
+  const [pendingQuestionIdx, setPendingQuestionIdx] = useState<number | null>(null);
+  const [showInteractModal, setShowInteractModal] = useState(false);
   
   // Kas mängija liigub hetkel (vajalik kõndimise animatsiooni jaoks)
   const isMoving = targetPos !== null;
@@ -462,7 +464,7 @@ export function Island({
           return (
             <motion.div
               key={idx}
-              className="absolute"
+              className="absolute pointer-events-none"
               style={{
                 left: pos.x - 20,
                 top: pos.y - 20,
@@ -535,7 +537,7 @@ export function Island({
           return (
             <motion.div
               key={idx}
-              className="absolute"
+              className="absolute pointer-events-none"
               style={{
                 left: pos.x - 20,
                 top: pos.y - 20,
