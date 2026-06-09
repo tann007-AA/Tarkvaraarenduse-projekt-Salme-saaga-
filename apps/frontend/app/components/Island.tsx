@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Ship } from 'lucide-react';
 import type { ArtifactType } from '../App';
@@ -62,10 +62,16 @@ export function Island({
   onTutorialComplete,
   savedPosition
 }: IslandProps) {
-  // Initialize player position - use saved position if available, otherwise default
+  // Mängija praegune asukoht ja sihtkoht, kuhu klikiti
   const [playerPos, setPlayerPos] = useState(savedPosition || { x: 400, y: 550 });
-  const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
+  const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(null);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [nearCauldron, setNearCauldron] = useState(false);
+  
+  // Kas mängija liigub hetkel (vajalik kõndimise animatsiooni jaoks)
+  const isMoving = targetPos !== null;
+
+  const svgRef = useRef<SVGSVGElement>(null);
 
   // Reset player position only when island ID changes (new island), or restore saved position
   useEffect(() => {
@@ -82,57 +88,50 @@ export function Island({
     return () => clearTimeout(timer);
   }, []);
 
-  // Keyboard controls
+  // Hiirekliki kuulaja pika maja / saare pinnal
+  const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current) return;
+
+    // Arvutame kliki koordinaadid võrreldes SVG mängualaga
+    const rect = svgRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Piirangud, et mängija ei kõndiks ekraanilt välja
+    const boundedX = Math.max(50, Math.min(750, x));
+    const boundedY = Math.max(100, Math.min(600, y));
+
+    setTargetPos({ x: boundedX, y: boundedY });
+  };
+
+  // Liikumise tsükkel (Point-and-Click sujuv liikumine sihtpunkti suunas)
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
-        e.preventDefault();
-        setKeysPressed(prev => new Set(prev).add(key));
-      }
-    };
+    if (!targetPos) return;
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      setKeysPressed(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(key);
-        return newSet;
-      });
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
-
-  // Movement loop
-  useEffect(() => {
-    const moveSpeed = 3;
+    const speed = 4; // Liikumiskiirus pikslit sekundi murdosa jooksul
     const interval = setInterval(() => {
       setPlayerPos(prev => {
-        let newX = prev.x;
-        let newY = prev.y;
+        const dx = targetPos.x - prev.x;
+        const dy = targetPos.y - prev.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (keysPressed.has('w') || keysPressed.has('arrowup')) newY -= moveSpeed;
-        if (keysPressed.has('s') || keysPressed.has('arrowdown')) newY += moveSpeed;
-        if (keysPressed.has('a') || keysPressed.has('arrowleft')) newX -= moveSpeed;
-        if (keysPressed.has('d') || keysPressed.has('arrowright')) newX += moveSpeed;
+        // Kui oleme sihtpunktile piisavalt lähedal, lõpetame liikumise
+        if (distance <= speed) {
+          setTargetPos(null);
+          clearInterval(interval);
+          return targetPos;
+        }
 
-        // Keep player within bounds
-        newX = Math.max(50, Math.min(750, newX));
-        newY = Math.max(100, Math.min(600, newY));
-
-        return { x: newX, y: newY };
+        // Liigume sammu võrra sihtpunkti poole
+        return {
+          x: prev.x + (dx / distance) * speed,
+          y: prev.y + (dy / distance) * speed,
+        };
       });
     }, 16);
 
     return () => clearInterval(interval);
-  }, [keysPressed]);
+  }, [targetPos]);
 
   // Check for question collisions
   useEffect(() => {
@@ -270,12 +269,14 @@ export function Island({
 
       {/* Game area */}
       <div className="relative w-[800px] h-[700px]">
-        {/* Island terrain - More realistic */}
-        <svg
-          width="800"
-          height="700"
-          viewBox="0 0 800 700"
-          className="absolute inset-0"
+        {/* Klikitav SVG ala */}
+        <svg 
+          ref={svgRef}
+          width="800" 
+          height="700" 
+          viewBox="0 0 800 700" 
+          className="absolute inset-0 cursor-pointer"
+          onClick={handleSvgClick}
         >
           {/* Water ripples around island */}
           <ellipse cx="400" cy="400" rx="380" ry="270" fill="none" stroke="#2a5c6f" strokeWidth="2" opacity="0.3" />
@@ -561,17 +562,17 @@ export function Island({
 
         {/* Player character (Viking) */}
         <motion.div
-          className="absolute z-10"
+          className="absolute z-10 pointer-events-none"
           style={{
             left: playerPos.x - 25,
             top: playerPos.y - 35,
           }}
           animate={{
-            rotate: keysPressed.size > 0 ? [0, -2, 2, 0] : 0,
+            rotate: isMoving ? [0, -2, 2, 0] : 0,
           }}
           transition={{
             duration: 0.3,
-            repeat: keysPressed.size > 0 ? Infinity : 0,
+            repeat: isMoving ? Infinity : 0,
           }}
         >
           {/* Viking character - Enhanced */}

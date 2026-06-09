@@ -9,7 +9,11 @@ overrides:
 
 importers:
 
-  .:
+  .: {}
+
+  apps/backend: {}
+
+  apps/frontend:
     dependencies:
       '@emotion/react':
         specifier: 11.14.0
