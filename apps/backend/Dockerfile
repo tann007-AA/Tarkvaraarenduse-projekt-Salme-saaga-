@@ -9,6 +9,8 @@ WORKDIR /usr/src/app
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm --filter backend build
 RUN pnpm deploy --filter=backend --prod /prod/backend --legacy
+# Explicitly copy dist because pnpm deploy might ignore it if it's in .gitignore
+RUN cp -r apps/backend/dist /prod/backend/dist
 
 FROM node:20-slim AS production
 WORKDIR /app
