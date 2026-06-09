@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Ship } from 'lucide-react';
 import type { ArtifactType } from '../App';
@@ -62,10 +62,18 @@ export function Island({
   onTutorialComplete,
   savedPosition
 }: IslandProps) {
-  // Initialize player position - use saved position if available, otherwise default
+  // Mängija praegune asukoht ja sihtkoht, kuhu klikiti
   const [playerPos, setPlayerPos] = useState(savedPosition || { x: 400, y: 550 });
-  const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
+  const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(null);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [nearCauldron, setNearCauldron] = useState(false);
+  const [pendingQuestionIdx, setPendingQuestionIdx] = useState<number | null>(null);
+  const [showInteractModal, setShowInteractModal] = useState(false);
+
+  // Kas mängija liigub hetkel (vajalik kõndimise animatsiooni jaoks)
+  const isMoving = targetPos !== null;
+
+  const svgRef = useRef<SVGSVGElement>(null);
 
   // Reset player position only when island ID changes (new island), or restore saved position
   useEffect(() => {
@@ -82,57 +90,50 @@ export function Island({
     return () => clearTimeout(timer);
   }, []);
 
-  // Keyboard controls
+  // Hiirekliki kuulaja
+  const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current) return;
+
+    // Arvutame kliki koordinaadid võrreldes SVG mängualaga
+    const rect = svgRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Piirangud, et mängija ei kõndiks ekraanilt välja
+    const boundedX = Math.max(50, Math.min(750, x));
+    const boundedY = Math.max(100, Math.min(600, y));
+
+    setTargetPos({ x: boundedX, y: boundedY });
+  };
+
+  // Liikumise tsükkel (Point-and-Click sujuv liikumine sihtpunkti suunas)
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
-        e.preventDefault();
-        setKeysPressed(prev => new Set(prev).add(key));
-      }
-    };
+    if (!targetPos) return;
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      setKeysPressed(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(key);
-        return newSet;
-      });
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
-
-  // Movement loop
-  useEffect(() => {
-    const moveSpeed = 3;
+    const speed = 4; // Liikumiskiirus pikslit sekundi murdosa jooksul
     const interval = setInterval(() => {
       setPlayerPos(prev => {
-        let newX = prev.x;
-        let newY = prev.y;
+        const dx = targetPos.x - prev.x;
+        const dy = targetPos.y - prev.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (keysPressed.has('w') || keysPressed.has('arrowup')) newY -= moveSpeed;
-        if (keysPressed.has('s') || keysPressed.has('arrowdown')) newY += moveSpeed;
-        if (keysPressed.has('a') || keysPressed.has('arrowleft')) newX -= moveSpeed;
-        if (keysPressed.has('d') || keysPressed.has('arrowright')) newX += moveSpeed;
+        // Kui oleme sihtpunktile piisavalt lähedal, lõpetame liikumise
+        if (distance <= speed) {
+          setTargetPos(null);
+          clearInterval(interval);
+          return targetPos;
+        }
 
-        // Keep player within bounds
-        newX = Math.max(50, Math.min(750, newX));
-        newY = Math.max(100, Math.min(600, newY));
-
-        return { x: newX, y: newY };
+        // Liigume sammu võrra sihtpunkti poole
+        return {
+          x: prev.x + (dx / distance) * speed,
+          y: prev.y + (dy / distance) * speed,
+        };
       });
     }, 16);
 
     return () => clearInterval(interval);
-  }, [keysPressed]);
+  }, [targetPos]);
 
   // Check for question collisions
   useEffect(() => {
@@ -164,7 +165,7 @@ export function Island({
 
       if (distance < triggerDistance) {
         onArtifactCollect(idx, pos.type);
-        
+
         // Show notification with artifact info
         const artifactNames: Record<ArtifactType, string> = {
           'sword': '⚔️ One-Edged Sword',
@@ -173,7 +174,7 @@ export function Island({
           'dice': '🎲 Bone Dice',
           'gaming-piece': '♟️ Gaming Piece'
         };
-        
+
         toast.success(artifactNames[pos.type] + ' collected!', {
           description: 'Use this artifact as a lifeline in quiz questions!',
           duration: 3000,
@@ -270,17 +271,19 @@ export function Island({
 
       {/* Game area */}
       <div className="relative w-[800px] h-[700px]">
-        {/* Island terrain - More realistic */}
+        {/* Klikitav SVG ala */}
         <svg
+          ref={svgRef}
           width="800"
           height="700"
           viewBox="0 0 800 700"
-          className="absolute inset-0"
+          className="absolute inset-0 cursor-pointer"
+          onClick={handleSvgClick}
         >
           {/* Water ripples around island */}
           <ellipse cx="400" cy="400" rx="380" ry="270" fill="none" stroke="#2a5c6f" strokeWidth="2" opacity="0.3" />
           <ellipse cx="400" cy="400" rx="365" ry="260" fill="none" stroke="#3d7a8f" strokeWidth="1" opacity="0.2" />
-          
+
           {/* Island main ground - irregular shape */}
           <path
             d="M 100,350 Q 80,300 120,250 Q 160,200 220,180 Q 280,160 350,155 Q 420,150 490,160 Q 560,170 620,200 Q 680,230 710,280 Q 730,330 720,380 Q 710,430 680,470 Q 640,510 580,530 Q 520,550 450,555 Q 380,560 310,545 Q 240,530 180,490 Q 120,450 100,380 Z"
@@ -288,12 +291,12 @@ export function Island({
             stroke="#4a6638"
             strokeWidth="3"
           />
-          
+
           {/* Darker grass areas */}
           <ellipse cx="250" cy="300" rx="80" ry="60" fill="#4d6b35" opacity="0.6" />
           <ellipse cx="500" cy="320" rx="90" ry="70" fill="#4d6b35" opacity="0.6" />
           <ellipse cx="380" cy="450" rx="70" ry="50" fill="#4d6b35" opacity="0.6" />
-          
+
           {/* Sandy beach areas */}
           <path
             d="M 130,360 Q 150,310 200,260 Q 250,220 310,200 L 320,215 Q 270,235 230,270 Q 180,310 160,360 Z"
@@ -316,14 +319,14 @@ export function Island({
             <ellipse cx="180" cy="280" rx="35" ry="25" fill="#7a7a7a" />
             <ellipse cx="185" cy="275" rx="30" ry="20" fill="#8b8b8b" />
             <ellipse cx="175" cy="283" rx="25" ry="18" fill="#6b6b6b" />
-            
+
             <ellipse cx="520" cy="310" rx="40" ry="28" fill="#7a7a7a" />
             <ellipse cx="525" cy="305" rx="35" ry="23" fill="#8b8b8b" />
             <ellipse cx="515" cy="313" rx="30" ry="20" fill="#6b6b6b" />
-            
+
             <ellipse cx="340" cy="470" rx="30" ry="20" fill="#7a7a7a" />
             <ellipse cx="345" cy="467" rx="25" ry="17" fill="#8b8b8b" />
-            
+
             <ellipse cx="580" cy="490" rx="35" ry="23" fill="#7a7a7a" />
             <ellipse cx="585" cy="487" rx="30" ry="20" fill="#8b8b8b" />
           </g>
@@ -352,7 +355,7 @@ export function Island({
             <rect x="195" y="390" width="9" height="70" fill="#654321" rx="1" />
             <polygon points="200,350 180,385 220,385" fill="#3d6b26" />
             <polygon points="200,370 185,395 215,395" fill="#4a7a35" />
-            
+
             <rect x="215" y="385" width="8" height="65" fill="#654321" rx="1" />
             <polygon points="219,345 202,375 236,375" fill="#2d5016" />
 
@@ -360,7 +363,7 @@ export function Island({
             <rect x="595" y="365" width="10" height="85" fill="#654321" rx="1" />
             <polygon points="600,325 578,355 622,355" fill="#2d5016" />
             <polygon points="600,345 583,370 617,370" fill="#3d6b26" />
-            
+
             <rect x="615" y="370" width="9" height="75" fill="#654321" rx="1" />
             <polygon points="620,335 602,365 638,365" fill="#3d6b26" />
           </g>
@@ -369,13 +372,13 @@ export function Island({
           <g opacity="0.8">
             <ellipse cx="280" cy="250" rx="20" ry="15" fill="#4a7a35" />
             <ellipse cx="295" cy="255" rx="18" ry="13" fill="#5a8a45" />
-            
+
             <ellipse cx="430" cy="275" rx="22" ry="16" fill="#4a7a35" />
             <ellipse cx="445" cy="280" rx="19" ry="14" fill="#5a8a45" />
-            
+
             <ellipse cx="320" cy="420" rx="24" ry="17" fill="#4a7a35" />
             <ellipse cx="470" cy="430" rx="21" ry="15" fill="#5a8a45" />
-            
+
             <ellipse cx="550" cy="360" rx="20" ry="14" fill="#4a7a35" />
           </g>
 
@@ -384,13 +387,13 @@ export function Island({
             <path d="M 240,310 Q 242,305 244,310" />
             <path d="M 245,312 Q 247,307 249,312" />
             <path d="M 250,308 Q 252,303 254,308" />
-            
+
             <path d="M 380,350 Q 382,345 384,350" />
             <path d="M 385,352 Q 387,347 389,352" />
-            
+
             <path d="M 460,380 Q 462,375 464,380" />
             <path d="M 465,382 Q 467,377 469,382" />
-            
+
             <path d="M 510,420 Q 512,415 514,420" />
             <path d="M 280,460 Q 282,455 284,460" />
           </g>
@@ -412,166 +415,212 @@ export function Island({
           />
         </svg>
 
-        {/* Question markers */}
-        {QUESTION_POSITIONS.map((pos, idx) => {
-          const isAnswered = answeredQuestions.includes(idx);
-
-          return (
+        {/* Klõpsamise sihtkoha indikaator (Hitmarker) */}
+        {targetPos && (
+          <div
+            className="absolute pointer-events-none z-0"
+            style={{
+              left: targetPos.x,
+              top: targetPos.y,
+              transform: 'translate(-50%, -50%)' // Tsentreerib ikooni täpselt kliki keskkohale
+            }}
+          >
+            {/* Välimine pulseeriv ring */}
             <motion.div
-              key={idx}
-              className="absolute"
-              style={{
-                left: pos.x - 20,
-                top: pos.y - 20,
-              }}
-              animate={{
-                scale: isAnswered ? 1 : [1, 1.1, 1],
-                opacity: isAnswered ? 0.4 : 1,
-              }}
+              className="absolute w-8 h-8 border-2 border-amber-500/60 rounded-full"
+              style={{ left: -16, top: -16 }}
+              initial={{ scale: 0.2, opacity: 1 }}
+              animate={{ scale: 1.5, opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            />
+
+            {/* Sisemine terav Hitmarker (X-kujuline viikingi rist) */}
+            <motion.svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              initial={{ scale: 0, opacity: 1, rotate: -45 }}
+              animate={{ scale: [1, 1.2, 1], opacity: [1, 1, 0] }}
               transition={{
-                scale: {
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'easeInOut'
-                }
+                duration: 0.6,
+                times: [0, 0.2, 1],
+                ease: "easeInOut"
               }}
             >
-              {/* Rune stone */}
-              <svg width="40" height="50" viewBox="0 0 40 50">
-                <ellipse
-                  cx="20"
-                  cy="45"
-                  rx="15"
-                  ry="4"
-                  fill="rgba(0,0,0,0.2)"
-                />
-                <rect
-                  x="10"
-                  y="10"
-                  width="20"
-                  height="35"
-                  rx="3"
-                  fill={isAnswered ? "#6b7280" : "#8b7280"}
-                  stroke="#4a4a4a"
-                  strokeWidth="2"
-                />
-                {!isAnswered && (
-                  <text
-                    x="20"
-                    y="30"
-                    fontSize="20"
-                    fill="#f4ede1"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    style={{ fontFamily: 'var(--font-display)' }}
-                  >
-                    ?
-                  </text>
-                )}
-                {isAnswered && (
-                  <text
-                    x="20"
-                    y="30"
-                    fontSize="20"
-                    fill="#2d5016"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
-                    ✓
-                  </text>
-                )}
-              </svg>
-            </motion.div>
-          );
-        })}
+              {/* Vasakult paremale joon */}
+              <line x1="2" y1="2" x2="18" y2="18" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
+              {/* Paremalt vasakule joon */}
+              <line x1="18" y1="2" x2="2" y2="18" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
+              {/* Pisike täpp keskel */}
+              <circle cx="10" cy="10" r="2" fill="#fff" />
+            </motion.svg>
+          </div>
+        )}
+
+        {/* Question markers */}
+        {
+          QUESTION_POSITIONS.map((pos, idx) => {
+            const isAnswered = answeredQuestions.includes(idx);
+
+            return (
+              <motion.div
+                key={idx}
+                className="absolute pointer-events-none"
+                style={{
+                  left: pos.x - 20,
+                  top: pos.y - 20,
+                }}
+                animate={{
+                  scale: isAnswered ? 1 : [1, 1.1, 1],
+                  opacity: isAnswered ? 0.4 : 1,
+                }}
+                transition={{
+                  scale: {
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'easeInOut'
+                  }
+                }}
+              >
+                {/* Rune stone */}
+                <svg width="40" height="50" viewBox="0 0 40 50">
+                  <ellipse
+                    cx="20"
+                    cy="45"
+                    rx="15"
+                    ry="4"
+                    fill="rgba(0,0,0,0.2)"
+                  />
+                  <rect
+                    x="10"
+                    y="10"
+                    width="20"
+                    height="35"
+                    rx="3"
+                    fill={isAnswered ? "#6b7280" : "#8b7280"}
+                    stroke="#4a4a4a"
+                    strokeWidth="2"
+                  />
+                  {!isAnswered && (
+                    <text
+                      x="20"
+                      y="30"
+                      fontSize="20"
+                      fill="#f4ede1"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      style={{ fontFamily: 'var(--font-display)' }}
+                    >
+                      ?
+                    </text>
+                  )}
+                  {isAnswered && (
+                    <text
+                      x="20"
+                      y="30"
+                      fontSize="20"
+                      fill="#2d5016"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                    >
+                      ✓
+                    </text>
+                  )}
+                </svg>
+              </motion.div>
+            );
+          })
+        }
 
         {/* Artifact markers */}
-        {ARTIFACT_POSITIONS.map((pos, idx) => {
-          const isCollected = collectedArtifacts.includes(idx);
+        {
+          ARTIFACT_POSITIONS.map((pos, idx) => {
+            const isCollected = collectedArtifacts.includes(idx);
 
-          return (
-            <motion.div
-              key={idx}
-              className="absolute"
-              style={{
-                left: pos.x - 20,
-                top: pos.y - 20,
-              }}
-              animate={{
-                scale: isCollected ? 1 : [1, 1.15, 1],
-                opacity: isCollected ? 0 : 1,
-              }}
-              transition={{
-                scale: {
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut'
-                }
-              }}
-            >
-              {/* Artifact chest */}
-              <svg width="40" height="50" viewBox="0 0 40 50">
-                <ellipse
-                  cx="20"
-                  cy="45"
-                  rx="15"
-                  ry="4"
-                  fill="rgba(0,0,0,0.2)"
-                />
-                {/* Golden chest */}
-                <rect
-                  x="8"
-                  y="20"
-                  width="24"
-                  height="20"
-                  rx="2"
-                  fill="#d4a574"
-                  stroke="#b8860b"
-                  strokeWidth="2"
-                />
-                {/* Chest lid */}
-                <path
-                  d="M8,20 Q20,10 32,20"
-                  fill="#c9a574"
-                  stroke="#b8860b"
-                  strokeWidth="2"
-                />
-                {/* Lock */}
-                <circle
-                  cx="20"
-                  cy="28"
-                  r="3"
-                  fill="#8b6f47"
-                  stroke="#654321"
-                  strokeWidth="1"
-                />
-                {/* Sparkles */}
-                {!isCollected && (
-                  <>
-                    <circle cx="10" cy="15" r="1.5" fill="#fff" opacity="0.8" />
-                    <circle cx="30" cy="15" r="1.5" fill="#fff" opacity="0.8" />
-                    <circle cx="15" cy="10" r="1" fill="#fff" opacity="0.6" />
-                    <circle cx="25" cy="10" r="1" fill="#fff" opacity="0.6" />
-                  </>
-                )}
-              </svg>
-            </motion.div>
-          );
-        })}
+            return (
+              <motion.div
+                key={idx}
+                className="absolute pointer-events-none"
+                style={{
+                  left: pos.x - 20,
+                  top: pos.y - 20,
+                }}
+                animate={{
+                  scale: isCollected ? 1 : [1, 1.15, 1],
+                  opacity: isCollected ? 0 : 1,
+                }}
+                transition={{
+                  scale: {
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: 'easeInOut'
+                  }
+                }}
+              >
+                {/* Artifact chest */}
+                <svg width="40" height="50" viewBox="0 0 40 50">
+                  <ellipse
+                    cx="20"
+                    cy="45"
+                    rx="15"
+                    ry="4"
+                    fill="rgba(0,0,0,0.2)"
+                  />
+                  {/* Golden chest */}
+                  <rect
+                    x="8"
+                    y="20"
+                    width="24"
+                    height="20"
+                    rx="2"
+                    fill="#d4a574"
+                    stroke="#b8860b"
+                    strokeWidth="2"
+                  />
+                  {/* Chest lid */}
+                  <path
+                    d="M8,20 Q20,10 32,20"
+                    fill="#c9a574"
+                    stroke="#b8860b"
+                    strokeWidth="2"
+                  />
+                  {/* Lock */}
+                  <circle
+                    cx="20"
+                    cy="28"
+                    r="3"
+                    fill="#8b6f47"
+                    stroke="#654321"
+                    strokeWidth="1"
+                  />
+                  {/* Sparkles */}
+                  {!isCollected && (
+                    <>
+                      <circle cx="10" cy="15" r="1.5" fill="#fff" opacity="0.8" />
+                      <circle cx="30" cy="15" r="1.5" fill="#fff" opacity="0.8" />
+                      <circle cx="15" cy="10" r="1" fill="#fff" opacity="0.6" />
+                      <circle cx="25" cy="10" r="1" fill="#fff" opacity="0.6" />
+                    </>
+                  )}
+                </svg>
+              </motion.div>
+            );
+          })
+        }
 
         {/* Player character (Viking) */}
         <motion.div
-          className="absolute z-10"
+          className="absolute z-10 pointer-events-none"
           style={{
             left: playerPos.x - 25,
             top: playerPos.y - 35,
           }}
           animate={{
-            rotate: keysPressed.size > 0 ? [0, -2, 2, 0] : 0,
+            rotate: isMoving ? [0, -2, 2, 0] : 0,
           }}
           transition={{
             duration: 0.3,
-            repeat: keysPressed.size > 0 ? Infinity : 0,
+            repeat: isMoving ? Infinity : 0,
           }}
         >
           {/* Viking character - Enhanced */}
@@ -592,7 +641,7 @@ export function Island({
               stroke="#654321"
               strokeWidth="1"
             />
-            
+
             {/* Belt */}
             <rect x="16" y="48" width="18" height="3" fill="#654321" />
             <circle cx="25" cy="49.5" r="2" fill="#d4a574" stroke="#8b6f47" strokeWidth="0.5" />
@@ -606,7 +655,7 @@ export function Island({
             <rect x="35" y="34" width="5" height="14" fill="#e8b896" rx="2" />
             <rect x="10" y="42" width="5" height="4" fill="#654321" rx="1" />
             <rect x="35" y="42" width="5" height="4" fill="#654321" rx="1" />
-            
+
             {/* Right hand holding axe */}
             <circle cx="38" cy="48" r="2" fill="#e8b896" />
             {/* Axe */}
@@ -627,11 +676,11 @@ export function Island({
 
             {/* Head/Face */}
             <circle cx="25" cy="20" r="9" fill="#e8b896" />
-            
+
             {/* Beard - longer and more prominent */}
             <ellipse cx="25" cy="27" rx="8" ry="6" fill="#8b6f47" />
             <ellipse cx="25" cy="29" rx="7" ry="5" fill="#a0826d" />
-            
+
             {/* Mustache */}
             <ellipse cx="20" cy="22" rx="3" ry="2" fill="#8b6f47" />
             <ellipse cx="30" cy="22" rx="3" ry="2" fill="#8b6f47" />
@@ -648,10 +697,10 @@ export function Island({
             {/* Viking helmet - detailed */}
             <ellipse cx="25" cy="14" rx="10" ry="8" fill="#6b7280" />
             <ellipse cx="25" cy="14" rx="9" ry="7" fill="#7d8794" />
-            
+
             {/* Helmet nose guard */}
             <rect x="24" y="14" width="2" height="6" fill="#6b7280" rx="0.5" />
-            
+
             {/* Helmet ridge */}
             <path
               d="M25,6 L25,14"
@@ -659,11 +708,11 @@ export function Island({
               strokeWidth="2"
               strokeLinecap="round"
             />
-            
+
             {/* Helmet side details */}
             <circle cx="16" cy="16" r="2" fill="#6b7280" />
             <circle cx="34" cy="16" r="2" fill="#6b7280" />
-            
+
             {/* Helmet decorative bands */}
             <ellipse cx="25" cy="13" rx="10" ry="1" fill="#8b9aa8" opacity="0.7" />
 
@@ -686,48 +735,52 @@ export function Island({
         </motion.div>
 
         {/* Ship (if unlocked) */}
-        {hasShip && (
-          <motion.div
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            className="absolute bottom-8 right-8 z-5"
-          >
-            <Ship className="w-16 h-16 text-[#8b6f47]" strokeWidth={1.5} />
-          </motion.div>
-        )}
+        {
+          hasShip && (
+            <motion.div
+              initial={{ x: -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="absolute bottom-8 right-8 z-5"
+            >
+              <Ship className="w-16 h-16 text-[#8b6f47]" strokeWidth={1.5} />
+            </motion.div>
+          )
+        }
 
         {/* Completion message */}
-        {allQuestionsAnswered && score !== undefined && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[90%] max-w-lg"
-          >
-            <div className="bg-gradient-to-br from-[#d4a574] to-[#b8860b] px-6 md:px-12 py-6 md:py-8 rounded-xl md:rounded-2xl border-3 md:border-4 border-[#8b6f47] shadow-2xl text-center">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1, rotate: 360 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-                className="text-5xl md:text-6xl mb-3 md:mb-4"
-              >
-                {score >= 70 ? '🏆' : '⚔️'}
-              </motion.div>
-              <h2
-                className="text-3xl md:text-4xl lg:text-5xl text-white mb-2 md:mb-3"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
-                {score >= 70 ? 'Victory!' : 'Island Conquered!'}
-              </h2>
-              <p className="text-2xl md:text-3xl text-white font-bold mb-2">
-                Score: {Math.round(score)}%
-              </p>
-              <p className="text-base md:text-lg lg:text-xl text-white/90">
-                {score >= 70 ? 'Sailing to the next island...' : 'Review your answers...'}
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </div>
-    </div>
+        {
+          allQuestionsAnswered && score !== undefined && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[90%] max-w-lg"
+            >
+              <div className="bg-gradient-to-br from-[#d4a574] to-[#b8860b] px-6 md:px-12 py-6 md:py-8 rounded-xl md:rounded-2xl border-3 md:border-4 border-[#8b6f47] shadow-2xl text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1, rotate: 360 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
+                  className="text-5xl md:text-6xl mb-3 md:mb-4"
+                >
+                  {score >= 70 ? '🏆' : '⚔️'}
+                </motion.div>
+                <h2
+                  className="text-3xl md:text-4xl lg:text-5xl text-white mb-2 md:mb-3"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  {score >= 70 ? 'Victory!' : 'Island Conquered!'}
+                </h2>
+                <p className="text-2xl md:text-3xl text-white font-bold mb-2">
+                  Score: {Math.round(score)}%
+                </p>
+                <p className="text-base md:text-lg lg:text-xl text-white/90">
+                  {score >= 70 ? 'Sailing to the next island...' : 'Review your answers...'}
+                </p>
+              </div>
+            </motion.div>
+          )
+        }
+      </div >
+    </div >
   );
 }

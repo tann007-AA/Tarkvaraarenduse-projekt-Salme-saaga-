@@ -1,0 +1,130 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(circle at center, #111827 0%, #05070d 70%, #000000 100%);
+  color: #d8b15a;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.credits-screen {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 75% 20%, rgba(255,255,255,0.8) 0 2px, transparent 3px),
+    radial-gradient(circle at 60% 70%, rgba(255,255,255,0.7) 0 2px, transparent 3px),
+    radial-gradient(circle at 40% 85%, rgba(255,255,255,0.8) 0 2px, transparent 3px),
+    radial-gradient(circle at 85% 55%, rgba(255,255,255,0.7) 0 2px, transparent 3px);
+  opacity: 0.8;
+}
+
+.crawl-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  perspective: 500px;
+  overflow: hidden;
+}
+
+.crawl {
+  width: min(70vw, 900px);
+  text-align: center;
+  transform-origin: 50% 100%;
+  transform: rotateX(25deg);
+  animation: crawlUp 28s linear forwards;
+}
+
+.credits-intro {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.credits-title {
+  font-size: 4.5rem;
+  margin: 0 0 50px;
+  text-transform: uppercase;
+}
+
+.credit-block {
+  margin-bottom: 50px;
+}
+
+.credit-block h2 {
+  margin-bottom: 14px;
+  font-size: 2.2rem;
+  color: #f2d48a;
+  text-transform: uppercase;
+}
+
+.credit-block p {
+  margin: 8px 0;
+  font-size: 1.8rem;
+}
+
+.skip-credits-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+@keyframes crawlUp {
+  0% {
+    transform: rotateX(25deg) translateY(110vh);
+    opacity: 1;
+  }
+
+  100% {
+    transform: rotateX(25deg) translateY(-320vh);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .crawl {
+    width: 90vw;
+  }
+
+  .credits-intro {
+    font-size: 1.2rem;
+  }
+
+  .credits-title {
+    font-size: 2.5rem;
+  }
+
+  .credit-block h2 {
+    font-size: 1.3rem;
+  }
+
+  .credit-block p {
+    font-size: 1.1rem;
+  }
+}

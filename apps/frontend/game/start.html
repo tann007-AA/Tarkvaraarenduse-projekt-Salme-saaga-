@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Viking quest</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!--Menu-->
+
+  <section class="menu-panel">
+    <h1>Viikingitemäng</h1>
+    <div class="title-line"></div>
+    <p class="subtitle">Avasta ja uuri viikingite kohta</p>
+
+    <div class="menu-buttons">
+      <button id="playBtn" class="menu-btn play">▶ Mängi</button>
+      <button id="guideBtn" class="menu-btn guide">☷ Juhend</button>
+      <button id="settingsBtn" class="menu-btn settings">⚙ Sätted</button>
+    </div>
+
+  </section>
+
+  <!--Settings-->
+  <dialog id="settingsDialog" class="settings-dialog">
+    <div class="settings-header">
+      <h2>Sätted</h2>
+      <button id="closeSettingsBtn" class="close-btn" aria-label="Close settings">✕</button>
+    </div>
+
+    <div class="settings-content">
+      <p>Lisa sätted hiljem</p>
+
+      <div class="setting-row">
+        <span>Muusika</span>
+        <span>Coming soon</span>
+      </div>
+
+      <div class="setting-row">
+        <span>Raskustase</span>
+        <span>Coming soon</span>
+      </div>
+
+      <div class="setting-row">
+        <span>Keel</span>
+        <span>Coming soon</span>
+      </div>
+    </div>
+  </dialog>
+
+  <!--Guide-->
+  <dialog id="guideDialog" class="guide-dialog">
+    <button id="closeGuideBtn" class="guide-close-btn" aria-label="Close guide">✕</button>
+
+    <div class="guide-top-icon">?</div>
+
+    <h2 class="guide-title">Mängu juhised</h2>
+
+    <div class="guide-card">
+      <div class="guide-icon movement-icon">✥</div>
+      <div class="guide-text">
+        <h3>Liikumine</h3>
+        <p>Kasuta nooli või WASD, tegelase liigutamiseks</p>
+        <div class="key-row">
+          <span class="key-box">W</span>
+          <span class="key-box">A</span>
+          <span class="key-box">S</span>
+          <span class="key-box">D</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="guide-icon question-icon">?</div>
+      <div class="guide-text">
+        <h3>Küsimused</h3>
+        <p>Kõnni küsimuste markeritesse (?), et vastata küsimustele</p>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="guide-icon artifact-icon">✦</div>
+      <div class="guide-text">
+        <h3>Artefaktid</h3>
+        <p>Kogu mõõki, kilpe, nugasid, täringuid, ja muid esemeid</p>
+      </div>
+    </div>
+
+    <button id="readyBtn" class="ready-btn">Olen valmis!</button>
+  </dialog>
+
+  <!--Login-->
+  <dialog id="playDialog" class="play-dialog">
+    <button id="closePlayBtn" class="play-close-btn" aria-label="Close play popup">✕</button>
+
+    <h2 class="play-title">Vali</h2>
+    <p class="play-subtitle">Kuidas tahaksid mängu mängida</p>
+
+    <div class="mode-switch">
+      <button id="singleplayerTab" class="mode-btn active" type="button">👤 Üksikmängija</button>
+      <button id="schoolModeTab" class="mode-btn" type="button">👥 Koolirežiim</button>
+    </div>
+
+    <form id="playForm" class="play-form">
+      <label for="vikingName" class="play-label">Viikingi nimi</label>
+      <input id="vikingName" class="play-input" type="text" placeholder="Sisesta oma nimi" />
+
+      <div id="singleplayerFields">
+        <label for="password" class="play-label">Parool</label>
+        <input id="password" class="play-input" type="password" placeholder="Sisesta oma parool" />
+      </div>
+
+      <div id="schoolModeFields" hidden>
+        <label for="roomCode" class="play-label">Ruumikood</label>
+        <input id="roomCode" class="play-input" type="text" placeholder="Sisesta Ruumikood" />
+      </div>
+
+      <button id="startAdventureBtn" class="start-adventure-btn" type="submit">
+        Alusta!
+      </button>
+    </form>
+  </dialog>
+
+  <script src="start.js"></script>
+  <script src="settings.js"></script>
+  <script src="guide.js"></script>
+  <script src="play.js"></script>
+</body>
+</html>
