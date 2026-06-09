@@ -1,3 +1,15 @@
+DROP TABLE `dialogue_state`;--> statement-breakpoint
+DROP TABLE `game_state`;--> statement-breakpoint
+DROP TABLE `inventory_items`;--> statement-breakpoint
+DROP TABLE `quest_state`;--> statement-breakpoint
+DROP TABLE `save_flags`;--> statement-breakpoint
+DROP TABLE `scores`;--> statement-breakpoint
+DROP TABLE `saves`;--> statement-breakpoint
+ALTER TABLE `users` ADD `username` varchar(50) NOT NULL;--> statement-breakpoint
+ALTER TABLE `users` ADD `name` varchar(50) NOT NULL;--> statement-breakpoint
+ALTER TABLE `users` ADD `role` enum('user','admin') DEFAULT 'user';--> statement-breakpoint
+ALTER TABLE `users` ADD `last_login_at` timestamp;--> statement-breakpoint
+ALTER TABLE `users` ADD CONSTRAINT `users_username_unique` UNIQUE(`username`);--> statement-breakpoint
 CREATE TABLE `sessions` (
 	`id` varchar(36) NOT NULL,
 	`user_id` varchar(36) NOT NULL,
@@ -12,16 +24,4 @@ CREATE TABLE `sessions` (
 	CONSTRAINT `sessions_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-DROP TABLE `dialogue_state`;--> statement-breakpoint
-DROP TABLE `game_state`;--> statement-breakpoint
-DROP TABLE `inventory_items`;--> statement-breakpoint
-DROP TABLE `quest_state`;--> statement-breakpoint
-DROP TABLE `save_flags`;--> statement-breakpoint
-DROP TABLE `saves`;--> statement-breakpoint
-DROP TABLE `scores`;--> statement-breakpoint
-ALTER TABLE `users` ADD `username` varchar(50) NOT NULL;--> statement-breakpoint
-ALTER TABLE `users` ADD `name` varchar(50) NOT NULL;--> statement-breakpoint
-ALTER TABLE `users` ADD `role` enum('user','admin') DEFAULT 'user';--> statement-breakpoint
-ALTER TABLE `users` ADD `last_login_at` timestamp;--> statement-breakpoint
-ALTER TABLE `users` ADD CONSTRAINT `users_username_unique` UNIQUE(`username`);--> statement-breakpoint
 ALTER TABLE `sessions` ADD CONSTRAINT `sessions_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;

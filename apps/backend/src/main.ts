@@ -32,6 +32,7 @@ async function bootstrap() {
       'Authentication',
       'User authentication, registration, and session management',
     )
+    .addTag('Saves', 'Game save and load endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -41,4 +42,4 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 }
 
-bootstrap();
+void bootstrap();

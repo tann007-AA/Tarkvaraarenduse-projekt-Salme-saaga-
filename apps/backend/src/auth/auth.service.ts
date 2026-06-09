@@ -3,6 +3,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -69,8 +70,16 @@ export class AuthService {
         role: 'user',
         lastLoginAt: new Date(),
       });
-    } catch {
-      throw new ConflictException('E-mail on juba kasutuses.');
+    } catch (error) {
+      if (this.isDuplicateEntryError(error)) {
+        throw new ConflictException(
+          'E-mail või kasutajanimi on juba kasutuses.',
+        );
+      }
+
+      throw new InternalServerErrorException(
+        'Kasutaja loomine ebaõnnestus. Kontrolli andmebaasi migratsioone.',
+      );
     }
 
     // Loome sessiooni (access + refresh token)
@@ -342,5 +351,14 @@ export class AuthService {
     if (password.length < 8) {
       throw new BadRequestException('Parool peab olema vähemalt 8 märki pikk.');
     }
+  }
+
+  private isDuplicateEntryError(error: unknown) {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 'ER_DUP_ENTRY'
+    );
   }
 }
