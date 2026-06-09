@@ -88,7 +88,7 @@ export function Island({
     return () => clearTimeout(timer);
   }, []);
 
-  // Hiirekliki kuulaja pika maja / saare pinnal
+  // Hiirekliki kuulaja 
   const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!svgRef.current) return;
 
@@ -412,6 +412,48 @@ export function Island({
             opacity="0.4"
           />
         </svg>
+
+        {/* Klõpsamise sihtkoha indikaator (Hitmarker) */}
+        {targetPos && (
+          <div
+            className="absolute pointer-events-none z-0"
+            style={{ 
+              left: targetPos.x, 
+              top: targetPos.y,
+              transform: 'translate(-50%, -50%)' // Tsentreerib ikooni täpselt kliki keskkohale
+            }}
+          >
+            {/* Välimine pulseeriv ring */}
+            <motion.div
+              className="absolute w-8 h-8 border-2 border-amber-500/60 rounded-full"
+              style={{ left: -16, top: -16 }}
+              initial={{ scale: 0.2, opacity: 1 }}
+              animate={{ scale: 1.5, opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            />
+
+            {/* Sisemine terav Hitmarker (X-kujuline viikingi rist) */}
+            <motion.svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              initial={{ scale: 0, opacity: 1, rotate: -45 }}
+              animate={{ scale: [1, 1.2, 1], opacity: [1, 1, 0] }}
+              transition={{ 
+                duration: 0.6, 
+                times: [0, 0.2, 1],
+                ease: "easeInOut" 
+              }}
+            >
+              {/* Vasakult paremale joon */}
+              <line x1="2" y1="2" x2="18" y2="18" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
+              {/* Paremalt vasakule joon */}
+              <line x1="18" y1="2" x2="2" y2="18" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
+              {/* Pisike täpp keskel */}
+              <circle cx="10" cy="10" r="2" fill="#fff" />
+            </motion.svg>
+          </div>
+        )}
 
         {/* Question markers */}
         {QUESTION_POSITIONS.map((pos, idx) => {
