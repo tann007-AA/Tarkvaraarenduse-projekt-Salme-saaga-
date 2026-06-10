@@ -50,6 +50,13 @@
       "when": 1781079059647,
       "tag": "0006_dry_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1781081955563,
+      "tag": "0007_nosy_paibok",
+      "breakpoints": true
     }
   ]
 }

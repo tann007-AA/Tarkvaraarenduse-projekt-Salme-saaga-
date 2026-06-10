@@ -6,6 +6,7 @@ RUN corepack enable
 COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+ENV VITE_API_URL=https://api.salmesaaga.eu
 RUN pnpm --filter @pell/frontend build
 
 FROM nginx:stable-alpine AS production

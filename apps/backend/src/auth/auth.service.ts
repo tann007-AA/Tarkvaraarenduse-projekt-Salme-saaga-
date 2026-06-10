@@ -39,7 +39,7 @@ export class AuthService {
   constructor(
     @Inject(DRIZZLE) private readonly db: MySql2Database,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   // Kasutaja registreerimine + sessiooni loomine
   async register(input: RegisterInput, metadata?: SessionMetadata) {
