@@ -1,5 +1,21 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { InventoryItemDto } from './save-game.dto';
+
+export class ScoreItemDto {
+  @ApiProperty({
+    description: 'Type or category of score',
+    example: 'combat',
+    type: String,
+  })
+  scoreType: string;
+
+  @ApiProperty({
+    description: 'Numerical score value',
+    example: 100,
+    type: Number,
+  })
+  scoreValue: number;
+}
 
 export class SaveProgressDto {
   @ApiProperty({
@@ -99,6 +115,12 @@ export class SaveResponseDto {
     type: [InventoryItemDto],
   })
   inventory: InventoryItemDto[];
+
+  @ApiPropertyOptional({
+    description: 'Scores associated with this save',
+    type: [ScoreItemDto],
+  })
+  scores?: ScoreItemDto[];
 }
 
 export class SaveListResponseDto {

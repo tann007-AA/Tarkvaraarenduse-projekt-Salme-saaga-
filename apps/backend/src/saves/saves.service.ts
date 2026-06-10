@@ -11,6 +11,7 @@ import { DRIZZLE } from '../db/db.module';
 import { saves } from '../db/schema/gamesave.schema';
 import { inventoryItems } from '../db/schema/inventory.schema';
 import { progress } from '../db/schema/progress.schema';
+import { scores } from '../db/schema/scores.schema';
 import type { InventoryItemDto, SaveGameDto } from './dto';
 
 const MAX_SAVE_SLOTS = 3;
@@ -46,7 +47,7 @@ type ProgressRow = {
 
 @Injectable()
 export class SavesService {
-  constructor(@Inject(DRIZZLE) private readonly db: MySql2Database) {}
+  constructor(@Inject(DRIZZLE) private readonly db: MySql2Database) { }
 
   async saveGame(userId: string, input: SaveGameDto) {
     const normalizedSave = this.normalizeSave(input);
@@ -229,7 +230,16 @@ export class SavesService {
       .where(eq(inventoryItems.saveId, saveRow.id))
       .orderBy(asc(inventoryItems.itemId));
 
-    return this.toSaveResponse(saveRow, progressRow, inventory);
+    const scoreRows = await this.db
+      .select({
+        scoreType: scores.scoreType,
+        scoreValue: scores.scoreValue,
+      })
+      .from(scores)
+      .where(eq(scores.saveId, saveRow.id))
+      .orderBy(asc(scores.scoreType));
+
+    return this.toSaveResponse(saveRow, progressRow, inventory, scoreRows);
   }
 
   private normalizeSave(input: SaveGameDto): NormalizedSaveInput {
@@ -363,6 +373,7 @@ export class SavesService {
     saveRow: SaveRow,
     progressRow: ProgressRow | undefined,
     inventory: Required<InventoryItemDto>[],
+    scoreRows: { scoreType: string; scoreValue: number }[],
   ) {
     return {
       id: saveRow.id,
@@ -379,6 +390,7 @@ export class SavesService {
         completedEndingB: progressRow?.completedEndingB ?? false,
       },
       inventory,
+      scores: scoreRows.length > 0 ? scoreRows : undefined,
     };
   }
 
