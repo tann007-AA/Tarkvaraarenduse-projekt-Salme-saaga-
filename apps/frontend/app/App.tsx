@@ -608,16 +608,20 @@ function GameContent() {
       )}
 
       {gameState === 'quiz' && currentQuestion && currentQuestionIndex !== null && (
-        <QuizScreen
-          island={currentIsland}
-          question={currentQuestion}
-          questionIndex={currentQuestionIndex}
-          totalQuestions={currentIsland.questions.length}
-          onAnswer={handleAnswer}
-          inventory={inventory}
-          onUseArtifact={handleUseArtifact}
-        />
-      )}
+  <QuizScreen
+    island={currentIsland}
+    question={currentQuestion}
+    questionIndex={currentQuestionIndex}
+    totalQuestions={currentIsland.questions.length}
+    onAnswer={handleAnswer}
+    inventory={inventory}
+    onUseArtifact={handleUseArtifact}
+    onClose={() => {
+      setGameState('island-select');
+      setCurrentQuestionIndex(null); // See nullib indeksi ära, et aken sulguks puhtalt
+    }}
+  />
+)}
 
       {gameState === 'sailing' && (
         <SailingTransition onComplete={handleSailingComplete} />

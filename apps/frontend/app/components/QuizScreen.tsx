@@ -19,6 +19,7 @@ interface QuizScreenProps {
   onAnswer: (answerIndex: number) => void;
   inventory: ArtifactType[];
   onUseArtifact: (artifactType: ArtifactType) => void;
+  onClose?: () => void;
 }
 
 export function QuizScreen({
@@ -28,7 +29,8 @@ export function QuizScreen({
   totalQuestions,
   onAnswer,
   inventory,
-  onUseArtifact
+  onUseArtifact,
+  onClose
 }: QuizScreenProps) {
   const { t } = useLanguage();
   const [filteredAnswers, setFilteredAnswers] = useState<number[]>([0, 1, 2, 3]);
@@ -132,6 +134,19 @@ export function QuizScreen({
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238b6f47' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
           }}
         />
+       {/* SULGEMISNUPP (Taganemistee ilma vastamata) */}
+        <button
+          onClick={() => {
+            console.log("X nuppu klikati edukalt!");
+            if (onClose) onClose();
+          }}
+          type="button"
+          className="absolute top-4 right-4 z-[99] p-2 text-[#8b6f47] hover:text-[#8b2e2e] bg-white hover:bg-stone-100 border-2 border-[#8b6f47]/40 hover:border-[#8b2e2e]/60 rounded-xl transition-all shadow-md cursor-pointer active:scale-95 block"
+          style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+          title="Retreat from challenge"
+        >
+          <X className="w-5 h-5 md:w-6 md:h-6 pointer-events-none" />
+        </button>
 
         {/* Progress indicator */}
         <div className="relative mb-4 md:mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
