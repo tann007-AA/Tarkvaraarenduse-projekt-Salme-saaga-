@@ -33,6 +33,8 @@ async function bootstrap() {
       'User authentication, registration, and session management',
     )
     .addTag('Saves', 'Game save and load endpoints')
+    .addTag('Inventory', 'Save-slot inventory management endpoints')
+    .addTag('Progression', 'Story chapter and quest progression endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
