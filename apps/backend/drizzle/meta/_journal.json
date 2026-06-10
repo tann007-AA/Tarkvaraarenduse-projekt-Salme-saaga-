@@ -43,6 +43,13 @@
       "when": 1780992194501,
       "tag": "0005_little_nightcrawler",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1781079059647,
+      "tag": "0006_dry_guardian",
+      "breakpoints": true
     }
   ]
 }
