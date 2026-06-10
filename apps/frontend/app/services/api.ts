@@ -1,5 +1,5 @@
 // API configuration
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://217.146.72.174:3000';
 
 // Type definitions matching backend DTOs
 export interface RegisterRequest {
