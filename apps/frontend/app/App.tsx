@@ -458,7 +458,7 @@ function GameContent() {
   const handleLogin = (username: string) => {
     setPlayerData({ name: username });
     setShowLoginModal(false);
-    setGameState('intro');
+    setGameState('mode-select');
   };
 
   const handleStartGame = () => {
@@ -515,7 +515,14 @@ function GameContent() {
       {/* Main Menu */}
       {gameState === 'menu' && (
         <MainMenuScreen
-          onPlay={() => setGameState('mode-select')}
+          onPlay={() => {
+          // KontrollimePlayerData olemasolu (asendab isAuthenticated'i)
+            if (playerData && playerData.name) {
+              setGameState('mode-select');
+            } else {
+              setShowLoginModal(true);
+            }
+          }}
           onGuide={handleGuideClick}
           onSettings={handleSettingsClick}
         />
