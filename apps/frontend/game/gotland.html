@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Viking's Journey - Gotland</title>
+  <link rel="stylesheet" href="level.css" />
+</head>
+
+<body>
+  <div class="water-bg" aria-hidden="true">
+    <div class="wave wave-1"></div>
+    <div class="wave wave-2"></div>
+    <div class="wave wave-3"></div>
+    <div class="wave wave-4"></div>
+    <div class="wave wave-5"></div>
+    <div class="wave wave-6"></div>
+  </div>
+
+  <main class="level-screen">
+    <aside class="level-info-card">
+      <h1>Gotland</h1>
+      <p class="level-topic">Viking Journeys</p>
+      <p class="level-progress">0 / 10 Questions</p>
+    </aside>
+
+    <section class="top-progress" aria-labelledby="islandProgressTitle">
+      <h2 id="islandProgressTitle" class="sr-only">Island progression</h2>
+
+      <div class="island-progress">
+        <button type="button" class="progress-step" data-page="rootsi.html">
+          <span class="step-icon">1</span>
+          <span class="step-label">Rootsi</span>
+        </button>
+
+        <div class="progress-line" aria-hidden="true"></div>
+
+        <button type="button" class="progress-step active" aria-current="step" data-page="gotland.html">
+          <span class="step-icon">2</span>
+          <span class="step-label">Gotland</span>
+        </button>
+
+        <div class="progress-line" aria-hidden="true"></div>
+
+        <button type="button" class="progress-step" data-page="saaremaa.html">
+          <span class="step-icon">3</span>
+          <span class="step-label">Saaremaa</span>
+        </button>
+      </div>
+    </section>
+
+    <button id="backBtn" class="back-btn" type="button">← Back</button>
+
+    <div class="map-wrap-gotland">
+      <img src="./Gotland.svg" alt="Gotland" class="gotland" />
+
+      <button class="question-marker active" data-index="0" style="left: 86%; top: 14%;">?</button>
+      <button class="question-marker" data-index="1" style="left: 45%; top: 14%;">?</button>
+      <button class="question-marker" data-index="2" style="left: 55%; top: 94%;">?</button>
+      <button class="question-marker" data-index="3" style="left: 20%; top: 55%;">?</button>
+      <button class="question-marker" data-index="4" style="left: 79%; top: 58%;">?</button>
+      <button class="question-marker" data-index="5" style="left: 30%; top: 80%;">?</button>
+      <button class="question-marker" data-index="6" style="left: 54%; top: 57%;">?</button>
+      <button class="question-marker" data-index="7" style="left: 80%; top: 35%;">?</button>
+    </div>
+
+    <script src="level.js"></script>
+</body>
+
+</html>

@@ -13,7 +13,7 @@ if (modeText) {
     modeText.textContent = mode === "school" ? "School Mode" : "Singleplayer";
 }
 beginJourneyBtn?.addEventListener("click", () => {
-    window.location.href = "level.html";
+    window.location.href = "rootsi.html";
 });
 backToMenuBtn?.addEventListener("click", () => {
     window.location.href = "start.html";
