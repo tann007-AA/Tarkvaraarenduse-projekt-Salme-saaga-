@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MainMenuScreen } from './components/MainMenuScreen';
-import { LoginModal, LoginData } from './components/LoginModal';
+import { LoginModal } from './components/LoginModal';
 import { SettingsModal } from './components/SettingsModal';
 import { StartScreen } from './components/StartScreen';
 import { TutorialModal } from './components/TutorialModal';
@@ -12,8 +12,10 @@ import { SailingTransition } from './components/SailingTransition';
 import { ProgressBar } from './components/ProgressBar';
 import { Toaster, toast } from 'sonner';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Settings, ShoppingBag } from 'lucide-react';
 import { ShopModal } from './components/ShopModal';
+import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 
 // Artifact types for lifelines
 export type ArtifactType = 'sword' | 'shield' | 'knife' | 'dice' | 'gaming-piece';
@@ -22,6 +24,10 @@ export interface Artifact {
   type: ArtifactType;
   name: string;
   description: string;
+}
+
+interface PlayerData {
+  name: string;
 }
 
 // Island data generator function that uses translations
@@ -256,7 +262,7 @@ const getIslandData = (t: any) => [
   }
 ];
 
-type GameState = 'menu' | 'intro' | 'island-select' | 'quiz' | 'sailing' | 'retry' | 'end';
+type GameState = 'intro' | 'menu' | 'island-select' | 'quiz' | 'sailing' | 'retry' | 'end' | 'mode-select' | 'story-mode' | 'hnefatafl-local';
 
 function GameContent() {
   const { t } = useLanguage();
@@ -264,7 +270,7 @@ function GameContent() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [playerData, setPlayerData] = useState<LoginData | null>(null);
+  const [playerData, setPlayerData] = useState<PlayerData | null>(null);
   const [currentIslandIndex, setCurrentIslandIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number | null>(null);
   const [userAnswers, setUserAnswers] = useState<{ [key: number]: number }>({});
@@ -449,10 +455,10 @@ function GameContent() {
     setShowSettingsModal(true);
   };
 
-  const handleLogin = (mode: 'singleplayer' | 'school', data: LoginData) => {
-    setPlayerData(data);
+  const handleLogin = (username: string) => {
+    setPlayerData({ name: username });
     setShowLoginModal(false);
-    setGameState('intro');
+    setGameState('mode-select');
   };
 
   const handleStartGame = () => {
@@ -509,17 +515,57 @@ function GameContent() {
       {/* Main Menu */}
       {gameState === 'menu' && (
         <MainMenuScreen
-          onPlay={handlePlayClick}
+          onPlay={() => {
+          // KontrollimePlayerData olemasolu (asendab isAuthenticated'i)
+            if (playerData && playerData.name) {
+              setGameState('mode-select');
+            } else {
+              setShowLoginModal(true);
+            }
+          }}
           onGuide={handleGuideClick}
           onSettings={handleSettingsClick}
         />
+      )}
+
+      {/* REŽIIMI VALIK */}
+      {gameState === 'mode-select' && (
+        <GameModeSelectScreen 
+          onSelectMode={(mode) => {
+          // mode võib nüüd olla 'story-mode', 'hnefatafl-local' või 'island-select'
+            setGameState(mode); 
+          }}
+          onBack={() => setGameState('menu')}
+        />
+      )}
+
+      {/* 4. STORY MODE  */}
+      {gameState === 'story-mode' && (
+        <div className="p-8 text-center bg-stone-900 min-h-screen flex flex-col justify-center items-center">
+          <h2 className="text-2xl font-serif text-[#dfc18d] mb-4">I Peatükk: Salme kutse</h2>
+          <p className="text-stone-400 mb-4">Siia ühendame kohe järgmise sammuna poti keetmise mängu.</p>
+          <button onClick={() => setGameState('mode-select')} className="px-4 py-2 bg-stone-800 rounded">
+            Tagasi režiimi valikusse
+          </button>
+        </div>
+      )}
+
+      {/* 5. HNEFATAFL LAUAMÄNG */}
+      {gameState === 'hnefatafl-local' && (
+        <div className="p-8 text-center bg-stone-950 min-h-screen flex flex-col justify-center items-center">
+          <h2 className="text-2xl font-serif text-[#dfc18d] mb-4">⚔️ Hnefatafl ⚔️</h2>
+          <p className="text-stone-400 mb-4">Siia tuleb kohalik kahe mängija lauamäng.</p>
+          <button onClick={() => setGameState('mode-select')} className="px-4 py-2 bg-stone-800 rounded">
+            Tagasi režiimi valikusse
+          </button>
+        </div>
       )}
 
       {/* Login Modal */}
       {showLoginModal && (
         <LoginModal
           onClose={() => setShowLoginModal(false)}
-          onLogin={handleLogin}
+          onSuccess={handleLogin}
         />
       )}
 
@@ -608,16 +654,20 @@ function GameContent() {
       )}
 
       {gameState === 'quiz' && currentQuestion && currentQuestionIndex !== null && (
-        <QuizScreen
-          island={currentIsland}
-          question={currentQuestion}
-          questionIndex={currentQuestionIndex}
-          totalQuestions={currentIsland.questions.length}
-          onAnswer={handleAnswer}
-          inventory={inventory}
-          onUseArtifact={handleUseArtifact}
-        />
-      )}
+  <QuizScreen
+    island={currentIsland}
+    question={currentQuestion}
+    questionIndex={currentQuestionIndex}
+    totalQuestions={currentIsland.questions.length}
+    onAnswer={handleAnswer}
+    inventory={inventory}
+    onUseArtifact={handleUseArtifact}
+    onClose={() => {
+      setGameState('island-select');
+      setCurrentQuestionIndex(null); // See nullib indeksi ära, et aken sulguks puhtalt
+    }}
+  />
+)}
 
       {gameState === 'sailing' && (
         <SailingTransition onComplete={handleSailingComplete} />
@@ -647,8 +697,10 @@ function GameContent() {
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <GameContent />
-    </LanguageProvider>
+    <AuthProvider>
+      <LanguageProvider>
+        <GameContent />
+      </LanguageProvider>
+    </AuthProvider>
   );
 }
