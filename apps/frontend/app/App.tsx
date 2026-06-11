@@ -15,6 +15,7 @@ import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Settings, ShoppingBag } from 'lucide-react';
 import { ShopModal } from './components/ShopModal';
+import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 
 // Artifact types for lifelines
 export type ArtifactType = 'sword' | 'shield' | 'knife' | 'dice' | 'gaming-piece';
@@ -261,7 +262,7 @@ const getIslandData = (t: any) => [
   }
 ];
 
-type GameState = 'menu' | 'intro' | 'island-select' | 'quiz' | 'sailing' | 'retry' | 'end';
+type GameState = 'intro' | 'menu' | 'island-select' | 'quiz' | 'sailing' | 'retry' | 'end' | 'mode-select' | 'story-mode' | 'hnefatafl-local';
 
 function GameContent() {
   const { t } = useLanguage();
@@ -514,10 +515,46 @@ function GameContent() {
       {/* Main Menu */}
       {gameState === 'menu' && (
         <MainMenuScreen
-          onPlay={handlePlayClick}
+          onPlay={() => setGameState('mode-select')}
           onGuide={handleGuideClick}
           onSettings={handleSettingsClick}
         />
+      )}
+
+      {/* REŽIIMI VALIK */}
+      {gameState === 'mode-select' && (
+        <GameModeSelectScreen 
+          onSelectMode={(mode) => {
+            if (mode === 'story-mode') {
+              setGameState('story-mode');
+            } else {
+              setGameState('hnefatafl-local');
+            }
+          }}
+          onBack={() => setGameState('menu')}
+        />
+      )}
+
+      {/* 4. STORY MODE  */}
+      {gameState === 'story-mode' && (
+        <div className="p-8 text-center bg-stone-900 min-h-screen flex flex-col justify-center items-center">
+          <h2 className="text-2xl font-serif text-[#dfc18d] mb-4">I Peatükk: Salme kutse</h2>
+          <p className="text-stone-400 mb-4">Siia ühendame kohe järgmise sammuna poti keetmise mängu.</p>
+          <button onClick={() => setGameState('mode-select')} className="px-4 py-2 bg-stone-800 rounded">
+            Tagasi režiimi valikusse
+          </button>
+        </div>
+      )}
+
+      {/* 5. HNEFATAFL LAUAMÄNG */}
+      {gameState === 'hnefatafl-local' && (
+        <div className="p-8 text-center bg-stone-950 min-h-screen flex flex-col justify-center items-center">
+          <h2 className="text-2xl font-serif text-[#dfc18d] mb-4">⚔️ Hnefatafl ⚔️</h2>
+          <p className="text-stone-400 mb-4">Siia tuleb kohalik kahe mängija lauamäng.</p>
+          <button onClick={() => setGameState('mode-select')} className="px-4 py-2 bg-stone-800 rounded">
+            Tagasi režiimi valikusse
+          </button>
+        </div>
       )}
 
       {/* Login Modal */}
