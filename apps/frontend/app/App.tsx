@@ -532,11 +532,8 @@ function GameContent() {
       {gameState === 'mode-select' && (
         <GameModeSelectScreen 
           onSelectMode={(mode) => {
-            if (mode === 'story-mode') {
-              setGameState('story-mode');
-            } else {
-              setGameState('hnefatafl-local');
-            }
+          // mode võib nüüd olla 'story-mode', 'hnefatafl-local' või 'island-select'
+            setGameState(mode); 
           }}
           onBack={() => setGameState('menu')}
         />

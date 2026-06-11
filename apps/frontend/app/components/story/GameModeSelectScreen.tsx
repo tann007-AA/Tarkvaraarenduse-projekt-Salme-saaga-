@@ -4,7 +4,7 @@ import { BookOpen, Users, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 interface GameModeSelectScreenProps {
-  onSelectMode: (mode: 'story-mode' | 'hnefatafl-local') => void;
+  onSelectMode: (mode: 'story-mode' | 'hnefatafl-local' | 'island-select') => void;
   onBack: () => void;
 }
 
@@ -95,6 +95,27 @@ export function GameModeSelectScreen({ onSelectMode, onBack }: GameModeSelectScr
               </div>
               <div className="text-xs text-white/70 mt-1">
                 Klassikaline viikingite strateegiamäng. Mängi sõbra vastu samal arvutil.
+              </div>
+            </div>
+          </motion.button>
+
+          {/* VANA SAARE/TESTI REŽIIMI NUPP */}
+          <motion.button
+            initial={{ x: -100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            onClick={() => onSelectMode('island-select')}
+            className="group relative flex items-center gap-4 w-full p-5 bg-gradient-to-r from-[#2a5c6f] to-[#1e4d5f] hover:from-[#3d7a8f] hover:to-[#2a5c6f] border-4 border-[#1e4d5f] hover:border-[#d4a574] rounded-xl shadow-2xl transition-all duration-300 cursor-pointer text-left hover:scale-105"
+          >
+            <div className="p-3 bg-amber-500/10 group-hover:bg-amber-500/20 text-amber-400 rounded-lg transition-colors">
+              <span>🗺️</span>
+            </div>
+            <div>
+              <div className="text-xl font-bold text-white font-serif" style={{ fontFamily: 'var(--font-heading)' }}>
+                Mälumängu Saared (Test)
+              </div>
+              <div className="text-xs text-white/70 mt-1">
+                Sinu algne režiim: liigu WASD klahvidega mööda saari ja vasta küsimustele.
               </div>
             </div>
           </motion.button>
