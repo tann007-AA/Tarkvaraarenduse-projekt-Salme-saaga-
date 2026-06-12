@@ -24,7 +24,7 @@ markers.forEach((marker, index) => {
             markers[currentMarkerIndex].classList.add("active");
         }
         else {
-            window.location.href = "gotland.html";
+            window.location.href = "repairminigame.html";
         }
     });
 });

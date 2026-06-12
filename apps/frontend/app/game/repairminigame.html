@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laeva Parandamine – Salme Saaga</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: "Cinzel", serif;
+            background:
+                linear-gradient(to bottom,
+                #1a3a4a 0%,
+                #0f2a35 40%,
+                #0a1f28 70%,
+                #051418 100%);
+            color: #f4efe6;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Storm effect overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(100, 120, 140, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(80, 100, 120, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Rain animation */
+        .rain {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .rain-drop {
+            position: absolute;
+            width: 1px;
+            height: 20px;
+            background: rgba(200, 220, 240, 0.4);
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+
+        /* Screens */
+        .screen {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 800px;
+            padding: 40px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .screen.hidden { display: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Story Screen */
+        .story-icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            animation: rock 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(220, 180, 100, 0.3));
+        }
+
+        @keyframes rock {
+            0%, 100% { transform: rotate(-3deg) translateY(0); }
+            25% { transform: rotate(2deg) translateY(-5px); }
+            50% { transform: rotate(-2deg) translateY(0); }
+            75% { transform: rotate(3deg) translateY(-3px); }
+        }
+
+        .story-screen h1 {
+            font-family: "Uncial Antiqua", serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            color: #f4efe6;
+            text-shadow: 0 3px 15px rgba(0, 0, 0, 0.5);
+            margin-bottom: 1.5rem;
+        }
+
+        .title-line {
+            width: 200px;
+            height: 2px;
+            margin: 0 auto 2rem;
+            background: linear-gradient(to right, transparent, #c8a46a, transparent);
+        }
+
+        .story-text {
+            font-size: 1.15em;
+            line-height: 1.9;
+            color: #c8d4dc;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .story-text strong {
+            color: #fbbf24;
+        }
+
+        .menu-btn {
+            border: none;
+            border-radius: 14px;
+            padding: 1.2rem 3rem;
+            font-size: 1.3rem;
+            font-family: "Cinzel", serif;
+            font-weight: 700;
+            color: #f8f4ea;
+            cursor: pointer;
+            box-shadow:
+                inset 0 2px 0 rgba(255, 255, 255, 0.18),
+                0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+            box-shadow:
+                inset 0 2px 0 rgba(255, 255, 255, 0.25),
+                0 8px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .menu-btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(to bottom, #c44, #922);
+            border: 2px solid #733;
+        }
+
+        .btn-success {
+            background: linear-gradient(to bottom, #ddb35a, #b98316);
+            border: 2px solid #8a6a2a;
+        }
+
+        .btn-retry {
+            background: linear-gradient(to bottom, #c44, #922);
+            border: 2px solid #733;
+        }
+
+        /* Game Screen */
+        .game-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .game-header h2 {
+            font-family: "Uncial Antiqua", serif;
+            color: #f4efe6;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .game-header .subtitle {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        /* Repair Progress */
+        .repair-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 2rem;
+        }
+
+        .repair-label-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .repair-track {
+            width: 100%;
+            height: 28px;
+            background: #1e293b;
+            border: 2px solid #475569;
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .repair-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #dc2626, #ef4444);
+            transition: width 0.4s ease, background 0.4s ease;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .repair-fill::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent);
+            border-radius: 12px;
+        }
+
+        .repair-fill.good {
+            background: linear-gradient(to right, #ca8a04, #fbbf24);
+        }
+
+        .repair-fill.excellent {
+            background: linear-gradient(to right, #16a34a, #22c55e);
+        }
+
+        /* Rhythm Lane */
+        #rhythm-lane {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            height: 380px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 3px solid #475569;
+            border-radius: 18px;
+            margin: 0 auto 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .lane-hint {
+            position: absolute;
+            top: 12px;
+            left: 0; right: 0;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #64748b;
+            z-index: 10;
+            letter-spacing: 1px;
+        }
+
+        .hit-zone {
+            position: absolute;
+            bottom: 25px;
+            left: 20px;
+            right: 20px;
+            height: 65px;
+            border: 3px solid #c8a46a;
+            border-radius: 12px;
+            background: rgba(200, 164, 106, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            box-shadow: 0 0 15px rgba(200, 164, 106, 0.1);
+        }
+
+        .hit-zone-text {
+            color: #c8a46a;
+            font-family: "Cinzel", serif;
+            font-weight: bold;
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+        }
+
+        .beat-note {
+            position: absolute;
+            width: 52px;
+            height: 52px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #c44, #922);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 22px;
+            color: white;
+            box-shadow: 0 0 15px rgba(200, 50, 50, 0.5), 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 5;
+            border: 2px solid rgba(255,255,255,0.2);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .beat-note.hit {
+            background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.6), 0 4px 8px rgba(0,0,0,0.3);
+            animation: hitPulse 0.35s ease-out;
+        }
+
+        .beat-note.missed {
+            background: linear-gradient(135deg, #475569, #334155) !important;
+            opacity: 0.25;
+            box-shadow: none;
+        }
+
+        @keyframes hitPulse {
+            0% { transform: translateX(-50%) scale(1); }
+            40% { transform: translateX(-50%) scale(1.5); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        .feedback-text {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 0.9s ease-out forwards;
+            z-index: 20;
+            font-family: "Cinzel", serif;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .feedback-text.perfect { color: #4ade80; }
+        .feedback-text.great { color: #fbbf24; }
+        .feedback-text.good { color: #fb923c; }
+        .feedback-text.miss { color: #f87171; }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) translateY(-25px) scale(1.2); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-50px) scale(0.9); }
+        }
+
+        /* Stats */
+        .game-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 0.8rem 1.5rem;
+            min-width: 100px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #f4efe6;
+        }
+
+        .stat-value.accent { color: #fbbf24; }
+
+        /* Key Legend */
+        .key-legend {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .key-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .key-badge {
+            width: 36px;
+            height: 36px;
+            background: #1e293b;
+            border: 2px solid #475569;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            color: #e2e8f0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Result Screen */
+        .result-icon {
+            font-size: 6rem;
+            margin-bottom: 1.5rem;
+            animation: rock 3s ease-in-out infinite;
+        }
+
+        .result-screen h2 {
+            font-family: "Uncial Antiqua", serif;
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            margin-bottom: 1.5rem;
+        }
+
+        .result-screen .win { color: #4ade80; }
+        .result-screen .lose { color: #f87171; }
+
+        .result-message {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #c8d4dc;
+            margin-bottom: 2.5rem;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .result-stats-box {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .result-stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+            font-size: 1rem;
+        }
+
+        .result-stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-stat-row span:first-child { color: #94a3b8; }
+        .result-stat-row span:last-child { font-weight: bold; }
+
+        .btn-row {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .screen { padding: 20px; }
+            #rhythm-lane { height: 320px; }
+            .game-stats { gap: 1rem; }
+            .stat-box { padding: 0.6rem 1rem; min-width: 80px; }
+            .key-legend { gap: 0.6rem; }
+            .menu-btn { padding: 1rem 2rem; font-size: 1.1rem; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <!-- Rain effect -->
+    <div class="rain" id="rain"></div>
+
+    <!-- STORY SCREEN -->
+    <div class="screen story-screen" id="story-screen">
+        <div class="story-icon">🚢</div>
+        <h1>Laev vajab hoolt</h1>
+        <div class="title-line"></div>
+        <div class="story-text">
+            Tormine meri on sinu laeva rängalt kahjustanud. Purjed on rebenenud, 
+            mastid pragunenud ja vesi tungib paati.<br><br>
+            <strong>Sellise laevaga jätkamine tundub ohtlik.</strong><br><br>
+            Ainult kiirete ja täpsete liigutustega saad laeva korda teeda 
+            ning oma retke jätkata.
+        </div>
+        <button class="menu-btn btn-danger" onclick="startRepairGame()">Alusta Parandamist</button>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div class="screen hidden" id="game-screen">
+        <div class="game-header">
+            <h2>⚓ Laeva Parandamine</h2>
+            <div class="subtitle">Tee täpseid tegevusi, et laev korda saada</div>
+        </div>
+
+        <div class="repair-container">
+            <div class="repair-label-row">
+                <span>Laeva seisukord</span>
+                <span id="repair-percent">0%</span>
+            </div>
+            <div class="repair-track">
+                <div class="repair-fill" id="repair-fill"></div>
+            </div>
+        </div>
+
+        <div class="game-stats">
+            <div class="stat-box">
+                <div class="stat-label">Tegemisi</div>
+                <div class="stat-value accent" id="hits-count">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Vead</div>
+                <div class="stat-value" id="misses-count">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Kombo</div>
+                <div class="stat-value accent" id="combo-count">0</div>
+            </div>
+        </div>
+
+        <div id="rhythm-lane">
+            <div class="lane-hint">VAJUTA KLAHVI, KUI MÄRGE JÕUAB KOLLANE TSOONI</div>
+            <div class="hit-zone">
+                <span class="hit-zone-text">PARANDA</span>
+            </div>
+        </div>
+
+        <div class="key-legend">
+            <div class="key-item">
+                <div class="key-badge">↑</div>
+                Keri
+            </div>
+            <div class="key-item">
+                <div class="key-badge">↓</div>
+                Haagi
+            </div>
+            <div class="key-item">
+                <div class="key-badge">←</div>
+                Keera
+            </div>
+            <div class="key-item">
+                <div class="key-badge">→</div>
+                Tõmba
+            </div>
+            <div class="key-item">
+                <div class="key-badge">␣</div>
+                Haamer
+            </div>
+        </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div class="screen result-screen hidden" id="result-screen">
+        <div class="result-icon" id="result-icon"></div>
+        <h2 id="result-title"></h2>
+        <div class="result-message" id="result-message"></div>
+        <div class="result-stats-box" id="result-stats-box"></div>
+        <div class="btn-row" id="result-buttons"></div>
+    </div>
+
+<script>
+// ============================================
+// LAEVA PARANDAMISE MÄNG – Salme Saaga
+// ============================================
+
+// Loo vihm
+(function createRain() {
+    var rain = document.getElementById('rain');
+    for (var i = 0; i < 50; i++) {
+        var drop = document.createElement('div');
+        drop.className = 'rain-drop';
+        drop.style.left = Math.random() * 100 + '%';
+        drop.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
+        drop.style.animationDelay = Math.random() * 2 + 's';
+        rain.appendChild(drop);
+    }
+})();
+
+function RhythmGame() {
+    this.audioCtx = null;
+    this.startTime = 0;
+    this.isPlaying = false;
+    this.beats = [];
+    this.tolerance = 200;
+    this.hits = 0;
+    this.misses = 0;
+    this.combo = 0;
+    this.maxCombo = 0;
+    this.totalRepair = 0;
+    this.animationId = null;
+    this.lane = document.getElementById('rhythm-lane');
+    this.noteElements = [];
+    this.keyHandler = null;
+    this.onProgress = null;
+    this.initAudio();
+}
+
+RhythmGame.prototype.initAudio = function() {
+    try {
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+            this.audioCtx = new AudioContext();
+        }
+    } catch(e) {}
+};
+
+RhythmGame.prototype.playSound = function(freq, duration, type) {
+    type = type || 'sine';
+    if (!this.audioCtx) return;
+    try {
+        var osc = this.audioCtx.createOscillator();
+        var gain = this.audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.15, this.audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + duration);
+        osc.start();
+        osc.stop(this.audioCtx.currentTime + duration);
+    } catch(e) {}
+};
+
+RhythmGame.prototype.addQTE = function(config) {
+    this.beats = [];
+    for (var i = 0; i < config.beats.length; i++) {
+        this.beats.push({
+            time: config.beats[i].time,
+            key: config.beats[i].key,
+            hit: false,
+            missed: false
+        });
+    }
+    this.bpm = config.bpm || 100;
+    this.tolerance = config.tolerance || 200;
+    this.onSuccess = config.onSuccess || function(){};
+    this.onFail = config.onFail || function(){};
+    this.onBeatHit = config.onBeatHit || function(){};
+    this.onProgress = config.onProgress || function(){};
+};
+
+RhythmGame.prototype.start = function() {
+    if (this.audioCtx && this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume();
+    }
+    this.isPlaying = true;
+    this.hits = 0;
+    this.misses = 0;
+    this.combo = 0;
+    this.maxCombo = 0;
+    this.totalRepair = 0;
+    this.startTime = performance.now();
+    this.spawnNotes();
+    var self = this;
+    this.keyHandler = function(e) { self.checkHit(e.key); };
+    document.addEventListener('keydown', this.keyHandler);
+    this.playSound(440, 0.1);
+    this.gameLoop();
+};
+
+RhythmGame.prototype.spawnNotes = function() {
+    var oldNotes = this.lane.querySelectorAll('.beat-note');
+    for (var i = 0; i < oldNotes.length; i++) {
+        oldNotes[i].remove();
+    }
+    var oldFeedback = this.lane.querySelectorAll('.feedback-text');
+    for (var i = 0; i < oldFeedback.length; i++) {
+        oldFeedback[i].remove();
+    }
+    this.noteElements = [];
+    for (var i = 0; i < this.beats.length; i++) {
+        var note = document.createElement('div');
+        note.className = 'beat-note';
+        note.textContent = this.getKeySymbol(this.beats[i].key);
+        note.dataset.index = i;
+        note.style.top = '-60px';
+        this.lane.appendChild(note);
+        this.noteElements.push({ element: note, beat: this.beats[i], index: i });
+    }
+};
+
+RhythmGame.prototype.getKeySymbol = function(key) {
+    var map = {
+        'ArrowUp': '↑', 'ArrowDown': '↓',
+        'ArrowLeft': '←', 'ArrowRight': '→',
+        'Space': '␣', 'Enter': '↵'
+    };
+    return map[key] || key;
+};
+
+RhythmGame.prototype.gameLoop = function() {
+    if (!this.isPlaying) return;
+    var now = performance.now();
+    var elapsed = now - this.startTime;
+    var laneHeight = this.lane.offsetHeight || 380;
+    var hitZoneY = laneHeight - 90;
+    var totalTime = 2800;
+    var allDone = true;
+    for (var i = 0; i < this.noteElements.length; i++) {
+        var item = this.noteElements[i];
+        var element = item.element;
+        var beat = item.beat;
+        var index = item.index;
+        if (beat.hit || beat.missed) continue;
+        allDone = false;
+        var timeToHit = beat.time - elapsed;
+        var progress = 1 - (timeToHit / totalTime);
+        var y = progress * (hitZoneY + 60) - 60;
+        element.style.top = y + 'px';
+        if (timeToHit < -this.tolerance && !beat.missed) {
+            beat.missed = true;
+            element.classList.add('missed');
+            this.misses++;
+            this.combo = 0;
+            this.updateStats();
+            this.showFeedback('VAHELE JÄI!', 'miss', y);
+            this.playSound(180, 0.25, 'sawtooth');
+        }
+    }
+    if (allDone) {
+        this.finish();
+        return;
+    }
+    var self = this;
+    this.animationId = requestAnimationFrame(function() { self.gameLoop(); });
+};
+
+RhythmGame.prototype.checkHit = function(pressedKey) {
+    if (!this.isPlaying) return;
+    var now = performance.now();
+    var elapsed = now - this.startTime;
+    var best = null;
+    var bestDiff = Infinity;
+    for (var i = 0; i < this.noteElements.length; i++) {
+        var item = this.noteElements[i];
+        var beat = item.beat;
+        if (beat.hit || beat.missed) continue;
+        var diff = Math.abs(elapsed - beat.time);
+        if (diff <= this.tolerance) {
+            var expected = beat.key.toLowerCase();
+            var pressed = pressedKey.toLowerCase();
+            var match = false;
+            if (expected === pressed) match = true;
+            else if (expected === 'space' && pressed === ' ') match = true;
+            else if (expected === 'arrowup' && pressed === 'arrowup') match = true;
+            else if (expected === 'arrowdown' && pressed === 'arrowdown') match = true;
+            else if (expected === 'arrowleft' && pressed === 'arrowleft') match = true;
+            else if (expected === 'arrowright' && pressed === 'arrowright') match = true;
+            if (match && diff < bestDiff) {
+                bestDiff = diff;
+                best = item;
+            }
+        }
+    }
+    if (best) {
+        best.beat.hit = true;
+        best.element.classList.add('hit');
+        this.hits++;
+        this.combo++;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+        var repairAmount = 7;
+        if (bestDiff < 50) repairAmount = 12;
+        else if (bestDiff < 100) repairAmount = 9;
+        this.totalRepair = Math.min(100, this.totalRepair + repairAmount);
+        this.onProgress(this.totalRepair);
+        this.updateStats();
+        var freqs = [523, 659, 784, 1047, 1319];
+        this.playSound(freqs[this.combo % freqs.length], 0.12);
+        var text = 'HEA!';
+        var type = 'good';
+        if (bestDiff < 50) { text = 'PERFECT!'; type = 'perfect'; }
+        else if (bestDiff < 100) { text = 'SUPER!'; type = 'great'; }
+        var rect = best.element.getBoundingClientRect();
+        var laneRect = this.lane.getBoundingClientRect();
+        var y = rect.top - laneRect.top;
+        this.showFeedback(text, type, y);
+        this.onBeatHit(best.beat);
+    }
+};
+
+RhythmGame.prototype.showFeedback = function(text, type, y) {
+    var fb = document.createElement('div');
+    fb.className = 'feedback-text ' + type;
+    fb.textContent = text;
+    fb.style.top = (y - 35) + 'px';
+    this.lane.appendChild(fb);
+    setTimeout(function() { fb.remove(); }, 900);
+};
+
+RhythmGame.prototype.updateStats = function() {
+    document.getElementById('hits-count').textContent = this.hits;
+    document.getElementById('misses-count').textContent = this.misses;
+    document.getElementById('combo-count').textContent = this.combo;
+};
+
+RhythmGame.prototype.finish = function() {
+    this.isPlaying = false;
+    cancelAnimationFrame(this.animationId);
+    document.removeEventListener('keydown', this.keyHandler);
+    var self = this;
+    setTimeout(function() {
+        var isRepaired = self.totalRepair >= 70;
+        if (isRepaired) {
+            self.onSuccess();
+        } else {
+            self.onFail();
+        }
+    }, 600);
+};
+
+RhythmGame.prototype.stop = function() {
+    this.isPlaying = false;
+    cancelAnimationFrame(this.animationId);
+    if (this.keyHandler) {
+        document.removeEventListener('keydown', this.keyHandler);
+    }
+};
+
+// ============================================
+// MÄNGU VOOG
+// ============================================
+
+var currentGame = null;
+
+function startRepairGame() {
+    document.getElementById('story-screen').classList.add('hidden');
+    var gameScreen = document.getElementById('game-screen');
+    gameScreen.classList.remove('hidden');
+    gameScreen.style.animation = 'none';
+    gameScreen.offsetHeight; // trigger reflow
+    gameScreen.style.animation = 'fadeIn 0.5s ease-out';
+    startRepairPhase();
+}
+
+function startRepairPhase() {
+    if (currentGame) currentGame.stop();
+    // Reset UI
+    document.getElementById('repair-fill').style.width = '0%';
+    document.getElementById('repair-fill').className = 'repair-fill';
+    document.getElementById('repair-percent').textContent = '0%';
+    document.getElementById('hits-count').textContent = '0';
+    document.getElementById('misses-count').textContent = '0';
+    document.getElementById('combo-count').textContent = '0';
+
+    var keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
+    var beats = [];
+    var count = 12;
+    for (var i = 0; i < count; i++) {
+        beats.push({
+            time: 2000 + (i * 650),
+            key: keys[Math.floor(Math.random() * keys.length)],
+            hit: false,
+            missed: false
+        });
+    }
+
+    currentGame = new RhythmGame();
+    currentGame.addQTE({
+        beats: beats,
+        bpm: 95,
+        tolerance: 220,
+        onProgress: function(repair) {
+            var fill = document.getElementById('repair-fill');
+            var label = document.getElementById('repair-percent');
+            fill.style.width = repair + '%';
+            label.textContent = Math.round(repair) + '%';
+            if (repair >= 70) {
+                fill.classList.add('excellent');
+            } else if (repair >= 40) {
+                fill.classList.add('good');
+            }
+        },
+        onSuccess: function() {
+            showWinResult();
+        },
+        onFail: function() {
+            showLoseResult();
+        }
+    });
+    currentGame.start();
+}
+
+function showWinResult() {
+    document.getElementById('game-screen').classList.add('hidden');
+    var resultScreen = document.getElementById('result-screen');
+    resultScreen.classList.remove('hidden');
+    resultScreen.style.animation = 'fadeIn 0.5s ease-out';
+
+    document.getElementById('result-icon').textContent = '⛵';
+    document.getElementById('result-title').textContent = 'Laev on Parandatud!';
+    document.getElementById('result-title').className = 'win';
+    document.getElementById('result-message').innerHTML = 
+        'Suurepärane töö, viiking! Oled edukalt parandanud laeva ja võid nüüd <strong>oma retke jätkata</strong>.<br><br>' +
+        'Tuul on taas sinu pool ja meri ootab avastamist!';
+
+    document.getElementById('result-stats-box').innerHTML = 
+        '<div class="result-stat-row"><span>Parandatud:</span><span style="color:#4ade80">' + Math.round(currentGame.totalRepair) + '%</span></div>' +
+        '<div class="result-stat-row"><span>Täpsed tegemised:</span><span>' + currentGame.hits + ' / ' + currentGame.beats.length + '</span></div>' +
+        '<div class="result-stat-row"><span>Max kombo:</span><span>' + currentGame.maxCombo + '</span></div>' +
+        '<div class="result-stat-row"><span>Vead:</span><span>' + currentGame.misses + '</span></div>';
+
+    document.getElementById('result-buttons').innerHTML = 
+        '<button class="menu-btn btn-success" onclick="continueJourney()">Jätka Retke ➔</button>';
+}
+
+function showLoseResult() {
+    document.getElementById('game-screen').classList.add('hidden');
+    var resultScreen = document.getElementById('result-screen');
+    resultScreen.classList.remove('hidden');
+    resultScreen.style.animation = 'fadeIn 0.5s ease-out';
+
+    document.getElementById('result-icon').textContent = '🌊';
+    document.getElementById('result-title').textContent = 'Laev on endiselt katki';
+    document.getElementById('result-title').className = 'lose';
+    document.getElementById('result-message').innerHTML = 
+        'Laev pole piisavalt parandatud. Vesi tungib ikka veel sisse ja <strong>retke jätkamine oleks ohtlik</strong>.<br><br>' +
+        'Pead proovima uuesti, enne kui saad edasi minna!';
+
+    document.getElementById('result-stats-box').innerHTML = 
+        '<div class="result-stat-row"><span>Parandatud:</span><span style="color:#f87171">' + Math.round(currentGame.totalRepair) + '%</span></div>' +
+        '<div class="result-stat-row"><span>Vajalik:</span><span style="color:#4ade80">70%</span></div>' +
+        '<div class="result-stat-row"><span>Täpsed tegemised:</span><span>' + currentGame.hits + ' / ' + currentGame.beats.length + '</span></div>' +
+        '<div class="result-stat-row"><span>Vead:</span><span>' + currentGame.misses + '</span></div>';
+
+    document.getElementById('result-buttons').innerHTML = 
+        '<button class="menu-btn btn-retry" onclick="retryRepair()">Proovi Uuesti ↻</button>';
+}
+
+function continueJourney() {
+    // SIIN SUUNA JÄRGMISSE KOHTA
+    window.location.href = 'saaremaa.html';
+}
+
+function retryRepair() {
+    document.getElementById('result-screen').classList.add('hidden');
+    var gameScreen = document.getElementById('game-screen');
+    gameScreen.classList.remove('hidden');
+    gameScreen.style.animation = 'fadeIn 0.5s ease-out';
+    startRepairPhase();
+}
+</script>
+</body>
+</html>
