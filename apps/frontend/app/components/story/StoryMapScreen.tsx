@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Anchor } from 'lucide-react';
-import { Character } from './Character'; // Impordime eraldatud komponendi
+import { Character } from './Character';
+
+// IMPORDIME KAARDID OTSE KAUSTAST (Vite teeb neist õiged veebiaadressid)
+import SwedenMap from '../../game/Sweden.svg';
+import GotlandMap from '../../game/Gotland.svg';
+import SaaremaaMap from '../../game/Saaremaa.svg';
 
 type IslandStage = 'rootsi' | 'gotland' | 'saaremaa';
 
@@ -12,13 +17,22 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
   const [currentIsland, setCurrentIsland] = useState<IslandStage>('rootsi');
   const [bjornPos, setBjornPos] = useState({ x: 20, y: 30 });
   const [isMoving, setIsMoving] = useState(false);
-  const [moveDuration, setMoveDuration] = useState(2000); // Dünaamiline aeg millisekundites
+  const [moveDuration, setMoveDuration] = useState(2000);
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
 
-  // FUNKTSIOON: Arvutab ja kerib kaamera täpselt tegelase reaalajas asukoha peale
+  const isPositionAllowed = (x: number, y: number, island: IslandStage): boolean => {
+    if (x < 5 || x > 95 || y < 5 || y > 95) return false;
+
+    if (island === 'rootsi') {
+      if (x < 15 && y < 25) return false;
+      if (x > 85 && y < 20) return false;
+    }
+    return true;
+  };
+
   const centerCameraOnBjorn = (smooth = true) => {
     if (!viewportRef.current || !mapRef.current) return;
 
@@ -46,7 +60,6 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
     }
   };
 
-  // KLIRENDUS: Punktuaalne liikumine distantsi põhjal
   const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!mapRef.current) return;
 
@@ -54,12 +67,15 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
     const clickX = ((e.clientX - rect.left) / rect.width) * 100;
     const clickY = ((e.clientY - rect.top) / rect.height) * 100;
 
-    // Arvutame vahemaa Pythagorase teoreemiga protsentides
+    if (!isPositionAllowed(clickX, clickY, currentIsland)) {
+      console.log("📍 Björn ei oska ujuda! See koht on keelatud.");
+      return;
+    }
+
     const dx = clickX - bjornPos.x;
     const dy = clickY - bjornPos.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // Kiiruse koefitsient (80ms iga protsendi kohta kaardil)
     const speedFactor = 80; 
     const calculatedDuration = Math.max(400, distance * speedFactor);
 
@@ -68,7 +84,6 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
     setBjornPos({ x: clickX, y: clickY });
   };
 
-  // Kaamera reaalajas uuendamise tsükkel requestAnimationFrame'iga
   useEffect(() => {
     const tick = () => {
       centerCameraOnBjorn(true);
@@ -86,7 +101,6 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
     };
   }, [isMoving, bjornPos]);
 
-  // Taimer mis lõpetab liikumise oleku vastavalt dünaamilisele ajale
   useEffect(() => {
     if (isMoving) {
       const timer = setTimeout(() => {
@@ -96,7 +110,6 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
     }
   }, [bjornPos, moveDuration]);
 
-  // Kui vahetatakse saart
   const handleNextIsland = () => {
     let startPos = { x: 20, y: 30 };
     if (currentIsland === 'rootsi') {
@@ -114,7 +127,6 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
     setTimeout(() => centerCameraOnBjorn(false), 50);
   };
 
-  // Esmane paigutus mängu või uuele saarele sisenemisel
   useEffect(() => {
     setTimeout(() => centerCameraOnBjorn(false), 100);
   }, [currentIsland]);
@@ -122,7 +134,7 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
   return (
     <div className="relative w-full h-screen bg-[#05090f] text-white flex flex-col overflow-hidden select-none">
       
-      {/* Ülemine juhtpaneel */}
+      {/* Juhtpaneel */}
       <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/95 via-black/40 to-transparent flex justify-between items-center z-20 backdrop-blur-xs pointer-events-none">
         <button
           onClick={onBackToMenu}
@@ -151,26 +163,24 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
         </button>
       </div>
 
-      {/* VIEWPORT (KAAMERA AKEN) */}
+      {/* VIEWPORT */}
       <div ref={viewportRef} className="w-full h-full overflow-hidden relative z-10">
-        {/* SUUR MAAILMA KAART */}
         <div 
           ref={mapRef}
           onClick={handleMapClick}
           className="w-[200vw] h-[200vh] relative bg-[#111e2e] cursor-crosshair"
         >
-          {/* SVG Kaardid */}
+          {/* KASUTAME IMPORDITUD MUUTUJAID SOURCINA */}
           {currentIsland === 'rootsi' && (
-            <img src="/game/Sweden.svg" alt="Rootsi" className="w-full h-full object-cover animate-fadeIn pointer-events-none" />
+            <img src={SwedenMap} alt="Rootsi" className="w-full h-full object-cover animate-fadeIn pointer-events-none" />
           )}
           {currentIsland === 'gotland' && (
-            <img src="/game/Gotland.svg" alt="Gotland" className="w-full h-full object-cover animate-fadeIn pointer-events-none" />
+            <img src={GotlandMap} alt="Gotland" className="w-full h-full object-cover animate-fadeIn pointer-events-none" />
           )}
           {currentIsland === 'saaremaa' && (
-            <img src="/game/Saaremaa.svg" alt="Saaremaa" className="w-full h-full object-cover animate-fadeIn pointer-events-none" />
+            <img src={SaaremaaMap} alt="Saaremaa" className="w-full h-full object-cover animate-fadeIn pointer-events-none" />
           )}
 
-          {/* TEGELASKUJU PUHAS VÄLJAKUTSE */}
           <Character 
             x={bjornPos.x} 
             y={bjornPos.y} 
@@ -178,11 +188,9 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
             duration={moveDuration} 
             name="Björn" 
           />
-
         </div>
       </div>
 
-      {/* Koordinaatide tabel info jaoks */}
       <div className="absolute bottom-4 left-4 bg-black/80 border border-stone-800 p-2 rounded-lg backdrop-blur-md z-20 pointer-events-none">
         <p className="text-[10px] text-stone-400 font-mono">
           📍 Koordinaadid: X: {Math.round(bjornPos.x)}% | Y: {Math.round(bjornPos.y)}%
