@@ -18,11 +18,11 @@
     <div class="wave wave-6"></div>
   </div>
 
-  <main class="level-screen">
+  <main class="level-screen" data-next="saaremaa.html">
     <aside class="level-info-card">
       <h1>Gotland</h1>
       <p class="level-topic">Viking Journeys</p>
-      <p class="level-progress">0 / 10 Questions</p>
+      <p class="level-progress">0 / 8 Checkpoints</p>
     </aside>
 
     <section class="top-progress" aria-labelledby="islandProgressTitle">
@@ -52,8 +52,9 @@
 
     <button id="backBtn" class="back-btn" type="button">← Back</button>
 
-    <div class="map-wrap-gotland">
+     <div class="map-wrap-gotland">
       <img src="./Gotland.svg" alt="Gotland" class="gotland" />
+      <img id="character" src="./character/Front_01.png" alt="Character" class="character" />
 
       <button class="question-marker active" data-index="0" style="left: 86%; top: 14%;">?</button>
       <button class="question-marker" data-index="1" style="left: 45%; top: 14%;">?</button>
@@ -64,8 +65,8 @@
       <button class="question-marker" data-index="6" style="left: 54%; top: 57%;">?</button>
       <button class="question-marker" data-index="7" style="left: 80%; top: 35%;">?</button>
     </div>
+  </main>
 
-    <script src="level.js"></script>
+  <script src="level.js"></script>
 </body>
-
 </html>

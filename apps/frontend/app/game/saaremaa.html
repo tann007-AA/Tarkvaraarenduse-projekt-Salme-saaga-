@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,11 +18,11 @@
     <div class="wave wave-6"></div>
   </div>
 
-  <main class="level-screen">
+  <main class="level-screen" data-next="win.html">
     <aside class="level-info-card">
       <h1>Saaremaa</h1>
       <p class="level-topic">Viking Journeys</p>
-      <p class="level-progress">0 / 10 Questions</p>
+      <p class="level-progress">0 / 8 Checkpoints</p>
     </aside>
 
     <section class="top-progress" aria-labelledby="islandProgressTitle">
@@ -42,12 +43,7 @@
 
         <div class="progress-line" aria-hidden="true"></div>
 
-        <button
-          type="button"
-          class="progress-step active"
-          aria-current="step"
-          data-page="saaremaa.html"
-        >
+        <button type="button" class="progress-step active" aria-current="step" data-page="saaremaa.html">
           <span class="step-icon">3</span>
           <span class="step-label">Saaremaa</span>
         </button>
@@ -56,9 +52,22 @@
 
     <button id="backBtn" class="back-btn" type="button">← Back</button>
 
-    <img src="./Saaremaa.svg" alt="Saaremaa saar" class="saaremaa" />
+    <div class="map-wrap-gotland">
+      <img src="./Saaremaa.svg" alt="Saaremaa saar" class="saaremaa" />
+      <img id="character" src="./character/Front_01.png" alt="Character" class="character" />
+
+      <button class="question-marker active" data-index="0" style="left: 86%; top: 14%;">?</button>
+      <button class="question-marker" data-index="1" style="left: 52%; top: 16%;">?</button>
+      <button class="question-marker" data-index="2" style="left: 25%; top: 94%;">?</button>
+      <button class="question-marker" data-index="3" style="left: 18%; top: 53%;">?</button>
+      <button class="question-marker" data-index="4" style="left: 71%; top: 58%;">?</button>
+      <button class="question-marker" data-index="5" style="left: 22%; top: 20%;">?</button>
+      <button class="question-marker" data-index="6" style="left: 62%; top: 9%;">?</button>
+      <button class="question-marker" data-index="7" style="left: 33%; top: 60%;">?</button>
+    </div>
   </main>
 
   <script src="level.js"></script>
 </body>
+
 </html>

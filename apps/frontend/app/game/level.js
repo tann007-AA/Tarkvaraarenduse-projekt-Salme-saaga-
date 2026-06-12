@@ -13,7 +13,12 @@ islandButtons.forEach((button) => {
     });
 });
 const markers = document.querySelectorAll(".question-marker");
+const levelScreen = document.querySelector(".level-screen");
+const nextPage = levelScreen?.dataset.next ?? "gotland.html";
 let currentMarkerIndex = 0;
+if (markers.length > 0) {
+    markers[0].classList.add("active");
+}
 markers.forEach((marker, index) => {
     marker.addEventListener("click", () => {
         if (index !== currentMarkerIndex)
@@ -24,114 +29,178 @@ markers.forEach((marker, index) => {
             markers[currentMarkerIndex].classList.add("active");
         }
         else {
-            window.location.href = "gotland.html";
+            window.location.href = nextPage;
         }
     });
 });
-/* UUE INTERAKTIIVSE LOOSÜSTEEMI ALGUS */
-const draggableItems = document.querySelectorAll(".inventory-item");
-const pot = document.getElementById("pot");
-const dialogueText = document.getElementById("dialogueText");
-const potStatus = document.getElementById("potStatus");
-const potItemsList = document.getElementById("potItemsList");
-const addedItems = [];
-let foodCount = 0;
-draggableItems.forEach((item) => {
-    item.addEventListener("dragstart", (event) => {
-        event.dataTransfer?.setData("text/plain", item.dataset.item || "");
-        event.dataTransfer?.setData("item-type", item.dataset.type || "");
-    });
-});
-pot?.addEventListener("dragover", (event) => {
-    event.preventDefault();
-    pot.classList.add("pot-hover");
-});
-pot?.addEventListener("dragleave", () => {
-    pot.classList.remove("pot-hover");
-});
-pot?.addEventListener("drop", (event) => {
-    event.preventDefault();
-    pot.classList.remove("pot-hover");
-    const itemName = event.dataTransfer?.getData("text/plain") || "";
-    const itemType = event.dataTransfer?.getData("item-type") || "";
-    if (!itemName || addedItems.includes(itemName)) {
-        return;
-    }
-    addedItems.push(itemName);
-    const listItem = document.createElement("li");
-    listItem.textContent = itemName;
-    potItemsList?.appendChild(listItem);
-    if (itemType === "food") {
-        foodCount++;
-        if (dialogueText) {
-            dialogueText.textContent = `${itemName} läks potti. Supp muutub tugevamaks.`;
-        }
-        if (potStatus) {
-            if (foodCount === 1) {
-                potStatus.textContent = "Supp kogub jõudu, aga vajab veel midagi rammusat.";
-            }
-            else if (foodCount === 2) {
-                potStatus.textContent = "Nüüd on pada juba päris korralik.";
-            }
-            else {
-                potStatus.textContent = "Supp on tugev ja vennad on homseks merereisiks peaaegu valmis.";
-            }
-        }
-    }
-    if (itemType === "wrong") {
-        if (dialogueText) {
-            if (itemName === "Nooleots") {
-                dialogueText.textContent =
-                    'Ivar: "Björn, ma ütlesin, et meil on vaja rauda kõhtu, aga mitte päris nii otseselt! Hoia see nool parem vaenlase jaoks."';
-            }
-            else {
-                dialogueText.textContent =
-                    'Gunnar turtsatab: "See asi ei käi patta. Proovi midagi söödavat."';
-            }
-        }
-        if (potStatus) {
-            potStatus.textContent = "See asi ei tee supile head. Proovi midagi söödavat.";
-        }
-    }
-});
-/* UUE INTERAKTIIVSE LOOSÜSTEEMI LÕPP */
-/* BJÖRNI LIIKUMISE ALGUS */
-const bjorn = document.getElementById("bjorn");
-const sceneMap = document.querySelector(".scene-map");
-if (bjorn && sceneMap) {
-    let x = 12;
-    let y = 68;
-    const step = 2;
-    const updateBjorn = () => {
-        bjorn.style.left = `${x}%`;
-        bjorn.style.top = `${y}%`;
+/*Charater movement*/
+const character = document.getElementById("character");
+if (character) {
+    let x = 20;
+    let y = 60;
+    let currentDirection = "front";
+    let currentFrame = 0;
+    let isMoving = false;
+    const speed = 0.036;
+    const frameDuration = 140;
+    const keys = {
+        up: false,
+        down: false,
+        left: false,
+        right: false,
     };
-    updateBjorn();
+    const sprites = {
+        front: [
+            "./character/Front_01.png",
+            "./character/Front_02.png",
+            "./character/Front_03.png",
+        ],
+        back: [
+            "./character/Back_01.png",
+            "./character/Back_02.png",
+            "./character/Back_03.png",
+        ],
+        left: [
+            "./character/Left_01.png",
+            "./character/Left_02.png",
+            "./character/Left_03.png",
+        ],
+        right: [
+            "./character/Right_01.png",
+            "./character/Right_02.png",
+            "./character/Right_03.png",
+        ],
+    };
+    const getIslandName = () => {
+        const file = window.location.pathname.toLowerCase();
+        if (file.includes("rootsi"))
+            return "rootsi";
+        if (file.includes("gotland"))
+            return "gotland";
+        if (file.includes("saaremaa"))
+            return "saaremaa";
+        return "rootsi";
+    };
+    const currentIsland = getIslandName();
+    const startPositions = {
+        rootsi: { x: 74, y: 70 },
+        gotland: { x: 48, y: 90 },
+        saaremaa: { x: 50, y: 82 },
+    };
+    x = startPositions[currentIsland].x;
+    y = startPositions[currentIsland].y;
+    const walkableZonesByIsland = {
+        rootsi: [
+            { minX: 15, maxX: 78, minY: 27, maxY: 98 },
+            { minX: 15, maxX: 18, minY: 12, maxY: 29 },
+            { minX: 24, maxX: 88, minY: 12, maxY: 29 },
+            { minX: 78, maxX: 88, minY: 8, maxY: 45 },
+            { minX: 85, maxX: 95, minY: 28, maxY: 45 },
+        ],
+        gotland: [
+            { minX: 36, maxX: 63, minY: 9, maxY: 98 },
+            { minX: 30, maxX: 63, minY: 28, maxY: 45 },
+            { minX: 39, maxX: 77, minY: 56, maxY: 74 },
+            { minX: 43, maxX: 58, minY: 74, maxY: 98 },
+            { minX: 45, maxX: 76, minY: 9, maxY: 23 },
+        ],
+        saaremaa: [
+            { minX: 18, maxX: 88, minY: 18, maxY: 70 },
+            { minX: 24, maxX: 36, minY: 70, maxY: 99 },
+            { minX: 70, maxX: 89, minY: 20, maxY: 46 },
+            { minX: 12, maxX: 26, minY: 28, maxY: 55 },
+            { minX: 58, maxX: 84, minY: 70, maxY: 83 },
+        ],
+    };
+    const currentZones = walkableZonesByIsland[currentIsland];
+    const isWalkable = (testX, testY) => {
+        return currentZones.some((zone) => {
+            return (testX >= zone.minX &&
+                testX <= zone.maxX &&
+                testY >= zone.minY &&
+                testY <= zone.maxY);
+        });
+    };
+    const renderCharacter = () => {
+        character.style.left = `${x}%`;
+        character.style.top = `${y}%`;
+        character.src = sprites[currentDirection][currentFrame];
+    };
     window.addEventListener("keydown", (event) => {
-        const key = event.key;
-        if (key === "ArrowUp") {
-            y = Math.max(10, y - step);
-        }
-        if (key === "ArrowDown") {
-            y = Math.min(85, y + step);
-        }
-        if (key === "ArrowLeft") {
-            x = Math.max(5, x - step);
-        }
-        if (key === "ArrowRight") {
-            x = Math.min(90, x + step);
-        }
-        if (key === "ArrowUp" ||
-            key === "ArrowDown" ||
-            key === "ArrowLeft" ||
-            key === "ArrowRight") {
+        if (event.key === "ArrowUp") {
+            keys.up = true;
             event.preventDefault();
-            bjorn.classList.add("moving");
-            updateBjorn();
-            window.setTimeout(() => {
-                bjorn.classList.remove("moving");
-            }, 120);
+        }
+        if (event.key === "ArrowDown") {
+            keys.down = true;
+            event.preventDefault();
+        }
+        if (event.key === "ArrowLeft") {
+            keys.left = true;
+            event.preventDefault();
+        }
+        if (event.key === "ArrowRight") {
+            keys.right = true;
+            event.preventDefault();
         }
     });
+    window.addEventListener("keyup", (event) => {
+        if (event.key === "ArrowUp")
+            keys.up = false;
+        if (event.key === "ArrowDown")
+            keys.down = false;
+        if (event.key === "ArrowLeft")
+            keys.left = false;
+        if (event.key === "ArrowRight")
+            keys.right = false;
+    });
+    let lastTime = 0;
+    let lastFrameChange = 0;
+    const gameLoop = (timestamp) => {
+        const delta = timestamp - lastTime;
+        lastTime = timestamp;
+        let nextX = x;
+        let nextY = y;
+        isMoving = false;
+        if (keys.up) {
+            nextY -= speed * delta;
+            currentDirection = "back";
+            isMoving = true;
+        }
+        if (keys.down) {
+            nextY += speed * delta;
+            currentDirection = "front";
+            isMoving = true;
+        }
+        if (keys.left) {
+            nextX -= speed * delta;
+            currentDirection = "left";
+            isMoving = true;
+        }
+        if (keys.right) {
+            nextX += speed * delta;
+            currentDirection = "right";
+            isMoving = true;
+        }
+        if (isWalkable(nextX, y)) {
+            x = nextX;
+        }
+        if (isWalkable(x, nextY)) {
+            y = nextY;
+        }
+        if (isMoving) {
+            if (timestamp - lastFrameChange > frameDuration) {
+                currentFrame = (currentFrame + 1) % 3;
+                lastFrameChange = timestamp;
+            }
+        }
+        else {
+            currentFrame = 0;
+        }
+        renderCharacter();
+        requestAnimationFrame(gameLoop);
+    };
+    renderCharacter();
+    requestAnimationFrame(gameLoop);
 }
-/* BJÖRNI LIIKUMISE LÕPP */ 
+/*Movement end */ 
