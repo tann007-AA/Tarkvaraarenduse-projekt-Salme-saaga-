@@ -29,7 +29,7 @@ markers.forEach((marker, index) => {
             markers[currentMarkerIndex].classList.add("active");
         }
         else {
-            window.location.href = nextPage;
+            window.location.href = "repairminigame.html";
         }
     });
 });
