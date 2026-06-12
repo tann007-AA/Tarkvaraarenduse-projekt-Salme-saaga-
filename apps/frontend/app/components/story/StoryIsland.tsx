@@ -42,15 +42,7 @@ interface StoryLevelProps {
   onGoToIsland?: (island: StoryIsland) => void;
 }
 
-const sharedWalkableZones: Zone[] = [
-  { minX: 15, maxX: 78, minY: 27, maxY: 98 },
-  { minX: 15, maxX: 18, minY: 12, maxY: 29 },
-  { minX: 24, maxX: 88, minY: 12, maxY: 29 },
-  { minX: 78, maxX: 88, minY: 8, maxY: 45 },
-  { minX: 85, maxX: 95, minY: 28, maxY: 45 },
-];
-
-const islandData: Record<
+const storyIslandData: Record<
   StoryIsland,
   {
     title: string;
@@ -62,6 +54,7 @@ const islandData: Record<
     markers: Marker[];
     startX: number;
     startY: number;
+    walkableZones: Zone[];
   }
 > = {
   rootsi: {
@@ -83,7 +76,15 @@ const islandData: Record<
       { left: '54%', top: '57%' },
       { left: '90%', top: '40%' },
     ],
+    walkableZones: [
+      { minX: 15, maxX: 78, minY: 27, maxY: 98 },
+      { minX: 15, maxX: 18, minY: 12, maxY: 29 },
+      { minX: 24, maxX: 88, minY: 12, maxY: 29 },
+      { minX: 78, maxX: 88, minY: 8, maxY: 45 },
+      { minX: 85, maxX: 95, minY: 28, maxY: 45 },
+    ],
   },
+
   gotland: {
     title: 'Gotland',
     mapImage: GotlandMap,
@@ -91,8 +92,8 @@ const islandData: Record<
     mapClassName: 'gotland',
     mapWrapClassName: 'map-wrap-gotland scene-map',
     nextIsland: 'saaremaa',
-    startX: 74,
-    startY: 70,
+    startX: 54,
+    startY: 50,
     markers: [
       { left: '86%', top: '14%' },
       { left: '45%', top: '14%' },
@@ -103,15 +104,27 @@ const islandData: Record<
       { left: '54%', top: '57%' },
       { left: '80%', top: '35%' },
     ],
+    walkableZones: [
+      { minX: 31, maxX: 75, minY: 20, maxY: 39 },
+      { minX: 75, maxX: 84, minY: 30, maxY: 39 },
+      { minX: 39, maxX: 90, minY: 11, maxY: 20 },
+      { minX: 22, maxX: 63, minY: 33, maxY: 63 },
+      { minX: 17, maxX: 63, minY: 43, maxY: 63 },
+      { minX: 63, maxX: 82, minY: 53, maxY: 64 },
+      { minX: 25, maxX: 70, minY: 63, maxY: 83 },
+      { minX: 45, maxX: 58, minY: 83, maxY: 93 },
+      { minX: 40, maxX: 58, minY: 93, maxY: 97 },
+    ],
   },
+
   saaremaa: {
     title: 'Saaremaa',
     mapImage: SaaremaaMap,
     mapAlt: 'Saaremaa saar',
     mapClassName: 'saaremaa',
     mapWrapClassName: 'map-wrap-gotland scene-map',
-    startX: 74,
-    startY: 70,
+    startX: 54,
+    startY: 50,
     markers: [
       { left: '86%', top: '14%' },
       { left: '52%', top: '16%' },
@@ -121,6 +134,29 @@ const islandData: Record<
       { left: '22%', top: '20%' },
       { left: '62%', top: '9%' },
       { left: '33%', top: '60%' },
+    ],
+    walkableZones: [
+      { minX: 14, maxX: 84, minY: 34, maxY: 52 },
+      { minX: 11, maxX: 14, minY: 39, maxY: 48 },
+      { minX: 16, maxX: 78, minY: 52, maxY: 57 },
+      { minX: 19, maxX: 94, minY: 30, maxY: 34 },
+      { minX: 30, maxX: 99, minY: 24, maxY: 30 },
+      { minX: 30, maxX: 41, minY: 17, maxY: 24 },
+      { minX: 33, maxX: 41, minY: 12, maxY: 17 },
+      { minX: 16, maxX: 24, minY: 13, maxY: 21 },
+      { minX: 19, maxX: 24, minY: 21, maxY: 30 },
+      { minX: 22, maxX: 39, minY: 57, maxY: 63 },
+      { minX: 27, maxX: 37, minY: 63, maxY: 67 },
+      { minX: 27, maxX: 31, minY: 67, maxY: 86 },
+      { minX: 22, maxX: 29, minY: 83, maxY: 98 },
+      { minX: 64, maxX: 73, minY: 57, maxY: 59 },
+      { minX: 68, maxX: 73, minY: 59, maxY: 64 },
+      { minX: 84, maxX: 87, minY: 33, maxY: 45 },
+      { minX: 87, maxX: 92, minY: 33, maxY: 41 },
+      { minX: 47, maxX: 91, minY: 11, maxY: 16 },
+      { minX: 47, maxX: 94, minY: 16, maxY: 25 },
+      { minX: 60, maxX: 64, minY: 3, maxY: 11 },
+      { minX: 76, maxX: 86, minY: 5, maxY: 11 },
     ],
   },
 };
@@ -135,7 +171,7 @@ export function StoryLevel({
   const lastTimeRef = useRef(0);
   const lastFrameChangeRef = useRef(0);
 
-  const island = islandData[currentIsland];
+  const island = storyIslandData[currentIsland];
 
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(0);
   const [checkpointCount, setCheckpointCount] = useState(0);
@@ -153,7 +189,7 @@ export function StoryLevel({
     right: false,
   });
 
-  const speed = 0.036;
+  const speed = 0.015;
   const frameDuration = 140;
 
   const sprites = useMemo(
@@ -173,6 +209,8 @@ export function StoryLevel({
     setCheckpointCount(0);
     currentDirectionRef.current = 'front';
     currentFrameRef.current = 0;
+    lastTimeRef.current = 0;
+    lastFrameChangeRef.current = 0;
 
     if (characterRef.current) {
       characterRef.current.style.left = `${xRef.current}%`;
@@ -182,7 +220,7 @@ export function StoryLevel({
   }, [currentIsland, island.startX, island.startY, sprites]);
 
   const isWalkable = (testX: number, testY: number) => {
-    return sharedWalkableZones.some((zone) => {
+    return island.walkableZones.some((zone) => {
       return (
         testX >= zone.minX &&
         testX <= zone.maxX &&
@@ -295,7 +333,7 @@ export function StoryLevel({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [sprites, currentIsland]);
+  }, [sprites, currentIsland, island]);
 
   const handleMarkerClick = (index: number) => {
     if (index !== currentMarkerIndex) return;
@@ -377,6 +415,7 @@ export function StoryLevel({
 
         <div className={island.mapWrapClassName}>
           <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
+
           <img
             ref={characterRef}
             id="character"
@@ -397,7 +436,7 @@ export function StoryLevel({
             </button>
           ))}
 
-          {sharedWalkableZones.map((zone, index) => (
+          {island.walkableZones.map((zone, index) => (
             <div
               key={index}
               className="debug-zone"
