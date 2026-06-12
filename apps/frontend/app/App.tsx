@@ -12,11 +12,14 @@ import { SailingTransition } from './components/SailingTransition';
 import { ProgressBar } from './components/ProgressBar';
 import { Toaster, toast } from 'sonner';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { Settings, ShoppingBag } from 'lucide-react';
 import { ShopModal } from './components/ShopModal';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
-import { StoryMapScreen } from './components/story/StoryMapScreen';
+import { StoryLevel } from './components/story/StoryIsland';
+
+// Island story type
+type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
 
 // Artifact types for lifelines
 export type ArtifactType = 'sword' | 'shield' | 'knife' | 'dice' | 'gaming-piece';
@@ -289,6 +292,9 @@ function GameContent() {
   const [purchaseHistory, setPurchaseHistory] = useState<{ [key in ArtifactType]?: number }>({});
   const [showShopModal, setShowShopModal] = useState(false);
 
+  // Story mode state
+  const [currentStoryIsland, setCurrentStoryIsland] = useState<StoryIsland>('rootsi');
+
   const ISLANDS = getIslandData(t);
   const currentIsland = ISLANDS[currentIslandIndex];
   const currentQuestion = currentQuestionIndex !== null ? currentIsland?.questions[currentQuestionIndex] : null;
@@ -319,9 +325,8 @@ function GameContent() {
   };
 
   const handleQuestionTrigger = (questionIdx: number, playerPos: { x: number; y: number }) => {
-    // Only trigger if not already answered
     if (userAnswers[questionIdx] === undefined) {
-      setSavedPlayerPosition(playerPos); // Save current position
+      setSavedPlayerPosition(playerPos);
       setCurrentQuestionIndex(questionIdx);
       setGameState('quiz');
     }
@@ -332,12 +337,11 @@ function GameContent() {
 
     const isCorrect = answerIndex === currentIsland.questions[currentQuestionIndex].correct;
 
-    // Update points: +30 for correct, -10 for wrong
     if (isCorrect) {
       setPoints(prev => prev + 30);
       toast.success('Correct! +30 points 💰', { duration: 2000 });
     } else {
-      setPoints(prev => Math.max(0, prev - 10)); // Don't go below 0
+      setPoints(prev => Math.max(0, prev - 10));
       toast.error('Wrong answer! -10 points', { duration: 2000 });
     }
 
@@ -346,13 +350,11 @@ function GameContent() {
     setCurrentQuestionIndex(null);
     setGameState('island-select');
 
-    // Check if all questions answered
     if (Object.keys(newAnswers).length === currentIsland.questions.length) {
       const score = calculateScore(newAnswers);
       setCurrentScore(score);
 
       if (score >= 70) {
-        // Passed
         const newCompleted = [...completedIslands, currentIsland.id];
         setCompletedIslands(newCompleted);
 
@@ -361,14 +363,11 @@ function GameContent() {
         }
 
         if (currentIslandIndex === ISLANDS.length - 1) {
-          // Completed all islands
           setGameState('end');
         } else {
-          // Move to next island
           setGameState('sailing');
         }
       } else {
-        // Failed - show wrong questions
         const wrong: number[] = [];
         currentIsland.questions.forEach((q, idx) => {
           if (newAnswers[idx] !== q.correct) {
@@ -386,20 +385,18 @@ function GameContent() {
   };
 
   const handleRetrySubmit = () => {
-    // Check if retry is successful and update points for retry answers only
     let correctRetries = 0;
     let pointsChange = 0;
     wrongQuestions.forEach((qIdx) => {
       const isCorrect = retryAnswers[qIdx] === currentIsland.questions[qIdx].correct;
       if (isCorrect) {
         correctRetries++;
-        pointsChange += 30; // +30 for correct retry
+        pointsChange += 30;
       } else {
-        pointsChange -= 10; // -10 for wrong retry
+        pointsChange -= 10;
       }
     });
 
-    // Apply points change
     setPoints(prev => Math.max(0, prev + pointsChange));
 
     if (pointsChange > 0) {
@@ -413,7 +410,6 @@ function GameContent() {
     const retryScore = (totalCorrect / currentIsland.questions.length) * 100;
 
     if (retryScore >= 70) {
-      // Retry successful
       const newCompleted = [...completedIslands, currentIsland.id];
       setCompletedIslands(newCompleted);
 
@@ -430,7 +426,6 @@ function GameContent() {
       setWrongQuestions([]);
       setRetryAnswers({});
     } else {
-      // Still failed
       setGameState('end');
     }
   };
@@ -440,7 +435,7 @@ function GameContent() {
     setCurrentQuestionIndex(null);
     setUserAnswers({});
     setCurrentScore(undefined);
-    setSavedPlayerPosition(null); // Reset position for new island
+    setSavedPlayerPosition(null);
     setGameState('island-select');
   };
 
@@ -463,7 +458,7 @@ function GameContent() {
   };
 
   const handleStartGame = () => {
-    setSavedPlayerPosition(null); // Reset position for fresh start
+    setSavedPlayerPosition(null);
     setGameState('island-select');
   };
 
@@ -503,6 +498,7 @@ function GameContent() {
     setSavedPlayerPosition(null);
     setPoints(0);
     setPurchaseHistory({});
+    setCurrentStoryIsland('rootsi');
   };
 
   const handleRestart = () => {
@@ -517,7 +513,6 @@ function GameContent() {
       {gameState === 'menu' && (
         <MainMenuScreen
           onPlay={() => {
-          // KontrollimePlayerData olemasolu (asendab isAuthenticated'i)
             if (playerData && playerData.name) {
               setGameState('mode-select');
             } else {
@@ -531,21 +526,27 @@ function GameContent() {
 
       {/* REŽIIMI VALIK */}
       {gameState === 'mode-select' && (
-        <GameModeSelectScreen 
+        <GameModeSelectScreen
           onSelectMode={(mode) => {
-          // mode võib nüüd olla 'story-mode', 'hnefatafl-local' või 'island-select'
-            setGameState(mode); 
+            setGameState(mode);
+            if (mode === 'story-mode') {
+              setCurrentStoryIsland('rootsi');
+            }
           }}
           onBack={() => setGameState('menu')}
         />
       )}
 
-      {/* 4. STORY MODE */}
+      {/* STORY MODE */}
       {gameState === 'story-mode' && (
-        <StoryMapScreen onBackToMenu={() => setGameState('mode-select')} />
+        <StoryLevel
+          currentIsland={currentStoryIsland}
+          onBackToMenu={() => setGameState('mode-select')}
+          onGoToIsland={setCurrentStoryIsland}
+        />
       )}
 
-      {/* 5. HNEFATAFL LAUAMÄNG */}
+      {/* HNEFATAFL LAUAMÄNG */}
       {gameState === 'hnefatafl-local' && (
         <div className="p-8 text-center bg-stone-950 min-h-screen flex flex-col justify-center items-center">
           <h2 className="text-2xl font-serif text-[#dfc18d] mb-4">⚔️ Hnefatafl ⚔️</h2>
@@ -596,7 +597,6 @@ function GameContent() {
       {/* In-game Settings and Shop Buttons */}
       {(gameState === 'island-select' || gameState === 'quiz') && (
         <div className="fixed top-4 right-4 z-40 flex gap-2">
-          {/* Points Display */}
           <div className="flex items-center gap-2 bg-gradient-to-r from-[#d4a574] to-[#b8860b] px-4 py-2 rounded-full border-3 border-[#f4ede1] shadow-2xl">
             <span className="text-xl md:text-2xl">💰</span>
             <span className="text-white font-bold text-lg md:text-xl" style={{ fontFamily: 'var(--font-heading)' }}>
@@ -604,7 +604,6 @@ function GameContent() {
             </span>
           </div>
 
-          {/* Shop Button */}
           <button
             onClick={() => setShowShopModal(true)}
             className="w-12 h-12 bg-gradient-to-br from-[#d4a574] to-[#b8860b] hover:from-[#b8860b] hover:to-[#d4a574] rounded-full border-3 border-[#f4ede1] shadow-2xl flex items-center justify-center transition-all hover:scale-110"
@@ -613,7 +612,6 @@ function GameContent() {
             <ShoppingBag className="w-6 h-6 text-white" />
           </button>
 
-          {/* Settings Button */}
           <button
             onClick={() => setShowSettingsModal(true)}
             className="w-12 h-12 bg-gradient-to-br from-[#8b6f47] to-[#6b5437] hover:from-[#6b5437] hover:to-[#8b6f47] rounded-full border-3 border-[#f4ede1] shadow-2xl flex items-center justify-center transition-all hover:scale-110"
@@ -649,20 +647,20 @@ function GameContent() {
       )}
 
       {gameState === 'quiz' && currentQuestion && currentQuestionIndex !== null && (
-  <QuizScreen
-    island={currentIsland}
-    question={currentQuestion}
-    questionIndex={currentQuestionIndex}
-    totalQuestions={currentIsland.questions.length}
-    onAnswer={handleAnswer}
-    inventory={inventory}
-    onUseArtifact={handleUseArtifact}
-    onClose={() => {
-      setGameState('island-select');
-      setCurrentQuestionIndex(null); // See nullib indeksi ära, et aken sulguks puhtalt
-    }}
-  />
-)}
+        <QuizScreen
+          island={currentIsland}
+          question={currentQuestion}
+          questionIndex={currentQuestionIndex}
+          totalQuestions={currentIsland.questions.length}
+          onAnswer={handleAnswer}
+          inventory={inventory}
+          onUseArtifact={handleUseArtifact}
+          onClose={() => {
+            setGameState('island-select');
+            setCurrentQuestionIndex(null);
+          }}
+        />
+      )}
 
       {gameState === 'sailing' && (
         <SailingTransition onComplete={handleSailingComplete} />
