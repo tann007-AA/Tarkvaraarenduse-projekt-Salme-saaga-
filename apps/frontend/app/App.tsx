@@ -16,6 +16,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Settings, ShoppingBag } from 'lucide-react';
 import { ShopModal } from './components/ShopModal';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
+import { StoryMapScreen } from './components/story/StoryMapScreen';
 
 // Artifact types for lifelines
 export type ArtifactType = 'sword' | 'shield' | 'knife' | 'dice' | 'gaming-piece';
@@ -539,15 +540,9 @@ function GameContent() {
         />
       )}
 
-      {/* 4. STORY MODE  */}
+      {/* 4. STORY MODE */}
       {gameState === 'story-mode' && (
-        <div className="p-8 text-center bg-stone-900 min-h-screen flex flex-col justify-center items-center">
-          <h2 className="text-2xl font-serif text-[#dfc18d] mb-4">I Peatükk: Salme kutse</h2>
-          <p className="text-stone-400 mb-4">Siia ühendame kohe järgmise sammuna poti keetmise mängu.</p>
-          <button onClick={() => setGameState('mode-select')} className="px-4 py-2 bg-stone-800 rounded">
-            Tagasi režiimi valikusse
-          </button>
-        </div>
+        <StoryMapScreen onBackToMenu={() => setGameState('mode-select')} />
       )}
 
       {/* 5. HNEFATAFL LAUAMÄNG */}
