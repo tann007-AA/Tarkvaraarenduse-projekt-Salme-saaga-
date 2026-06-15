@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import './level.css';
 
 import SwedenMap from './character/Sweden.svg';
@@ -21,6 +22,8 @@ import Right01 from './character/Right_01.png';
 import Right02 from './character/Right_02.png';
 import Right03 from './character/Right_03.png';
 
+import { CookingGame } from './cooking/CookingGame';
+
 type Direction = 'front' | 'back' | 'left' | 'right';
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
 
@@ -36,7 +39,13 @@ type Marker = {
   top: string;
 };
 
-interface StoryLevelProps {
+const HOUSE_POSITIONS: Record<StoryIsland, { left: string; top: string }> = {
+  rootsi: { left: '16%', top: '12%' },
+  gotland: { left: '20%', top: '55%' },
+  saaremaa: { left: '22%', top: '20%' },
+};
+
+interface StoryIslandProps {
   currentIsland: StoryIsland;
   onBackToMenu: () => void;
   onGoToIsland?: (island: StoryIsland) => void;
@@ -161,11 +170,11 @@ const storyIslandData: Record<
   },
 };
 
-export function StoryLevel({
+export function StoryIsland({
   currentIsland,
   onBackToMenu,
   onGoToIsland,
-}: StoryLevelProps) {
+}: StoryIslandProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const characterRef = useRef<HTMLImageElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -179,6 +188,10 @@ export function StoryLevel({
 
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(0);
   const [checkpointCount, setCheckpointCount] = useState(0);
+
+  const [isCookingOpen, setIsCookingOpen] = useState(false);
+  const [cookingCompleted, setCookingCompleted] = useState(false);
+  const [showHousePrompt, setShowHousePrompt] = useState(false);
 
   const xRef = useRef(island.startX);
   const yRef = useRef(island.startY);
@@ -217,6 +230,8 @@ export function StoryLevel({
     lastFrameChangeRef.current = 0;
     clickTargetRef.current = null;
     clickMovingRef.current = false;
+    setCookingCompleted(false);
+    setShowHousePrompt(false);
 
     keysRef.current = {
       up: false,
@@ -252,7 +267,20 @@ export function StoryLevel({
     character.src = sprites[currentDirectionRef.current][currentFrameRef.current];
   };
 
-  const handleMapClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleHouseClick = (e: MouseEvent<HTMLImageElement>) => {
+    e.stopPropagation();
+    if (!cookingCompleted) {
+      setIsCookingOpen(true);
+    }
+  };
+
+  const handleCookingComplete = () => {
+    setCookingCompleted(true);
+    setIsCookingOpen(false);
+    setCheckpointCount((prev: number) => prev + 1);
+  };
+
+  const handleMapClick = (event: MouseEvent<HTMLDivElement>) => {
     const map = mapRef.current;
     if (!map) return;
 
@@ -385,6 +413,20 @@ export function StoryLevel({
         currentFrameRef.current = 0;
       }
 
+      const house = HOUSE_POSITIONS[currentIsland];
+      const houseX = parseFloat(house.left);
+      const houseY = parseFloat(house.top);
+      const distToHouse = Math.sqrt(
+        Math.pow(xRef.current - houseX, 2) + 
+        Math.pow(yRef.current - houseY, 2)
+      );
+      
+      if (distToHouse < 8 && !cookingCompleted) {
+        setShowHousePrompt(true);
+      } else {
+        setShowHousePrompt(false);
+      }
+
       renderCharacter();
       animationFrameRef.current = requestAnimationFrame(gameLoop);
     };
@@ -401,7 +443,7 @@ export function StoryLevel({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [sprites, currentIsland, island]);
+  }, [sprites, currentIsland, island, cookingCompleted]);
 
   const handleMarkerClick = (index: number) => {
     if (index !== currentMarkerIndex) return;
@@ -416,7 +458,7 @@ export function StoryLevel({
   };
 
   return (
-    <>
+    <React.Fragment>
       <div className="water-bg" aria-hidden="true">
         <div className="wave wave-1"></div>
         <div className="wave wave-2"></div>
@@ -496,6 +538,29 @@ export function StoryLevel({
             className="character"
           />
 
+          <div
+            className={`house-marker ${showHousePrompt ? 'nearby' : ''} ${cookingCompleted ? 'completed' : ''}`}
+            style={{ left: HOUSE_POSITIONS[currentIsland].left, top: HOUSE_POSITIONS[currentIsland].top }}
+            onClick={handleHouseClick}
+            title={cookingCompleted ? 'Supp on juba tehtud!' : 'Klõpsa, et süüa teha'}
+          >
+            <span className="house-emoji">🏠</span>
+            {!cookingCompleted && (
+              <span className="house-indicator">
+                {showHousePrompt ? '👆 Klõpsa!' : '🍲'}
+              </span>
+            )}
+            {cookingCompleted && <span className="house-indicator">✅</span>}
+            
+            {showHousePrompt && !cookingCompleted && (
+              <div className="house-prompt">
+                🍲 Aja suppi!
+                <br />
+                <small>Klõpsa majale</small>
+              </div>
+            )}
+          </div>
+
           {island.markers.map((marker, index) => (
             <button
               key={index}
@@ -525,6 +590,12 @@ export function StoryLevel({
           ))}
         </div>
       </main>
-    </>
+
+      <CookingGame
+        isOpen={isCookingOpen}
+        onClose={() => setIsCookingOpen(false)}
+        onComplete={handleCookingComplete}
+      />
+    </React.Fragment>
   );
 }
