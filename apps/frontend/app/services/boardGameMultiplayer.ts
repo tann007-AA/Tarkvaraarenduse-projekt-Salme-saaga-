@@ -34,7 +34,7 @@ export class BoardGameMultiplayerService {
   private player: Player | null = null;
   private lobbySocket: Socket | null = null;
   private gameSocket: Socket | null = null;
-  private baseUrl = (window as any).__API_BASE_URL__ || '';
+  private baseUrl = (window as any).__VITE_API_URL__ || '';
 
   private constructor() {
     const savedPlayer = localStorage.getItem('hnefatafl_player');
