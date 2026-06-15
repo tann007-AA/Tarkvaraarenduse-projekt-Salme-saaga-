@@ -18,11 +18,11 @@ export function ShopModal({ onClose, points, inventory, purchaseHistory, onPurch
   const { t } = useLanguage();
 
   const artifacts: Array<{ type: ArtifactType; name: string; desc: string; icon: string }> = [
-    { type: 'sword', name: t.artifacts.sword, desc: t.artifacts.swordDesc, icon: '⚔️' },
-    { type: 'shield', name: t.artifacts.shield, desc: t.artifacts.shieldDesc, icon: '🛡️' },
-    { type: 'knife', name: t.artifacts.knife, desc: t.artifacts.knifeDesc, icon: '🔪' },
-    { type: 'dice', name: t.artifacts.dice, desc: t.artifacts.diceDesc, icon: '🎲' },
-    { type: 'gaming-piece', name: t.artifacts.gamingPiece, desc: t.artifacts.gamingPieceDesc, icon: '♟️' }
+    { type: 'sword', name: t.artifacts.sword, desc: t.artifacts.swordDesc, icon: 'pics/axe2.png' },
+    { type: 'shield', name: t.artifacts.shield, desc: t.artifacts.shieldDesc, icon: 'pics/round.png' },
+    { type: 'knife', name: t.artifacts.knife, desc: t.artifacts.knifeDesc, icon: 'pics/dagger.png' },
+    { type: 'dice', name: t.artifacts.dice, desc: t.artifacts.diceDesc, icon: 'pics/d20.png' },
+    { type: 'gaming-piece', name: t.artifacts.gamingPiece, desc: t.artifacts.gamingPieceDesc, icon: 'pics/castle-tower.png' }
   ];
 
   const canPurchase = (artifact: ArtifactType) => {
@@ -67,7 +67,11 @@ export function ShopModal({ onClose, points, inventory, purchaseHistory, onPurch
             className="inline-block mb-3"
           >
             <div className="bg-gradient-to-br from-[#d4a574] to-[#b8860b] rounded-full p-3 md:p-4 border-3 md:border-4 border-[#8b6f47] shadow-xl">
-              <ShoppingCart className="w-8 h-8 md:w-12 md:h-12 text-white" />
+              <img
+                src="pics/money.png"
+                alt="Shop Icon"
+                className="w-8 h-8 md:w-12 md:h-12 object-contain"
+              />
             </div>
           </motion.div>
           <h2
@@ -82,7 +86,11 @@ export function ShopModal({ onClose, points, inventory, purchaseHistory, onPurch
 
           {/* Points Display */}
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#d4a574] to-[#b8860b] px-6 py-3 rounded-xl border-2 border-[#8b6f47] shadow-lg">
-            <Coins className="w-6 h-6 text-white" />
+            <img
+              src="pics/coin.png"
+              alt="Currency Icon"
+              className="w-6 h-6 object-contain"
+            />
             <span className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-heading)' }}>
               {points} Points
             </span>
@@ -92,7 +100,14 @@ export function ShopModal({ onClose, points, inventory, purchaseHistory, onPurch
         {/* Shop Info */}
         <div className="bg-white/50 rounded-lg p-4 mb-6 border-2 border-[#8b6f47]">
           <p className="text-sm md:text-base text-[#1e4d5f] text-center">
-            <span className="font-bold">💰 Each artifact costs {ARTIFACT_COST} points</span>
+            <span className="font-bold">
+              <img
+                src="pics/dollar.png" // <-- Pane siia oma rahakoti või mündi pildi nimi
+                alt="Points Cost"
+                className="w-5 h-5 inline-block mr-1 align-text-bottom object-contain"
+              />
+
+              Each artifact costs {ARTIFACT_COST} points</span>
             <br />
             <span className="text-xs md:text-sm text-[#6b7280]">
               Earn +30 points for correct answers, -10 for wrong answers. Each artifact can be purchased once.
@@ -113,16 +128,19 @@ export function ShopModal({ onClose, points, inventory, purchaseHistory, onPurch
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: idx * 0.1 }}
-                className={`relative bg-white rounded-xl p-5 border-3 shadow-lg ${
-                  canBuy
-                    ? 'border-[#d4a574] hover:shadow-xl hover:scale-105 transition-all'
-                    : 'border-[#cbd5e1] opacity-75'
-                }`}
+                className={`relative bg-white rounded-xl p-5 border-3 shadow-lg ${canBuy
+                  ? 'border-[#d4a574] hover:shadow-xl hover:scale-105 transition-all'
+                  : 'border-[#cbd5e1] opacity-75'
+                  }`}
               >
                 {/* Artifact Icon */}
                 <div className="flex items-start gap-4 mb-4">
                   <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-[#d4a574] to-[#b8860b] rounded-full flex items-center justify-center text-4xl border-3 border-[#8b6f47] shadow-md">
-                    {artifact.icon}
+                    <img
+                      src={artifact.icon}
+                      alt={artifact.name}
+                      className="w-10 h-10 object-contain"
+                    />
                   </div>
                   <div className="flex-1">
                     <h3
@@ -149,11 +167,10 @@ export function ShopModal({ onClose, points, inventory, purchaseHistory, onPurch
                 <button
                   onClick={() => canBuy && onPurchase(artifact.type)}
                   disabled={!canBuy}
-                  className={`w-full py-3 rounded-lg border-2 font-bold transition-all ${
-                    canBuy
-                      ? 'bg-gradient-to-b from-[#d4a574] to-[#b8860b] border-[#8b6f47] text-white hover:scale-105 shadow-md cursor-pointer'
-                      : 'bg-[#cbd5e1] border-[#6b7280] text-[#6b7280] cursor-not-allowed'
-                  }`}
+                  className={`w-full py-3 rounded-lg border-2 font-bold transition-all ${canBuy
+                    ? 'bg-gradient-to-b from-[#d4a574] to-[#b8860b] border-[#8b6f47] text-white hover:scale-105 shadow-md cursor-pointer'
+                    : 'bg-[#cbd5e1] border-[#6b7280] text-[#6b7280] cursor-not-allowed'
+                    }`}
                   style={{ fontFamily: 'var(--font-heading)' }}
                 >
                   {canBuy ? (

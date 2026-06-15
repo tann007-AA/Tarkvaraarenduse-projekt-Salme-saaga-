@@ -147,11 +147,11 @@ export const translations = {
 
     // Artifacts
     artifacts: {
-      sword: "Valkyrie Sword",
+      sword: "Battle Axe",
       swordDesc: "Cuts through wrong answers (50/50)",
       shield: "Odin's Shield",
       shieldDesc: "Protects from one wrong answer",
-      knife: "Rune Knife",
+      knife: "Dagger",
       knifeDesc: "Reveals hidden hints",
       dice: "Fate Dice",
       diceDesc: "Skip a difficult question",

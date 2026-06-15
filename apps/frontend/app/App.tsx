@@ -16,7 +16,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Settings, ShoppingBag } from 'lucide-react';
 import { ShopModal } from './components/ShopModal';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
-import { StoryLevel } from './components/story/StoryIsland';
+import { StoryIsland } from './components/story/StoryIsland';
 
 // Island story type
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
@@ -539,10 +539,13 @@ function GameContent() {
 
       {/* STORY MODE */}
       {gameState === 'story-mode' && (
-        <StoryLevel
+        <StoryIsland
           currentIsland={currentStoryIsland}
           onBackToMenu={() => setGameState('mode-select')}
           onGoToIsland={setCurrentStoryIsland}
+          points={points}
+          onOpenSettings={() => setShowSettingsModal(true)}
+          onOpenShop={() => setShowShopModal(true)}
         />
       )}
 
