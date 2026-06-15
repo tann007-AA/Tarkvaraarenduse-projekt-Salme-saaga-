@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Anchor } from 'lucide-react';
 import { Character } from './Character';
 
-// IMPORDIME KAARDID OTSE KAUSTAST (Vite teeb neist õiged veebiaadressid)
+// IMPORDIME KAARDID OTSE KAUSTAST 
 import SwedenMap from '../../game/Sweden.svg';
 import GotlandMap from '../../game/Gotland.svg';
 import SaaremaaMap from '../../game/Saaremaa.svg';

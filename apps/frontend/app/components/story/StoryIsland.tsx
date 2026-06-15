@@ -166,10 +166,14 @@ export function StoryLevel({
   onBackToMenu,
   onGoToIsland,
 }: StoryLevelProps) {
+  const mapRef = useRef<HTMLDivElement | null>(null);
   const characterRef = useRef<HTMLImageElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const lastTimeRef = useRef(0);
   const lastFrameChangeRef = useRef(0);
+
+  const clickTargetRef = useRef<{ x: number; y: number } | null>(null);
+  const clickMovingRef = useRef(false);
 
   const island = storyIslandData[currentIsland];
 
@@ -211,6 +215,15 @@ export function StoryLevel({
     currentFrameRef.current = 0;
     lastTimeRef.current = 0;
     lastFrameChangeRef.current = 0;
+    clickTargetRef.current = null;
+    clickMovingRef.current = false;
+
+    keysRef.current = {
+      up: false,
+      down: false,
+      left: false,
+      right: false,
+    };
 
     if (characterRef.current) {
       characterRef.current.style.left = `${xRef.current}%`;
@@ -239,33 +252,51 @@ export function StoryLevel({
     character.src = sprites[currentDirectionRef.current][currentFrameRef.current];
   };
 
+  const handleMapClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const rect = map.getBoundingClientRect();
+    const clickX = ((event.clientX - rect.left) / rect.width) * 100;
+    const clickY = ((event.clientY - rect.top) / rect.height) * 100;
+
+    if (!isWalkable(clickX, clickY)) return;
+
+    clickTargetRef.current = { x: clickX, y: clickY };
+    clickMovingRef.current = true;
+  };
+
   useEffect(() => {
     renderCharacter();
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowUp') {
+      const key = event.key.toLowerCase();
+
+      if (key === 'arrowup' || key === 'w') {
         keysRef.current.up = true;
         event.preventDefault();
       }
-      if (event.key === 'ArrowDown') {
+      if (key === 'arrowdown' || key === 's') {
         keysRef.current.down = true;
         event.preventDefault();
       }
-      if (event.key === 'ArrowLeft') {
+      if (key === 'arrowleft' || key === 'a') {
         keysRef.current.left = true;
         event.preventDefault();
       }
-      if (event.key === 'ArrowRight') {
+      if (key === 'arrowright' || key === 'd') {
         keysRef.current.right = true;
         event.preventDefault();
       }
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowUp') keysRef.current.up = false;
-      if (event.key === 'ArrowDown') keysRef.current.down = false;
-      if (event.key === 'ArrowLeft') keysRef.current.left = false;
-      if (event.key === 'ArrowRight') keysRef.current.right = false;
+      const key = event.key.toLowerCase();
+
+      if (key === 'arrowup' || key === 'w') keysRef.current.up = false;
+      if (key === 'arrowdown' || key === 's') keysRef.current.down = false;
+      if (key === 'arrowleft' || key === 'a') keysRef.current.left = false;
+      if (key === 'arrowright' || key === 'd') keysRef.current.right = false;
     };
 
     const gameLoop = (timestamp: number) => {
@@ -298,6 +329,43 @@ export function StoryLevel({
         nextX += speed * delta;
         currentDirectionRef.current = 'right';
         isMovingRef.current = true;
+      }
+
+      const keyboardMoving =
+        keysRef.current.up ||
+        keysRef.current.down ||
+        keysRef.current.left ||
+        keysRef.current.right;
+
+      if (keyboardMoving) {
+        clickMovingRef.current = false;
+        clickTargetRef.current = null;
+      }
+
+      if (!keyboardMoving && clickMovingRef.current && clickTargetRef.current) {
+        const target = clickTargetRef.current;
+        const dx = target.x - xRef.current;
+        const dy = target.y - yRef.current;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 0.5) {
+          clickMovingRef.current = false;
+          clickTargetRef.current = null;
+        } else {
+          const step = speed * delta;
+          const moveX = (dx / distance) * step;
+          const moveY = (dy / distance) * step;
+
+          nextX = xRef.current + moveX;
+          nextY = yRef.current + moveY;
+          isMovingRef.current = true;
+
+          if (Math.abs(dx) > Math.abs(dy)) {
+            currentDirectionRef.current = dx > 0 ? 'right' : 'left';
+          } else {
+            currentDirectionRef.current = dy > 0 ? 'front' : 'back';
+          }
+        }
       }
 
       if (isWalkable(nextX, yRef.current)) {
@@ -413,7 +481,11 @@ export function StoryLevel({
           ← Back
         </button>
 
-        <div className={island.mapWrapClassName}>
+        <div
+          ref={mapRef}
+          className={island.mapWrapClassName}
+          onClick={handleMapClick}
+        >
           <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
 
           <img
@@ -430,7 +502,10 @@ export function StoryLevel({
               className={`question-marker ${index === currentMarkerIndex ? 'active' : ''}`}
               data-index={index}
               style={{ left: marker.left, top: marker.top }}
-              onClick={() => handleMarkerClick(index)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMarkerClick(index);
+              }}
             >
               ?
             </button>
