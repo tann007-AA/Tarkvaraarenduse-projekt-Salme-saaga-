@@ -17,6 +17,7 @@ import { Settings, ShoppingBag } from 'lucide-react';
 import { ShopModal } from './components/ShopModal';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 import { StoryIsland } from './components/story/StoryIsland';
+import { BoardGameScreen } from './components/board-game/BoardGameScreen';
 
 // Island story type
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
@@ -271,7 +272,6 @@ type GameState = 'intro' | 'menu' | 'island-select' | 'quiz' | 'sailing' | 'retr
 function GameContent() {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState<GameState>('menu');
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
@@ -439,22 +439,12 @@ function GameContent() {
     setGameState('island-select');
   };
 
-  const handlePlayClick = () => {
-    setShowLoginModal(true);
-  };
-
   const handleGuideClick = () => {
     setShowGuideModal(true);
   };
 
   const handleSettingsClick = () => {
     setShowSettingsModal(true);
-  };
-
-  const handleLogin = (username: string) => {
-    setPlayerData({ name: username });
-    setShowLoginModal(false);
-    setGameState('mode-select');
   };
 
   const handleStartGame = () => {
@@ -513,11 +503,15 @@ function GameContent() {
       {gameState === 'menu' && (
         <MainMenuScreen
           onPlay={() => {
+            /*
             if (playerData && playerData.name) {
-              setGameState('mode-select');
+            */
+            setGameState('mode-select');
+            /*
             } else {
               setShowLoginModal(true);
             }
+            */
           }}
           onGuide={handleGuideClick}
           onSettings={handleSettingsClick}
@@ -551,21 +545,7 @@ function GameContent() {
 
       {/* HNEFATAFL LAUAMÄNG */}
       {gameState === 'hnefatafl-local' && (
-        <div className="p-8 text-center bg-stone-950 min-h-screen flex flex-col justify-center items-center">
-          <h2 className="text-2xl font-serif text-[#dfc18d] mb-4">⚔️ Hnefatafl ⚔️</h2>
-          <p className="text-stone-400 mb-4">Siia tuleb kohalik kahe mängija lauamäng.</p>
-          <button onClick={() => setGameState('mode-select')} className="px-4 py-2 bg-stone-800 rounded">
-            Tagasi režiimi valikusse
-          </button>
-        </div>
-      )}
-
-      {/* Login Modal */}
-      {showLoginModal && (
-        <LoginModal
-          onClose={() => setShowLoginModal(false)}
-          onSuccess={handleLogin}
-        />
+        <BoardGameScreen onBack={() => setGameState('mode-select')} />
       )}
 
       {/* Guide Modal */}

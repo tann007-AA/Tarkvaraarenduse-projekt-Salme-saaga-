@@ -17,6 +17,24 @@ export default defineConfig({
     },
   },
 
+  server: {
+    proxy: {
+      '/socket.io': {
+        target: 'http://localhost:3000',
+        ws: true,
+      },
+      '/players': {
+        target: 'http://localhost:3000',
+      },
+      '/lobbies': {
+        target: 'http://localhost:3000',
+      },
+      '/games': {
+        target: 'http://localhost:3000',
+      },
+    },
+  },
+
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
 })

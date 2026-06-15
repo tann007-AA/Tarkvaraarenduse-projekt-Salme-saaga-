@@ -373,7 +373,78 @@ export const translations = {
         answers: ["Gold coins", "Gaming pieces and weapons", "Manuscripts", "Jewelry only"],
         correct: 1
       }
-    ]
+    ],
+
+    // Board Game
+    boardGame: {
+      title: "Hnefatafl",
+      subtitle: "Ancient Nordic battle game",
+      menu: {
+        singlePlayer: "Single Player (vs AI)",
+        multiplayer: "Multiplayer (Online)",
+        backToMainMenu: "Back to Main Menu"
+      },
+      difficulty: {
+        title: "Hnefatafl",
+        subtitle: "Ancient Nordic battle game on a grid",
+        rulesTitle: "How to Play?",
+        intro: "Welcome to the Viking battlefield! This is not ordinary chess — the sides are locked in a siege, and attackers always move first.",
+        defenderGoal: "Defenders (Black pieces center): Protect the King Jarl (crown) at center. Win by guiding him to any of the four corner squares.",
+        attackerGoal: "Attackers (Red pieces on edges): You outnumber the defenders. Win by surrounding the King on all four sides (three if against a wall).",
+        movement: "Moving: Pieces move like a rook (any number of empty squares orthogonally). Only the King can step on the throne or corner squares. Capture by sandwiching an enemy between two of your pieces.",
+        easy: "Easy",
+        medium: "Medium (Recommended)",
+        hard: "Hard",
+        back: "Back"
+      },
+      side: {
+        title: "Select Your Side, Viking!",
+        attacker: "Attackers (Red)",
+        defender: "Defenders (Black)",
+        attackerDesc: "First Move",
+        defenderDesc: "Second Move",
+        back: "Back"
+      },
+      game: {
+        turn: "Turn",
+        attackers: "Attackers",
+        defenders: "Defenders",
+        youAre: "You are",
+        aiThinking: "AI is thinking...",
+        mainMenu: "Main Menu",
+        winner: {
+          attackersWinCaptured: "Attackers win! King captured.",
+          defendersWinEscaped: "Defenders win! King escaped.",
+          attackersWinSurrounded: "Attackers win! King surrounded.",
+          youWin: "You win!",
+          opponentWins: "Opponent wins!",
+          opponentForfeited: "Opponent forfeited!",
+          gameOver: "Game over!"
+        }
+      },
+      multiplayer: {
+        welcome: "Welcome to Hnefatafl Multiplayer",
+        namePlaceholder: "Your name",
+        createPlayer: "Create Player",
+        back: "Back",
+        menuTitle: "Multiplayer Menu",
+        createGame: "Create New Game (Host)",
+        joinGame: "Join Game",
+        lobbyCodePlaceholder: "Lobby code",
+        cancel: "Cancel",
+        lobbyTitle: "Lobby",
+        waitingOpponent: "Lobby created. Waiting for opponent...",
+        opponentJoined: "Opponent joined: {name}",
+        opponentLeft: "Opponent left. Waiting for new player...",
+        lobbyReady: "Lobby ready. Waiting for opponent...",
+        joinedLobby: "Joined lobby. Waiting for host to start...",
+        startGame: "Start Game",
+        failedCreatePlayer: "Failed to create player",
+        failedCreateLobby: "Failed to create lobby",
+        error: "Error",
+        disconnected: "Opponent disconnected! Waiting for reconnection ({seconds}s)..."
+      }
+    }
   },
 
   et: {
@@ -750,7 +821,78 @@ export const translations = {
         answers: ["Kuldmünte", "Mängunuppe ja relvi", "Käsikirju", "Ainult ehteid"],
         correct: 1
       }
-    ]
+    ],
+
+    // Board Game
+    boardGame: {
+      title: "Hnefatafl",
+      subtitle: "Muistne põhjamaade lahingumäng",
+      menu: {
+        singlePlayer: "Üksikmäng (AI vastu)",
+        multiplayer: "Mitmikmäng (võrgus)",
+        backToMainMenu: "Tagasi peamenüüsse"
+      },
+      difficulty: {
+        title: "Hnefatafl",
+        subtitle: "Vana põhjamaade strateegiamäng ruudustikul",
+        rulesTitle: "Kuidas mängida?",
+        intro: "Tere tulemast viikingite lahinguväljale! See pole tavaline male — pooled on piiramisrõngas ja ründajad käivad alati esimesena.",
+        defenderGoal: "Kaitsjad (mustad nupud keskel): Kaitse kuningat (kroon) keskel. Võida, juhtides ta ühte neljast nurgaruudust.",
+        attackerGoal: "Ründajad (punased nupud servadel): Teid on rohkem kui kaitsjaid. Võida, ümbritsedes kuninga neljast küljest (kolmest, kui ta on seina ääres).",
+        movement: "Liikumine: Nupud liiguvad nagu vanker (suvaline arv tühje ruute risti). Ainult kuningas tohib astuda troonile või nurgaruutudele. Võta vastase nupp kinni, pannes ta oma kahe nupu vahele.",
+        easy: "Kerge",
+        medium: "Keskmine (soovitatav)",
+        hard: "Raske",
+        back: "Tagasi"
+      },
+      side: {
+        title: "Vali oma pool, viiking!",
+        attacker: "Ründajad (punased)",
+        defender: "Kaitsjad (mustad)",
+        attackerDesc: "Käib esimesena",
+        defenderDesc: "Käib teisena",
+        back: "Tagasi"
+      },
+      game: {
+        turn: "Kord",
+        attackers: "Ründajad",
+        defenders: "Kaitsjad",
+        youAre: "Sina oled",
+        aiThinking: "AI mõtleb...",
+        mainMenu: "Peamenüü",
+        winner: {
+          attackersWinCaptured: "Ründajad võidavad! Kuningas võeti kinni.",
+          defendersWinEscaped: "Kaitsjad võidavad! Kuningas pääses põgenema.",
+          attackersWinSurrounded: "Ründajad võidavad! Kuningas ümbritseti.",
+          youWin: "Sina võitsid!",
+          opponentWins: "Vastane võitis!",
+          opponentForfeited: "Vastane loobus!",
+          gameOver: "Mäng läbi!"
+        }
+      },
+      multiplayer: {
+        welcome: "Tere tulemast Hnefatafl mitmikmängu",
+        namePlaceholder: "Sinu nimi",
+        createPlayer: "Loo mängija",
+        back: "Tagasi",
+        menuTitle: "Mitmikmängu menüü",
+        createGame: "Loo uus mäng (peremees)",
+        joinGame: "Liitu mänguga",
+        lobbyCodePlaceholder: "Lobi kood",
+        cancel: "Tühista",
+        lobbyTitle: "Lobi",
+        waitingOpponent: "Lobi loodud. Ootan vastast...",
+        opponentJoined: "Vastane liitus: {name}",
+        opponentLeft: "Vastane lahkus. Ootan uut mängijat...",
+        lobbyReady: "Lobi valmis. Ootan vastast...",
+        joinedLobby: "Liitusid lobiga. Ootan peremeest...",
+        startGame: "Alusta mängu",
+        failedCreatePlayer: "Mängija loomine ebaõnnestus",
+        failedCreateLobby: "Lobi loomine ebaõnnestus",
+        error: "Viga",
+        disconnected: "Vastane lahkus! Ootan uuestiühendumist ({seconds}s)..."
+      }
+    }
   },
 
   no: {

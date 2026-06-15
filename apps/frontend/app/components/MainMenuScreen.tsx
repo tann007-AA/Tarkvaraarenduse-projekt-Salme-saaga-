@@ -59,32 +59,6 @@ export function MainMenuScreen({ onPlay, onGuide, onSettings }: MainMenuScreenPr
         <Ship className="w-24 h-24 text-white" strokeWidth={1} />
       </motion.div>
 
-      {/* User info and logout - top right */}
-      {isAuthenticated && user && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full border-2 border-[#8b6f47] shadow-lg"
-        >
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#d4a574] to-[#b8860b] rounded-full flex items-center justify-center">
-              <UserIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-sm font-bold text-[#1e4d5f]" style={{ fontFamily: 'var(--font-heading)' }}>
-              {user.username}
-            </span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="ml-2 p-2 hover:bg-red-100 rounded-full transition-colors"
-            title="Logout"
-          >
-            <LogOut className="w-4 h-4 text-red-600" />
-          </button>
-        </motion.div>
-      )}
-
       {/* Main content */}
       <div className="relative z-10 w-full max-w-2xl mx-auto px-4 md:px-8 text-center">
         {/* Logo/Title */}

@@ -7,7 +7,7 @@ import {
 import { and, asc, eq } from 'drizzle-orm';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
 import { randomUUID } from 'node:crypto';
-import { DRIZZLE } from '../db/db.module';
+import { DRIZZLE } from '../db/db.constants';
 import { saves } from '../db/schema/gamesave.schema';
 import { inventoryItems } from '../db/schema/inventory.schema';
 import { progress } from '../db/schema/progress.schema';

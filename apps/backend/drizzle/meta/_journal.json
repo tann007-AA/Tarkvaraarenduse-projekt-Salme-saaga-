@@ -5,57 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1780915859590,
-      "tag": "0000_puzzling_killraven",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1780919308604,
-      "tag": "0001_dry_eternity",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1780919326322,
-      "tag": "0002_right_firebrand",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1780991773714,
-      "tag": "0003_goofy_starjammers",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1780992005093,
-      "tag": "0004_chunky_sinister_six",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1780992194501,
-      "tag": "0005_little_nightcrawler",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1781079059647,
-      "tag": "0006_dry_guardian",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "5",
-      "when": 1781081955563,
-      "tag": "0007_nosy_paibok",
+      "when": 1781554504572,
+      "tag": "0000_swift_living_lightning",
       "breakpoints": true
     }
   ]

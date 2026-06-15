@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
-import { DRIZZLE } from '../db/db.module';
+import { DRIZZLE } from '../db/db.constants';
 import { saves } from '../db/schema/gamesave.schema';
 import { progress } from '../db/schema/progress.schema';
 import type { UpdateProgressionDto } from './dto';

@@ -1,8 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { createPool } from 'mysql2/promise';
 import { drizzle } from 'drizzle-orm/mysql2';
-
-export const DRIZZLE = Symbol('DRIZZLE');
+import { DbService } from './db.service';
+import { DRIZZLE } from './db.constants';
 
 const dbProvider = {
   provide: DRIZZLE,
@@ -18,7 +18,7 @@ const dbProvider = {
 
 @Global()
 @Module({
-  providers: [dbProvider],
-  exports: [dbProvider],
+  providers: [dbProvider, DbService],
+  exports: [dbProvider, DbService],
 })
 export class DbModule { }
