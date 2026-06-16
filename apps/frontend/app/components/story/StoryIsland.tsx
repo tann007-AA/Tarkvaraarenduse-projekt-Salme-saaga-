@@ -576,7 +576,7 @@ export function StoryIsland({
         </button>
 
         <div className="map-container">
-          <AnimatePresence mode="sync">
+          <AnimatePresence mode="wait">
             <motion.div
               key={currentIsland}
               ref={mapRef}
