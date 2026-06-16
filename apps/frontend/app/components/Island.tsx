@@ -791,33 +791,33 @@ export function Island({
         {showConfirmModal && pendingQuestionIdx !== null && (
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
             <div className="bg-[#f4ede1] border-4 border-[#8b6f47] p-6 rounded-xl max-w-sm w-full text-center shadow-2xl relative transform scale-100 transition-transform">
-              
+
               {/* Dekoratiivsed elemendid nurgas atmosfääri loomiseks */}
               <div className="absolute top-2 left-3 text-lg opacity-20">🪓</div>
               <div className="absolute top-2 right-3 text-lg opacity-20">🛡️</div>
 
-              <h3 
+              <h3
                 className="text-2xl font-bold text-[#1e4d5f] mb-3 tracking-wide"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 📜 Iidne Ruunikivi
               </h3>
-              
+
               <p className="text-[#4a6638] font-medium text-xs uppercase tracking-wider mb-2">
                 Avastus saarel
               </p>
-              
+
               <p className="text-stone-700 text-sm md:text-base mb-6 leading-relaxed">
                 Oled jõudnud muistse ruuni juurde. Kas soovid süveneda selle saladusse või uurid esmalt saart edasi?
               </p>
-              
+
               <div className="flex flex-col sm:flex-row justify-center gap-3">
                 {/* VALIK A: Ava küsimus */}
                 <button
                   onClick={() => {
                     setShowConfirmModal(false);
                     // Käivitame olemasoleva funktsiooni, mis avab päris mälumängu ekraani
-                    onQuestionTrigger(pendingQuestionIdx, playerPos); 
+                    onQuestionTrigger(pendingQuestionIdx, playerPos);
                   }}
                   className="bg-gradient-to-b from-[#d4a574] to-[#b8860b] hover:from-[#b8860b] hover:to-[#a0730a] text-white font-bold px-5 py-2.5 rounded-lg border-2 border-[#8b6f47] transition-all cursor-pointer text-sm shadow-md active:scale-95"
                 >
@@ -843,12 +843,12 @@ export function Island({
         {showArtifactConfirmModal && pendingArtifact !== null && (
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
             <div className="bg-[#f4ede1] border-4 border-[#8b6f47] p-6 rounded-xl max-w-sm w-full text-center shadow-2xl relative transform scale-100 transition-transform">
-              
+
               <div className="absolute top-2 left-3 text-lg opacity-20">🪓</div>
               <div className="absolute top-2 right-3 text-lg opacity-20">🛡️</div>
 
               {(() => {
-                
+
                 const artifactNames: Record<ArtifactType, string> = {
                   'sword': '⚔️ One-Edged Sword',
                   'shield': '🛡️ Viking Shield',
@@ -859,30 +859,30 @@ export function Island({
 
                 return (
                   <>
-                    <h3 
+                    <h3
                       className="text-2xl font-bold text-[#1e4d5f] mb-3 tracking-wide"
                       style={{ fontFamily: 'var(--font-display)' }}
                     >
                       {artifactNames[pendingArtifact.type]}
                     </h3>
-                    
+
                     <p className="text-[#4a6638] font-medium text-xs uppercase tracking-wider mb-2">
                       Mysterious Object Found
                     </p>
-                    
+
                     <p className="text-stone-700 text-sm md:text-base mb-6 leading-relaxed">
                       You spotted an ancient artifact on the ground. Do you want to collect it and use it as a lifeline during your journey?
                     </p>
-                    
+
                     <div className="flex flex-col sm:flex-row justify-center gap-3">
                       {/* VALIK A: Korja üles */}
                       <button
                         onClick={() => {
                           setShowArtifactConfirmModal(false);
-                          
+
                           // Käivitame sinu algse loogika artefakti lisamiseks ja toast teavituse näitamiseks
                           onArtifactCollect(pendingArtifact.idx, pendingArtifact.type);
-                          
+
                           toast.success(artifactNames[pendingArtifact.type] + ' collected!', {
                             description: 'Use this artifact as a lifeline in quiz questions!',
                             duration: 3000,

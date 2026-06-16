@@ -104,7 +104,7 @@ export function MainMenuScreen({ onPlay, onGuide, onSettings }: MainMenuScreenPr
           </motion.button>
 
           {/* Guide Button */}
-          <motion.button
+          {/* <motion.button
             initial={{ x: -100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.6 }}
@@ -120,8 +120,10 @@ export function MainMenuScreen({ onPlay, onGuide, onSettings }: MainMenuScreenPr
               {t.mainMenu.guide}
             </span>
           </motion.button>
+           */}
 
           {/* Settings Button */}
+          {/*
           <motion.button
             initial={{ x: -100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -138,6 +140,7 @@ export function MainMenuScreen({ onPlay, onGuide, onSettings }: MainMenuScreenPr
               {t.mainMenu.settings}
             </span>
           </motion.button>
+          */}
         </div>
 
         {/* Version or credits */}

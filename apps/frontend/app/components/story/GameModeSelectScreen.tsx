@@ -46,7 +46,7 @@ export function GameModeSelectScreen({ onSelectMode, onBack }: GameModeSelectScr
           transition={{ duration: 0.5 }}
           className="mb-12"
         >
-          <h2 
+          <h2
             className="text-4xl md:text-5xl text-white drop-shadow-2xl mb-4"
             style={{ fontFamily: 'var(--font-display)' }}
           >
@@ -100,6 +100,7 @@ export function GameModeSelectScreen({ onSelectMode, onBack }: GameModeSelectScr
           </motion.button>
 
           {/* VANA SAARE/TESTI REŽIIMI NUPP */}
+          {/*
           <motion.button
             initial={{ x: -100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -119,6 +120,7 @@ export function GameModeSelectScreen({ onSelectMode, onBack }: GameModeSelectScr
               </div>
             </div>
           </motion.button>
+          */}
 
           {/* BACK BUTTON */}
           <motion.button
