@@ -39,10 +39,10 @@ type Marker = {
   top: string;
 };
 
-const HOUSE_POSITIONS: Record<StoryIsland, { left: string; top: string }> = {
+const HOUSE_POSITIONS: Record<StoryIsland, { left: string; top: string } | null> = {
   rootsi: { left: '16%', top: '12%' },
-  gotland: { left: '20%', top: '55%' },
-  saaremaa: { left: '22%', top: '20%' },
+  gotland: null,
+  saaremaa: null,
 };
 
 interface StoryIslandProps {
@@ -81,7 +81,7 @@ const storyIslandData: Record<
     markers: [
       { left: '86%', top: '14%' },
       { left: '45%', top: '14%' },
-      { left: '16%', top: '12%' },
+      { left: '22%', top: '30%' },
       { left: '68%', top: '83%' },
       { left: '17%', top: '66%' },
       { left: '26%', top: '82%' },
@@ -273,8 +273,10 @@ export function StoryIsland({
     character.src = sprites[currentDirectionRef.current][currentFrameRef.current];
   };
 
-  const handleHouseClick = (e: MouseEvent<HTMLImageElement>) => {
+  const handleHouseClick = (e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
+    const house = HOUSE_POSITIONS[currentIsland];
+    if (!house) return;
     if (!cookingCompleted) {
       setIsCookingOpen(true);
     }
@@ -420,15 +422,19 @@ export function StoryIsland({
       }
 
       const house = HOUSE_POSITIONS[currentIsland];
-      const houseX = parseFloat(house.left);
-      const houseY = parseFloat(house.top);
-      const distToHouse = Math.sqrt(
-        Math.pow(xRef.current - houseX, 2) +
-        Math.pow(yRef.current - houseY, 2)
-      );
+      if (house) {
+        const houseX = parseFloat(house.left);
+        const houseY = parseFloat(house.top);
+        const distToHouse = Math.sqrt(
+          Math.pow(xRef.current - houseX, 2) +
+          Math.pow(yRef.current - houseY, 2)
+        );
 
-      if (distToHouse < 8 && !cookingCompleted) {
-        setShowHousePrompt(true);
+        if (distToHouse < 8 && !cookingCompleted) {
+          setShowHousePrompt(true);
+        } else {
+          setShowHousePrompt(false);
+        }
       } else {
         setShowHousePrompt(false);
       }
@@ -591,28 +597,30 @@ export function StoryIsland({
             className="character"
           />
 
-          <div
-            className={`house-marker ${showHousePrompt ? 'nearby' : ''} ${cookingCompleted ? 'completed' : ''}`}
-            style={{ left: HOUSE_POSITIONS[currentIsland].left, top: HOUSE_POSITIONS[currentIsland].top }}
-            onClick={handleHouseClick}
-            title={cookingCompleted ? 'Supp on juba tehtud!' : 'Klõpsa, et süüa teha'}
-          >
-            <span className="house-emoji">🏠</span>
-            {!cookingCompleted && (
-              <span className="house-indicator">
-                {showHousePrompt ? '👆 Klõpsa!' : '🍲'}
-              </span>
-            )}
-            {cookingCompleted && <span className="house-indicator">✅</span>}
+          {HOUSE_POSITIONS[currentIsland] && (
+            <div
+              className={`house-marker ${showHousePrompt ? 'nearby' : ''} ${cookingCompleted ? 'completed' : ''}`}
+              style={{ left: HOUSE_POSITIONS[currentIsland]!.left, top: HOUSE_POSITIONS[currentIsland]!.top }}
+              onClick={handleHouseClick}
+              title={cookingCompleted ? 'Supp on juba tehtud!' : 'Klõpsa, et süüa teha'}
+            >
+              <span className="house-emoji">🏠</span>
+              {!cookingCompleted && (
+                <span className="house-indicator">
+                  {showHousePrompt ? '👆 Klõpsa!' : '🍲'}
+                </span>
+              )}
+              {cookingCompleted && <span className="house-indicator">✅</span>}
 
-            {showHousePrompt && !cookingCompleted && (
-              <div className="house-prompt">
-                🍲 Aja suppi!
-                <br />
-                <small>Klõpsa majale</small>
-              </div>
-            )}
-          </div>
+              {showHousePrompt && !cookingCompleted && (
+                <div className="house-prompt">
+                  🍲 Aja suppi!
+                  <br />
+                  <small>Klõpsa majale</small>
+                </div>
+              )}
+            </div>
+          )}
 
           {island.markers.map((marker, index) => (
             <button
@@ -626,7 +634,7 @@ export function StoryIsland({
               }}
             >
               <img
-                src="pics/investigation.png" // <-- Pane siia oma pildi nimi (nt. marker.png või quest.png)
+                src="pics/investigation.png"
                 alt="Quest Marker"
                 className="w-full h-full object-contain"
               />
