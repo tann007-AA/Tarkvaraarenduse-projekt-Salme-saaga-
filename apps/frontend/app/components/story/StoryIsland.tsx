@@ -1,6 +1,7 @@
 import React from 'react';
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { Home } from 'lucide-react';
 import './level.css';
 
 import SwedenMap from './character/Sweden.svg';
@@ -55,6 +56,7 @@ interface StoryIslandProps {
   points: number;
   onOpenSettings?: () => void;
   onOpenShop?: () => void;
+  onEnterHouse?: () => void;
 }
 
 const storyIslandData: Record<
@@ -184,6 +186,7 @@ export function StoryIsland({
   points = 0,
   onOpenSettings,
   onOpenShop,
+  onEnterHouse,
 }: StoryIslandProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const characterRef = useRef<HTMLImageElement | null>(null);
@@ -547,6 +550,14 @@ export function StoryIsland({
 
 
           <button
+            onClick={onEnterHouse}
+            className="flex items-center justify-center bg-gradient-to-r from-[#d4a574] to-[#b8860b] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden p-2.5"
+            title="Maja"
+          >
+            <Home className="w-full h-full text-white" />
+          </button>
+
+          <button
             onClick={onOpenSettings}
             className="flex items-center justify-center bg-gradient-to-r from-[#d4a574] to-[#b8860b] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden p-2.5"
           >
@@ -690,20 +701,24 @@ export function StoryIsland({
                   />
                 </button>
               ))}
-            </div>
-          </main>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </main>
 
-          <CookingGame
-            isOpen={isCookingOpen}
-            onClose={() => setIsCookingOpen(false)}
-            onComplete={handleCookingComplete}
-          />
+      <CookingGame
+        isOpen={isCookingOpen}
+        onClose={() => setIsCookingOpen(false)}
+        onComplete={handleCookingComplete}
+      />
 
-          <LonghouseHotspots
-            isOpen={isLonghouseOpen}
-            onClose={() => setIsLonghouseOpen(false)}
-            onComplete={handleLonghouseComplete}
-          />
-        </React.Fragment>
-        );
+      <LonghouseHotspots
+        isOpen={isLonghouseOpen}
+        onClose={() => setIsLonghouseOpen(false)}
+        onComplete={handleLonghouseComplete}
+      />
+    </React.Fragment>
+  );
 }
+
+export { StoryIsland as StoryLevel };
