@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Anchor } from 'lucide-react';
 import { Character } from './Character';
+import { HouseScene } from './housescene';
 
-// IMPORDIME KAARDID OTSE KAUSTAST 
-import SwedenMap from '../../game/Sweden.svg';
-import GotlandMap from '../../game/Gotland.svg';
-import SaaremaaMap from '../../game/Saaremaa.svg';
+import SwedenMap from './character/Sweden.svg';
+import GotlandMap from './character/Gotland.svg';
+import SaaremaaMap from './character/Saaremaa.svg';
 
 type IslandStage = 'rootsi' | 'gotland' | 'saaremaa';
 
@@ -14,6 +14,9 @@ interface StoryMapScreenProps {
 }
 
 export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
+  console.log('StoryMapScreen renderdab');
+
+  const [hasSeenHouseScene, setHasSeenHouseScene] = useState(false);
   const [currentIsland, setCurrentIsland] = useState<IslandStage>('rootsi');
   const [bjornPos, setBjornPos] = useState({ x: 20, y: 30 });
   const [isMoving, setIsMoving] = useState(false);
@@ -30,6 +33,7 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
       if (x < 15 && y < 25) return false;
       if (x > 85 && y < 20) return false;
     }
+
     return true;
   };
 
@@ -67,16 +71,13 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
     const clickX = ((e.clientX - rect.left) / rect.width) * 100;
     const clickY = ((e.clientY - rect.top) / rect.height) * 100;
 
-    if (!isPositionAllowed(clickX, clickY, currentIsland)) {
-      console.log("📍 Björn ei oska ujuda! See koht on keelatud.");
-      return;
-    }
+    if (!isPositionAllowed(clickX, clickY, currentIsland)) return;
 
     const dx = clickX - bjornPos.x;
     const dy = clickY - bjornPos.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    const speedFactor = 80; 
+    const speedFactor = 80;
     const calculatedDuration = Math.max(400, distance * speedFactor);
 
     setMoveDuration(calculatedDuration);
@@ -106,12 +107,14 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
       const timer = setTimeout(() => {
         setIsMoving(false);
       }, moveDuration);
+
       return () => clearTimeout(timer);
     }
-  }, [bjornPos, moveDuration]);
+  }, [bjornPos, moveDuration, isMoving]);
 
   const handleNextIsland = () => {
     let startPos = { x: 20, y: 30 };
+
     if (currentIsland === 'rootsi') {
       setCurrentIsland('gotland');
       startPos = { x: 45, y: 40 };
@@ -119,22 +122,31 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
       setCurrentIsland('saaremaa');
       startPos = { x: 30, y: 60 };
     }
-    
+
     setBjornPos(startPos);
     setIsMoving(false);
-    
+
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    setTimeout(() => centerCameraOnBjorn(false), 50);
   };
 
   useEffect(() => {
-    setTimeout(() => centerCameraOnBjorn(false), 100);
+    const timer = setTimeout(() => centerCameraOnBjorn(false), 100);
+    return () => clearTimeout(timer);
   }, [currentIsland]);
+
+  if (!hasSeenHouseScene) {
+    return (
+      <HouseScene
+        onBackToMenu={onBackToMenu}
+        onExitHouse={() => {
+          setHasSeenHouseScene(true);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="relative w-full h-screen bg-[#05090f] text-white flex flex-col overflow-hidden select-none">
-      
-      {/* Juhtpaneel */}
       <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/95 via-black/40 to-transparent flex justify-between items-center z-20 backdrop-blur-xs pointer-events-none">
         <button
           onClick={onBackToMenu}
@@ -163,14 +175,12 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
         </button>
       </div>
 
-      {/* VIEWPORT */}
       <div ref={viewportRef} className="w-full h-full overflow-hidden relative z-10">
-        <div 
+        <div
           ref={mapRef}
           onClick={handleMapClick}
           className="w-[200vw] h-[200vh] relative bg-[#111e2e] cursor-crosshair"
         >
-          {/* KASUTAME IMPORDITUD MUUTUJAID SOURCINA */}
           {currentIsland === 'rootsi' && (
             <img src={SwedenMap} alt="Rootsi" className="w-full h-full object-cover animate-fadeIn pointer-events-none" />
           )}
@@ -181,22 +191,15 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
             <img src={SaaremaaMap} alt="Saaremaa" className="w-full h-full object-cover animate-fadeIn pointer-events-none" />
           )}
 
-          <Character 
-            x={bjornPos.x} 
-            y={bjornPos.y} 
-            isMoving={isMoving} 
-            duration={moveDuration} 
-            name="Björn" 
+          <Character
+            x={bjornPos.x}
+            y={bjornPos.y}
+            isMoving={isMoving}
+            duration={moveDuration}
+            name="Björn"
           />
         </div>
       </div>
-
-      <div className="absolute bottom-4 left-4 bg-black/80 border border-stone-800 p-2 rounded-lg backdrop-blur-md z-20 pointer-events-none">
-        <p className="text-[10px] text-stone-400 font-mono">
-          📍 Koordinaadid: X: {Math.round(bjornPos.x)}% | Y: {Math.round(bjornPos.y)}%
-        </p>
-      </div>
-
     </div>
   );
 }

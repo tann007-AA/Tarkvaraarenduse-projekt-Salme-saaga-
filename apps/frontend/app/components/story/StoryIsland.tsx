@@ -510,19 +510,6 @@ export function StoryLevel({
               ?
             </button>
           ))}
-
-          {island.walkableZones.map((zone, index) => (
-            <div
-              key={index}
-              className="debug-zone"
-              style={{
-                left: `${zone.minX}%`,
-                top: `${zone.minY}%`,
-                width: `${zone.maxX - zone.minX}%`,
-                height: `${zone.maxY - zone.minY}%`,
-              }}
-            />
-          ))}
         </div>
       </main>
     </>

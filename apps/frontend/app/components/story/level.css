@@ -42,8 +42,8 @@ body {
   overflow: hidden;
   z-index: 0;
   background:
-    radial-gradient(circle at 20% 10%, rgba(255,255,255,0.12), transparent 30%),
-    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08), transparent 28%),
+    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.12), transparent 30%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08), transparent 28%),
     linear-gradient(to bottom, #6bb4c9 0%, #3d8094 46%, #205b6f 100%);
 }
 
@@ -55,23 +55,19 @@ body {
 }
 
 .water-bg::before {
-  background: linear-gradient(
-    to bottom,
-    rgba(255,255,255,0.08) 0%,
-    rgba(255,255,255,0.03) 15%,
-    rgba(255,255,255,0) 40%
-  );
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.03) 15%,
+      rgba(255, 255, 255, 0) 40%);
   opacity: 0.8;
 }
 
 .water-bg::after {
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,0.03) 0px,
-    rgba(255,255,255,0.03) 2px,
-    transparent 2px,
-    transparent 36px
-  );
+  background: repeating-linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 2px,
+      transparent 2px,
+      transparent 36px);
   opacity: 0.35;
   animation: waterTexture 7s linear infinite;
 }
@@ -84,12 +80,53 @@ body {
   pointer-events: none;
 }
 
-.wave-1 { top: 4%; height: 70px; background: rgba(255,255,255,0.14); opacity: 0.75; animation: waveA 9s ease-in-out infinite; }
-.wave-2 { top: 12%; height: 90px; background: rgba(132,219,244,0.15); opacity: 0.55; animation: waveB 11s ease-in-out infinite; }
-.wave-3 { top: 28%; height: 80px; background: rgba(255,255,255,0.11); opacity: 0.6; animation: waveC 8s ease-in-out infinite; }
-.wave-4 { top: 44%; height: 95px; background: rgba(103,196,225,0.16); opacity: 0.55; animation: waveD 13s ease-in-out infinite; }
-.wave-5 { top: 62%; height: 85px; background: rgba(255,255,255,0.10); opacity: 0.48; animation: waveE 10s ease-in-out infinite; }
-.wave-6 { top: 80%; height: 100px; background: rgba(124,207,233,0.15); opacity: 0.44; animation: waveF 12s ease-in-out infinite; }
+.wave-1 {
+  top: 4%;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.14);
+  opacity: 0.75;
+  animation: waveA 9s ease-in-out infinite;
+}
+
+.wave-2 {
+  top: 12%;
+  height: 90px;
+  background: rgba(132, 219, 244, 0.15);
+  opacity: 0.55;
+  animation: waveB 11s ease-in-out infinite;
+}
+
+.wave-3 {
+  top: 28%;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.11);
+  opacity: 0.6;
+  animation: waveC 8s ease-in-out infinite;
+}
+
+.wave-4 {
+  top: 44%;
+  height: 95px;
+  background: rgba(103, 196, 225, 0.16);
+  opacity: 0.55;
+  animation: waveD 13s ease-in-out infinite;
+}
+
+.wave-5 {
+  top: 62%;
+  height: 85px;
+  background: rgba(255, 255, 255, 0.10);
+  opacity: 0.48;
+  animation: waveE 10s ease-in-out infinite;
+}
+
+.wave-6 {
+  top: 80%;
+  height: 100px;
+  background: rgba(124, 207, 233, 0.15);
+  opacity: 0.44;
+  animation: waveF 12s ease-in-out infinite;
+}
 
 .level-screen {
   position: relative;
@@ -276,38 +313,85 @@ body {
 }
 
 @keyframes waterTexture {
-  from { transform: translateY(0); }
-  to { transform: translateY(24px); }
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(24px);
+  }
 }
 
 @keyframes waveA {
-  0%, 100% { transform: translateX(-5%) translateY(0) scaleX(1); }
-  50% { transform: translateX(7%) translateY(8px) scaleX(0.96); }
+
+  0%,
+  100% {
+    transform: translateX(-5%) translateY(0) scaleX(1);
+  }
+
+  50% {
+    transform: translateX(7%) translateY(8px) scaleX(0.96);
+  }
 }
 
 @keyframes waveB {
-  0%, 100% { transform: translateX(6%) translateY(0) scaleX(1.05); }
-  50% { transform: translateX(-6%) translateY(-8px) scaleX(1.12); }
+
+  0%,
+  100% {
+    transform: translateX(6%) translateY(0) scaleX(1.05);
+  }
+
+  50% {
+    transform: translateX(-6%) translateY(-8px) scaleX(1.12);
+  }
 }
 
 @keyframes waveC {
-  0%, 100% { transform: translateX(-3%) translateY(0) scaleX(1); }
-  50% { transform: translateX(8%) translateY(6px) scaleX(0.95); }
+
+  0%,
+  100% {
+    transform: translateX(-3%) translateY(0) scaleX(1);
+  }
+
+  50% {
+    transform: translateX(8%) translateY(6px) scaleX(0.95);
+  }
 }
 
 @keyframes waveD {
-  0%, 100% { transform: translateX(5%) translateY(0) scaleX(1.03); }
-  50% { transform: translateX(-7%) translateY(-10px) scaleX(1.08); }
+
+  0%,
+  100% {
+    transform: translateX(5%) translateY(0) scaleX(1.03);
+  }
+
+  50% {
+    transform: translateX(-7%) translateY(-10px) scaleX(1.08);
+  }
 }
 
 @keyframes waveE {
-  0%, 100% { transform: translateX(-4%) translateY(0) scaleX(1.02); }
-  50% { transform: translateX(7%) translateY(9px) scaleX(0.97); }
+
+  0%,
+  100% {
+    transform: translateX(-4%) translateY(0) scaleX(1.02);
+  }
+
+  50% {
+    transform: translateX(7%) translateY(9px) scaleX(0.97);
+  }
 }
 
 @keyframes waveF {
-  0%, 100% { transform: translateX(4%) translateY(0) scaleX(1.04); }
-  50% { transform: translateX(-8%) translateY(-9px) scaleX(1.1); }
+
+  0%,
+  100% {
+    transform: translateX(4%) translateY(0) scaleX(1.04);
+  }
+
+  50% {
+    transform: translateX(-8%) translateY(-9px) scaleX(1.1);
+  }
 }
 
 .saaremaa {
@@ -375,9 +459,12 @@ body {
 }
 
 @keyframes floatMarker {
-  0%, 100% {
+
+  0%,
+  100% {
     translate: 0 0;
   }
+
   50% {
     translate: 0 -8px;
   }
@@ -401,8 +488,118 @@ body {
 
  /* .debug-zone {
   position: absolute;
-  border: 2px solid red;
-  background: rgba(255, 0, 0, 0.2);
+  border: 2px solid lime;
+  background: rgba(0, 255, 0, 0.15);
   pointer-events: none;
   z-index: 20;
+}
+
+.blocked-zone {
+  border: 2px solid red;
+  background: rgba(255, 0, 0, 0.2);
 }  */
+
+.house-scene-screen {
+  min-height: 100vh;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  background: radial-gradient(circle at center, #3a1708 0%, #241008 55%, #170904 100%);
+  overflow: hidden;
+}
+
+
+.house-scene-only {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+
+.house-scene-map {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+
+.house-scene-stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(96vw, 1100px);
+  height: 140vh;
+  transform: translate(-43%, -50%);
+}
+
+
+.house-scene-image {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  transform: translate(-50%, -46%);
+}
+
+
+.house-player-sprite {
+  position: absolute;
+  width: 28px;
+  height: auto;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+
+.house-exit-btn {
+  position: absolute;
+  left: 47.5%;
+  top: 83.5%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(35, 20, 10, 0.92);
+  color: #f6dfb5;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+  transition: 0.15s ease;
+}
+
+
+.house-exit-btn:hover {
+  background: rgba(68, 37, 18, 0.98);
+  color: #ffd38a;
+}
+
+
+@media (max-width: 768px) {
+  .house-scene-stage {
+    width: min(100vw, 760px);
+  }
+
+
+  .house-player-sprite {
+    width: 22px;
+  }
+
+
+  .house-exit-btn {
+    font-size: 13px;
+    padding: 7px 12px;
+    top: 90%;
+  }
+}
