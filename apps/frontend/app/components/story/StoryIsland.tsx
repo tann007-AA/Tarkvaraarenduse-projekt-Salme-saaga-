@@ -1,5 +1,6 @@
 import React from 'react';
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import './level.css';
 
 import SwedenMap from './character/Sweden.svg';
@@ -241,6 +242,7 @@ export function StoryIsland({
     lastFrameChangeRef.current = 0;
     clickTargetRef.current = null;
     clickMovingRef.current = false;
+    setIsCookingOpen(false);
     setCookingCompleted(false);
     setShowHousePrompt(false);
     setLonghouseCompleted(false);
@@ -613,89 +615,95 @@ export function StoryIsland({
         </section>
 
         <button id="backBtn" className="back-btn" type="button" onClick={onBackToMenu}>
-          ← Back
+          ← Tagasi
         </button>
 
         <div className="map-container">
-          <div
-            ref={mapRef}
-            className={island.mapWrapClassName}
-            onClick={handleMapClick}
-          >
+          <AnimatePresence mode="sync">
+            <motion.div
+              key={currentIsland}
+              ref={mapRef}
+              className={island.mapWrapClassName}
+              onClick={handleMapClick}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: 'easeInOut' }}
+            >
 
-            <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
+              <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
 
-            <img
-              ref={characterRef}
-              id="character"
-              src={Front01}
-              alt="Character"
-              className="character"
-            />
+              <img
+                ref={characterRef}
+                id="character"
+                src={Front01}
+                alt="Character"
+                className="character"
+              />
 
-            {HOUSE_POSITIONS[currentIsland] && (
-              <div
-                className={`house-marker ${showHousePrompt ? 'nearby' : ''} ${longhouseCompleted ? 'completed' : ''}`}
-                style={{ left: HOUSE_POSITIONS[currentIsland]!.left, top: HOUSE_POSITIONS[currentIsland]!.top }}
-                onClick={handleHouseClick}
-                title={
-                  !cookingCompleted
-                    ? 'Klõpsa, et süüa teha'
-                    : longhouseCompleted
-                      ? 'Pikkmaja on juba uuritud'
-                      : 'Klõpsa, et pikkmaja uurida'
-                }
-              >
-                <span className="house-emoji">🏘️</span>
-                {!longhouseCompleted && (
-                  <span className="house-indicator">
-                    {showHousePrompt ? '👆' : cookingCompleted ? '🗝️' : '🍲'}
-                  </span>
-                )}
-                {longhouseCompleted && <span className="house-indicator">✅</span>}
+              {HOUSE_POSITIONS[currentIsland] && (
+                <div
+                  className={`house-marker ${showHousePrompt ? 'nearby' : ''} ${longhouseCompleted ? 'completed' : ''}`}
+                  style={{ left: HOUSE_POSITIONS[currentIsland]!.left, top: HOUSE_POSITIONS[currentIsland]!.top }}
+                  onClick={handleHouseClick}
+                  title={
+                    !cookingCompleted
+                      ? 'Klõpsa, et süüa teha'
+                      : longhouseCompleted
+                        ? 'Pikkmaja on juba uuritud'
+                        : 'Klõpsa, et pikkmaja uurida'
+                  }
+                >
+                  <span className="house-emoji">🏘️</span>
+                  {!longhouseCompleted && (
+                    <span className="house-indicator">
+                      {showHousePrompt ? '👆' : cookingCompleted ? '🗝️' : '🍲'}
+                    </span>
+                  )}
+                  {longhouseCompleted && <span className="house-indicator">✅</span>}
 
-                {showHousePrompt && !longhouseCompleted && (
-                  <div className="house-prompt">
-                    {!cookingCompleted ? '🍲 Aja suppi!' : '🗝️ Pikkmaja'}
-                    <br />
-                    <small>{!cookingCompleted ? 'Klõpsa majale' : 'Klõpsa uurimiseks'}</small>
-                  </div>
-                )}
-              </div>
-            )}
+                  {showHousePrompt && !longhouseCompleted && (
+                    <div className="house-prompt">
+                      {!cookingCompleted ? '🍲 Aja suppi!' : '🗝️ Pikkmaja'}
+                      <br />
+                      <small>{!cookingCompleted ? 'Klõpsa majale' : 'Klõpsa uurimiseks'}</small>
+                    </div>
+                  )}
+                </div>
+              )}
 
-            {island.markers.map((marker, index) => (
-              <button
-                key={index}
-                className={`question-marker ${index === currentMarkerIndex ? 'active' : ''}`}
-                data-index={index}
-                style={{ left: marker.left, top: marker.top }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleMarkerClick(index);
-                }}
-              >
-                <img
-                  src="pics/investigation.png"
-                  alt="Quest Marker"
-                  className="w-full h-full object-contain"
-                />
-              </button>
-            ))}
-          </div>
-      </main>
+              {island.markers.map((marker, index) => (
+                <button
+                  key={index}
+                  className={`question-marker ${index === currentMarkerIndex ? 'active' : ''}`}
+                  data-index={index}
+                  style={{ left: marker.left, top: marker.top }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleMarkerClick(index);
+                  }}
+                >
+                  <img
+                    src="pics/investigation.png"
+                    alt="Quest Marker"
+                    className="w-full h-full object-contain"
+                  />
+                </button>
+              ))}
+            </div>
+          </main>
 
-      <CookingGame
-        isOpen={isCookingOpen}
-        onClose={() => setIsCookingOpen(false)}
-        onComplete={handleCookingComplete}
-      />
+          <CookingGame
+            isOpen={isCookingOpen}
+            onClose={() => setIsCookingOpen(false)}
+            onComplete={handleCookingComplete}
+          />
 
-      <LonghouseHotspots
-        isOpen={isLonghouseOpen}
-        onClose={() => setIsLonghouseOpen(false)}
-        onComplete={handleLonghouseComplete}
-      />
-    </React.Fragment>
-  );
+          <LonghouseHotspots
+            isOpen={isLonghouseOpen}
+            onClose={() => setIsLonghouseOpen(false)}
+            onComplete={handleLonghouseComplete}
+          />
+        </React.Fragment>
+        );
 }

@@ -37,14 +37,14 @@ body {
 }
 
 .water-bg {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  z-index: 0;
-  background:
-    radial-gradient(circle at 20% 10%, rgba(255,255,255,0.12), transparent 30%),
-    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08), transparent 28%),
-    linear-gradient(to bottom, #6bb4c9 0%, #3d8094 46%, #205b6f 100%);
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.12), transparent 30%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08), transparent 28%),
+        linear-gradient(to bottom, #6bb4c9 0%, #3d8094 46%, #205b6f 100%);
 }
 
 .water-bg::before,
@@ -55,25 +55,21 @@ body {
 }
 
 .water-bg::before {
-  background: linear-gradient(
-    to bottom,
-    rgba(255,255,255,0.08) 0%,
-    rgba(255,255,255,0.03) 15%,
-    rgba(255,255,255,0) 40%
-  );
-  opacity: 0.8;
+    background: linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.08) 0%,
+            rgba(255, 255, 255, 0.03) 15%,
+            rgba(255, 255, 255, 0) 40%);
+    opacity: 0.8;
 }
 
 .water-bg::after {
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,0.03) 0px,
-    rgba(255,255,255,0.03) 2px,
-    transparent 2px,
-    transparent 36px
-  );
-  opacity: 0.35;
-  animation: waterTexture 7s linear infinite;
+    background: repeating-linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.03) 0px,
+            rgba(255, 255, 255, 0.03) 2px,
+            transparent 2px,
+            transparent 36px);
+    opacity: 0.35;
+    animation: waterTexture 7s linear infinite;
 }
 
 .wave {
@@ -84,12 +80,53 @@ body {
     pointer-events: none;
 }
 
-.wave-1 { top: 4%; height: 70px; background: rgba(255,255,255,0.14); opacity: 0.75; animation: waveA 9s ease-in-out infinite; }
-.wave-2 { top: 12%; height: 90px; background: rgba(132,219,244,0.15); opacity: 0.55; animation: waveB 11s ease-in-out infinite; }
-.wave-3 { top: 28%; height: 80px; background: rgba(255,255,255,0.11); opacity: 0.6; animation: waveC 8s ease-in-out infinite; }
-.wave-4 { top: 44%; height: 95px; background: rgba(103,196,225,0.16); opacity: 0.55; animation: waveD 13s ease-in-out infinite; }
-.wave-5 { top: 62%; height: 85px; background: rgba(255,255,255,0.10); opacity: 0.48; animation: waveE 10s ease-in-out infinite; }
-.wave-6 { top: 80%; height: 100px; background: rgba(124,207,233,0.15); opacity: 0.44; animation: waveF 12s ease-in-out infinite; }
+.wave-1 {
+    top: 4%;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.14);
+    opacity: 0.75;
+    animation: waveA 9s ease-in-out infinite;
+}
+
+.wave-2 {
+    top: 12%;
+    height: 90px;
+    background: rgba(132, 219, 244, 0.15);
+    opacity: 0.55;
+    animation: waveB 11s ease-in-out infinite;
+}
+
+.wave-3 {
+    top: 28%;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.11);
+    opacity: 0.6;
+    animation: waveC 8s ease-in-out infinite;
+}
+
+.wave-4 {
+    top: 44%;
+    height: 95px;
+    background: rgba(103, 196, 225, 0.16);
+    opacity: 0.55;
+    animation: waveD 13s ease-in-out infinite;
+}
+
+.wave-5 {
+    top: 62%;
+    height: 85px;
+    background: rgba(255, 255, 255, 0.10);
+    opacity: 0.48;
+    animation: waveE 10s ease-in-out infinite;
+}
+
+.wave-6 {
+    top: 80%;
+    height: 100px;
+    background: rgba(124, 207, 233, 0.15);
+    opacity: 0.44;
+    animation: waveF 12s ease-in-out infinite;
+}
 
 .level-screen {
     position: relative;
@@ -276,40 +313,76 @@ body {
 }
 
 @keyframes waterTexture {
-  from { transform: translateY(0); }
-  to { transform: translateY(24px); }
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(24px);
+    }
 }
 
 @keyframes waveA {
-  0%, 100% { transform: translateX(-5%) translateY(0) scaleX(1); }
-  50% { transform: translateX(7%) translateY(8px) scaleX(0.96); }
+
+    0%,
+    100% {
+        transform: translateX(-5%) translateY(0) scaleX(1);
+    }
+
+    50% {
+        transform: translateX(7%) translateY(8px) scaleX(0.96);
+    }
 }
 
 @keyframes waveB {
-  0%, 100% { transform: translateX(6%) translateY(0) scaleX(1.05); }
-  50% { transform: translateX(-6%) translateY(-8px) scaleX(1.12); }
+
+    0%,
+    100% {
+        transform: translateX(6%) translateY(0) scaleX(1.05);
+    }
+
+    50% {
+        transform: translateX(-6%) translateY(-8px) scaleX(1.12);
+    }
 }
 
 @keyframes waveC {
-  0%, 100% { transform: translateX(-3%) translateY(0) scaleX(1); }
-  50% { transform: translateX(8%) translateY(6px) scaleX(0.95); }
+
+    0%,
+    100% {
+        transform: translateX(-3%) translateY(0) scaleX(1);
+    }
+
+    50% {
+        transform: translateX(8%) translateY(6px) scaleX(0.95);
+    }
 }
 
 @keyframes waveD {
-  0%, 100% { transform: translateX(5%) translateY(0) scaleX(1.03); }
-  50% { transform: translateX(-7%) translateY(-10px) scaleX(1.08); }
+
+    0%,
+    100% {
+        transform: translateX(5%) translateY(0) scaleX(1.03);
+    }
+
+    50% {
+        transform: translateX(-7%) translateY(-10px) scaleX(1.08);
+    }
 }
 
 @keyframes waveE {
-  0%, 100% { transform: translateX(-4%) translateY(0) scaleX(1.02); }
-  50% { transform: translateX(7%) translateY(9px) scaleX(0.97); }
+
+    0%,
+    100% {
+        transform: translateX(-4%) translateY(0) scaleX(1.02);
+    }
+
+    50% {
+        transform: translateX(7%) translateY(9px) scaleX(0.97);
+    }
 }
 
 @keyframes waveF {
-<<<<<<< HEAD
-  0%, 100% { transform: translateX(4%) translateY(0) scaleX(1.04); }
-  50% { transform: translateX(-8%) translateY(-9px) scaleX(1.1); }
-=======
 
     0%,
     100% {
@@ -319,24 +392,6 @@ body {
     50% {
         transform: translateX(-8%) translateY(-9px) scaleX(1.1);
     }
-}
-
-.map-container {
-    position: relative;
-}
-
-.map-container::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-        radial-gradient(ellipse at center,
-            rgba(0, 0, 0, 0.0) 0%,
-            rgba(0, 0, 0, 0.08) 50%,
-            rgba(0, 0, 0, 0.15) 100%);
-    pointer-events: none;
-    z-index: -1;
->>>>>>> b64f42d4 (fix(frontend): better maps on storymode)
 }
 
 .saaremaa {
@@ -410,12 +465,15 @@ body {
 }
 
 @keyframes floatMarker {
-  0%, 100% {
-    translate: 0 0;
-  }
-  50% {
-    translate: 0 -8px;
-  }
+
+    0%,
+    100% {
+        translate: 0 0;
+    }
+
+    50% {
+        translate: 0 -8px;
+    }
 }
 
 .scene-map {
@@ -652,63 +710,65 @@ body {
 }  */
 
 .house-scene-screen {
-  min-height: 100vh;
-  height: 100vh;
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0;
-  background: radial-gradient(circle at center, #3a1708 0%, #241008 55%, #170904 100%);
-  overflow: hidden;
+    min-height: 100vh;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    background: radial-gradient(circle at center, #3a1708 0%, #241008 55%, #170904 100%);
+    overflow: hidden;
 }
 
 
 .house-scene-only {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
 }
 
 
 .house-scene-map {
-  position: relative;
-  width: 100%;
-  height: 100%;
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 
 .house-scene-stage {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(96vw, 1100px);
-  height: 140vh;
-  transform: translate(-43%, -50%);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(96vw, 1100px);
+    height: 140vh;
+    transform: translate(-43%, -50%);
 }
 
 
 .house-scene-image {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
-  transform: translate(-50%, -46%);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    transform: translate(-50%, -46%);
 }
 
 
 .house-player-sprite {
-  position: absolute;
-  width: 28px;
-  height: auto;
-  transform: translate(-50%, -50%);
-  z-index: 4;
-  image-rendering: pixelated;
-  pointer-events: none;
-  z-index: 20;
-}  */
+    position: absolute;
+    width: 28px;
+    height: auto;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    image-rendering: pixelated;
+    pointer-events: none;
+    z-index: 20;
+}
+
+*/
