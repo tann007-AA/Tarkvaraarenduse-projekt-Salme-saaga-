@@ -12,7 +12,7 @@ export function SailingTransition({ onComplete }: SailingTransitionProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onComplete();
-    }, 4000);
+    }, 2500);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
@@ -79,7 +79,7 @@ export function SailingTransition({ onComplete }: SailingTransitionProps) {
         initial={{ x: '-100%', scale: 0.5 }}
         animate={{ x: '100vw', scale: 1.2 }}
         transition={{
-          duration: 4,
+          duration: 2.5,
           ease: 'easeInOut'
         }}
         className="relative z-10"

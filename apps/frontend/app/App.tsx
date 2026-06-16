@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { MainMenuScreen } from './components/MainMenuScreen';
-import { LoginModal } from './components/LoginModal';
 import { SettingsModal } from './components/SettingsModal';
 import { StartScreen } from './components/StartScreen';
 import { TutorialModal } from './components/TutorialModal';
@@ -17,6 +17,7 @@ import { Settings, ShoppingBag } from 'lucide-react';
 import { ShopModal } from './components/ShopModal';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 import { StoryLevel } from './components/story/StoryIsland';
+import { HouseScene } from './components/story/housescene';
 
 // Island story type
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
@@ -30,11 +31,6 @@ export interface Artifact {
   type: ArtifactType;
   name: string;
   description: string;
-}
-
-
-interface PlayerData {
-  name: string;
 }
 
 
@@ -279,7 +275,6 @@ function GameContent() {
   const [gameState, setGameState] = useState<GameState>('menu');
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [playerData, setPlayerData] = useState<PlayerData | null>(null);
   const [currentIslandIndex, setCurrentIslandIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number | null>(null);
   const [userAnswers, setUserAnswers] = useState<{ [key: number]: number }>({});
@@ -469,10 +464,6 @@ function GameContent() {
     setGameState('island-select');
   };
 
-  const handlePlayClick = () => {
-    setShowLoginModal(true);
-  };
-
   const handleGuideClick = () => {
     setShowGuideModal(true);
   };
@@ -480,12 +471,6 @@ function GameContent() {
 
   const handleSettingsClick = () => {
     setShowSettingsModal(true);
-  };
-
-  const handleLogin = (username: string) => {
-    setPlayerData({ name: username });
-    setShowLoginModal(false);
-    setGameState('mode-select');
   };
 
   const handleStartGame = () => {
@@ -529,7 +514,6 @@ function GameContent() {
     setInventory([]);
     setCollectedArtifacts([]);
     setHasSeenTutorial(false);
-    setPlayerData(null);
     setSavedPlayerPosition(null);
     setPoints(0);
     setPurchaseHistory({});
@@ -551,17 +535,7 @@ function GameContent() {
       {/* Main Menu */}
       {gameState === 'menu' && (
         <MainMenuScreen
-          onPlay={() => {
-            /*
-            if (playerData && playerData.name) {
-            */
-            setGameState('mode-select');
-            /*
-            } else {
-              setShowLoginModal(true);
-            }
-            */
-          }}
+          onPlay={() => setGameState('mode-select')}
           onGuide={handleGuideClick}
           onSettings={handleSettingsClick}
         />
@@ -584,13 +558,20 @@ function GameContent() {
 
 
       {/* STORY MODE – maja enne esimest saart */}
-      {gameState === 'story-mode' && (
-        <StoryLevel
-          currentIsland={currentStoryIsland}
-          onBackToMenu={() => setGameState('mode-select')}
-          onGoToIsland={setCurrentStoryIsland}
-        />
-      )}
+      {gameState === 'story-mode' &&
+        (showHouseScene ? (
+          <HouseScene
+            onBackToMenu={() => setGameState('mode-select')}
+            onExitHouse={() => setShowHouseScene(false)}
+          />
+        ) : (
+          <StoryLevel
+            currentIsland={currentStoryIsland}
+            onBackToMenu={() => setGameState('mode-select')}
+            onGoToIsland={setCurrentStoryIsland}
+            onEnterHouse={() => setShowHouseScene(true)}
+          />
+        ))}
 
 
       {/* HNEFATAFL LAUAMÄNG */}
@@ -603,15 +584,6 @@ function GameContent() {
           </button>
         </div>
       )}
-
-      {/* Login Modal */}
-      {showLoginModal && (
-        <LoginModal
-          onClose={() => setShowLoginModal(false)}
-          onSuccess={handleLogin}
-        />
-      )}
-
 
       {/* Guide Modal */}
       {showGuideModal && (
