@@ -17,8 +17,6 @@ import { Settings, ShoppingBag } from 'lucide-react';
 import { ShopModal } from './components/ShopModal';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 import { StoryLevel } from './components/story/StoryIsland';
-import { HouseScene } from './components/story/housescene';
-
 
 // Island story type
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
@@ -279,7 +277,6 @@ type GameState = 'intro' | 'menu' | 'island-select' | 'quiz' | 'sailing' | 'retr
 function GameContent() {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState<GameState>('menu');
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
@@ -472,11 +469,9 @@ function GameContent() {
     setGameState('island-select');
   };
 
-
   const handlePlayClick = () => {
     setShowLoginModal(true);
   };
-
 
   const handleGuideClick = () => {
     setShowGuideModal(true);
@@ -487,13 +482,11 @@ function GameContent() {
     setShowSettingsModal(true);
   };
 
-
   const handleLogin = (username: string) => {
     setPlayerData({ name: username });
     setShowLoginModal(false);
     setGameState('mode-select');
   };
-
 
   const handleStartGame = () => {
     setSavedPlayerPosition(null);
@@ -559,11 +552,15 @@ function GameContent() {
       {gameState === 'menu' && (
         <MainMenuScreen
           onPlay={() => {
+            /*
             if (playerData && playerData.name) {
-              setGameState('mode-select');
+            */
+            setGameState('mode-select');
+            /*
             } else {
               setShowLoginModal(true);
             }
+            */
           }}
           onGuide={handleGuideClick}
           onSettings={handleSettingsClick}
@@ -588,18 +585,11 @@ function GameContent() {
 
       {/* STORY MODE – maja enne esimest saart */}
       {gameState === 'story-mode' && (
-        showHouseScene ? (
-          <HouseScene
-            onBackToMenu={() => setGameState('mode-select')}
-            onExitHouse={() => setShowHouseScene(false)}
-          />
-        ) : (
-          <StoryLevel
-            currentIsland={currentStoryIsland}
-            onBackToMenu={() => setGameState('mode-select')}
-            onGoToIsland={setCurrentStoryIsland}
-          />
-        )
+        <StoryLevel
+          currentIsland={currentStoryIsland}
+          onBackToMenu={() => setGameState('mode-select')}
+          onGoToIsland={setCurrentStoryIsland}
+        />
       )}
 
 
@@ -613,7 +603,6 @@ function GameContent() {
           </button>
         </div>
       )}
-
 
       {/* Login Modal */}
       {showLoginModal && (

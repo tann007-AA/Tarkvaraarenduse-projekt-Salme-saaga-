@@ -8,6 +8,7 @@ import { SavesModule } from './saves/saves.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { ProgressionModule } from './progression/progression.module';
 import { ScoresModule } from './scores/scores.module';
+import { BoardGameModule } from './board-game/board-game.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ScoresModule } from './scores/scores.module';
     InventoryModule,
     ProgressionModule,
     ScoresModule,
+    BoardGameModule,
   ],
   controllers: [AppController],
   providers: [AppService],

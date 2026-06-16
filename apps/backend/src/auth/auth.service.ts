@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { and, eq } from 'drizzle-orm';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
 import { randomUUID } from 'node:crypto';
-import { DRIZZLE } from '../db/db.module';
+import { DRIZZLE } from '../db/db.constants';
 import { users } from '../db/schema/users.schema';
 import { sessions } from '../db/schema/sessions.schema';
 import { hashPassword, verifyPassword } from './password.util';

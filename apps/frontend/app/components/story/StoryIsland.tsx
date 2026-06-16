@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import './level.css';
 
 import SwedenMap from './character/Sweden.svg';
@@ -21,6 +22,9 @@ import Right01 from './character/Right_01.png';
 import Right02 from './character/Right_02.png';
 import Right03 from './character/Right_03.png';
 
+import { CookingGame } from './cooking/CookingGame';
+import { LonghouseHotspots } from './cooking/LonghouseHotspots';
+
 type Direction = 'front' | 'back' | 'left' | 'right';
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
 
@@ -36,10 +40,19 @@ type Marker = {
   top: string;
 };
 
-interface StoryLevelProps {
+const HOUSE_POSITIONS: Record<StoryIsland, { left: string; top: string } | null> = {
+  rootsi: { left: '16%', top: '12%' },
+  gotland: null,
+  saaremaa: null,
+};
+
+interface StoryIslandProps {
   currentIsland: StoryIsland;
   onBackToMenu: () => void;
   onGoToIsland?: (island: StoryIsland) => void;
+  points: number;
+  onOpenSettings?: () => void;
+  onOpenShop?: () => void;
 }
 
 const storyIslandData: Record<
@@ -69,7 +82,7 @@ const storyIslandData: Record<
     markers: [
       { left: '86%', top: '14%' },
       { left: '45%', top: '14%' },
-      { left: '16%', top: '12%' },
+      { left: '22%', top: '30%' },
       { left: '68%', top: '83%' },
       { left: '17%', top: '66%' },
       { left: '26%', top: '82%' },
@@ -161,11 +174,14 @@ const storyIslandData: Record<
   },
 };
 
-export function StoryLevel({
+export function StoryIsland({
   currentIsland,
   onBackToMenu,
   onGoToIsland,
-}: StoryLevelProps) {
+  points = 0,
+  onOpenSettings,
+  onOpenShop,
+}: StoryIslandProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const characterRef = useRef<HTMLImageElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -179,6 +195,12 @@ export function StoryLevel({
 
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(0);
   const [checkpointCount, setCheckpointCount] = useState(0);
+
+  const [isCookingOpen, setIsCookingOpen] = useState(false);
+  const [cookingCompleted, setCookingCompleted] = useState(false);
+  const [showHousePrompt, setShowHousePrompt] = useState(false);
+  const [isLonghouseOpen, setIsLonghouseOpen] = useState(false);
+  const [longhouseCompleted, setLonghouseCompleted] = useState(false);
 
   const xRef = useRef(island.startX);
   const yRef = useRef(island.startY);
@@ -217,6 +239,10 @@ export function StoryLevel({
     lastFrameChangeRef.current = 0;
     clickTargetRef.current = null;
     clickMovingRef.current = false;
+    setCookingCompleted(false);
+    setShowHousePrompt(false);
+    setLonghouseCompleted(false);
+    setIsLonghouseOpen(false);
 
     keysRef.current = {
       up: false,
@@ -252,7 +278,48 @@ export function StoryLevel({
     character.src = sprites[currentDirectionRef.current][currentFrameRef.current];
   };
 
-  const handleMapClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleHouseClick = (e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+
+    const house = HOUSE_POSITIONS[currentIsland];
+    if (!house) return;
+
+    const houseX = parseFloat(house.left);
+    const houseY = parseFloat(house.top);
+    const distToHouse = Math.sqrt(
+      Math.pow(xRef.current - houseX, 2) +
+      Math.pow(yRef.current - houseY, 2)
+    );
+
+    if (distToHouse >= 8) {
+      clickTargetRef.current = { x: houseX, y: houseY };
+      clickMovingRef.current = true;
+      return;
+    }
+
+    if (!cookingCompleted) {
+      setIsCookingOpen(true);
+      return;
+    }
+
+    if (!longhouseCompleted) {
+      setIsLonghouseOpen(true);
+    }
+  };
+
+  const handleCookingComplete = () => {
+    setCookingCompleted(true);
+    setIsCookingOpen(false);
+    setCheckpointCount((prev: number) => prev + 1);
+  };
+
+  const handleLonghouseComplete = () => {
+    setLonghouseCompleted(true);
+    setIsLonghouseOpen(false);
+    setCheckpointCount((prev: number) => prev + 1);
+  };
+
+  const handleMapClick = (event: MouseEvent<HTMLDivElement>) => {
     const map = mapRef.current;
     if (!map) return;
 
@@ -385,6 +452,24 @@ export function StoryLevel({
         currentFrameRef.current = 0;
       }
 
+      const house = HOUSE_POSITIONS[currentIsland];
+      if (house) {
+        const houseX = parseFloat(house.left);
+        const houseY = parseFloat(house.top);
+        const distToHouse = Math.sqrt(
+          Math.pow(xRef.current - houseX, 2) +
+          Math.pow(yRef.current - houseY, 2)
+        );
+
+        if (distToHouse < 8 && !longhouseCompleted) {
+          setShowHousePrompt(true);
+        } else {
+          setShowHousePrompt(false);
+        }
+      } else {
+        setShowHousePrompt(false);
+      }
+
       renderCharacter();
       animationFrameRef.current = requestAnimationFrame(gameLoop);
     };
@@ -401,7 +486,7 @@ export function StoryLevel({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [sprites, currentIsland, island]);
+  }, [sprites, currentIsland, island, cookingCompleted, longhouseCompleted]);
 
   const handleMarkerClick = (index: number) => {
     if (index !== currentMarkerIndex) return;
@@ -416,7 +501,7 @@ export function StoryLevel({
   };
 
   return (
-    <>
+    <React.Fragment>
       <div className="water-bg" aria-hidden="true">
         <div className="wave wave-1"></div>
         <div className="wave wave-2"></div>
@@ -427,6 +512,54 @@ export function StoryLevel({
       </div>
 
       <main className="level-screen">
+
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
+
+          {/*
+          <div className="flex items-center gap-2 bg-gradient-to-r from-[#d4a574] to-[#b8860b] px-4 py-2 rounded-full border-3 border-[#f4ede1] shadow-xl">
+            <img
+              src="pics/dollar.png"
+              alt="Coins"
+              className="w-5 h-5 md:w-6 md:h-6 object-contain"
+            />
+            <span className="text-white font-bold text-base md:text-lg" style={{ fontFamily: 'var(--font-heading)' }}>
+              {points}
+            </span>
+          </div>
+
+
+          <button
+            onClick={onOpenShop}
+
+            className="flex items-center justify-center bg-gradient-to-r from-[#d4a574] to-[#b8860b] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden p-2"
+          >
+            <img
+              src="pics/money-bag.png"
+              alt="Inventory"
+              className="w-full h-full object-contain"
+            />
+          </button>
+          */}
+
+
+          <button
+            onClick={onOpenSettings}
+            className="flex items-center justify-center bg-gradient-to-r from-[#d4a574] to-[#b8860b] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden p-2.5"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={3}
+              stroke="currentColor"
+              className="w-full h-full text-white"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.77a1.119 1.119 0 0 0-.362.853v.052c0 .31.13.602.362.853l1.003.77a1.125 1.125 0 0 1 .26 1.43l-1.296 2.247a1.125 1.125 0 0 1-1.37.49l-1.216-.456a1.125 1.125 0 0 0-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281a1.125 1.125 0 0 0-.645-.87a6.528 6.528 0 0 1-.22-.127a1.125 1.125 0 0 0-1.075-.124l-1.217.456a1.125 1.125 0 0 1-1.37-.49l-1.296-2.247a1.125 1.125 0 0 1 .26-1.43l1.003-.77a1.119 1.119 0 0 0 .362-.852v-.052c0-.31-.13-.602-.362-.853l-1.003-.77a1.125 1.125 0 0 1-.26-1.43l1.296-2.247a1.125 1.125 0 0 1 1.37-.49l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128c.332-.183.582-.495.644-.869l.214-1.28Z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+          </button>
+        </div>
+
         <aside className="level-info-card">
           <h1>{island.title}</h1>
           <p className="level-topic">Viking Journeys</p>
@@ -486,7 +619,10 @@ export function StoryLevel({
           className={island.mapWrapClassName}
           onClick={handleMapClick}
         >
-          <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
+
+          <div className="map-container">
+            <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
+          </div>
 
           <img
             ref={characterRef}
@@ -495,6 +631,37 @@ export function StoryLevel({
             alt="Character"
             className="character"
           />
+
+          {HOUSE_POSITIONS[currentIsland] && (
+            <div
+              className={`house-marker ${showHousePrompt ? 'nearby' : ''} ${longhouseCompleted ? 'completed' : ''}`}
+              style={{ left: HOUSE_POSITIONS[currentIsland]!.left, top: HOUSE_POSITIONS[currentIsland]!.top }}
+              onClick={handleHouseClick}
+              title={
+                !cookingCompleted
+                  ? 'Klõpsa, et süüa teha'
+                  : longhouseCompleted
+                    ? 'Pikkmaja on juba uuritud'
+                    : 'Klõpsa, et pikkmaja uurida'
+              }
+            >
+              <span className="house-emoji">🏘️</span>
+              {!longhouseCompleted && (
+                <span className="house-indicator">
+                  {showHousePrompt ? '👆' : cookingCompleted ? '🗝️' : '🍲'}
+                </span>
+              )}
+              {longhouseCompleted && <span className="house-indicator">✅</span>}
+
+              {showHousePrompt && !longhouseCompleted && (
+                <div className="house-prompt">
+                  {!cookingCompleted ? '🍲 Aja suppi!' : '🗝️ Pikkmaja'}
+                  <br />
+                  <small>{!cookingCompleted ? 'Klõpsa majale' : 'Klõpsa uurimiseks'}</small>
+                </div>
+              )}
+            </div>
+          )}
 
           {island.markers.map((marker, index) => (
             <button
@@ -507,11 +674,27 @@ export function StoryLevel({
                 handleMarkerClick(index);
               }}
             >
-              ?
+              <img
+                src="pics/investigation.png"
+                alt="Quest Marker"
+                className="w-full h-full object-contain"
+              />
             </button>
           ))}
         </div>
       </main>
-    </>
+
+      <CookingGame
+        isOpen={isCookingOpen}
+        onClose={() => setIsCookingOpen(false)}
+        onComplete={handleCookingComplete}
+      />
+
+      <LonghouseHotspots
+        isOpen={isLonghouseOpen}
+        onClose={() => setIsLonghouseOpen(false)}
+        onComplete={handleLonghouseComplete}
+      />
+    </React.Fragment>
   );
 }
