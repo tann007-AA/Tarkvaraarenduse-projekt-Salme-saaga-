@@ -696,7 +696,7 @@ body {
     font-size: 0.65rem;
 }
 
-/* .debug-zone {
+ /* .debug-zone {
   position: absolute;
   border: 2px solid lime;
   background: rgba(0, 255, 0, 0.15);
@@ -707,7 +707,7 @@ body {
 .blocked-zone {
   border: 2px solid red;
   background: rgba(255, 0, 0, 0.2);
-}  */
+}   */
 
 .house-scene-screen {
     min-height: 100vh;
@@ -768,4 +768,26 @@ body {
   image-rendering: pixelated;
   pointer-events: none;
   z-index: 20;
+}
+
+.house-exit-btn {
+  position: absolute;
+  left: 48.5%;
+  bottom: 18%;
+  transform: translateX(-50%);
+  z-index: 30;
+
+  border: none;
+  border-radius: 6px;
+  padding: 5px 5px;
+  background: #000000;
+  color: white;
+  font-size: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+
+.house-exit-btn:hover {
+  background: #c89438;
 }

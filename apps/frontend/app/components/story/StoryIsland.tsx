@@ -101,7 +101,6 @@ const storyIslandData: Record<
       { minX: 85, maxX: 95, minY: 28, maxY: 45 },
     ],
   },
-
   gotland: {
     title: 'Gotland',
     mapImage: GotlandMap,
@@ -133,7 +132,6 @@ const storyIslandData: Record<
       { minX: 40, maxX: 58, minY: 93, maxY: 97 },
     ],
   },
-
   saaremaa: {
     title: 'Saaremaa',
     mapImage: SaaremaaMap,
@@ -183,9 +181,7 @@ export function StoryIsland({
   onBackToMenu,
   onGoToIsland,
   onCompleteIsland,
-  points = 0,
   onOpenSettings,
-  onOpenShop,
   onEnterHouse,
 }: StoryIslandProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -201,7 +197,6 @@ export function StoryIsland({
 
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(0);
   const [checkpointCount, setCheckpointCount] = useState(0);
-
   const [isCookingOpen, setIsCookingOpen] = useState(false);
   const [cookingCompleted, setCookingCompleted] = useState(false);
   const [showHousePrompt, setShowHousePrompt] = useState(false);
@@ -250,13 +245,7 @@ export function StoryIsland({
     setShowHousePrompt(false);
     setLonghouseCompleted(false);
     setIsLonghouseOpen(false);
-
-    keysRef.current = {
-      up: false,
-      down: false,
-      left: false,
-      right: false,
-    };
+    keysRef.current = { up: false, down: false, left: false, right: false };
 
     if (characterRef.current) {
       characterRef.current.style.left = `${xRef.current}%`;
@@ -279,7 +268,6 @@ export function StoryIsland({
   const renderCharacter = () => {
     const character = characterRef.current;
     if (!character) return;
-
     character.style.left = `${xRef.current}%`;
     character.style.top = `${yRef.current}%`;
     character.src = sprites[currentDirectionRef.current][currentFrameRef.current];
@@ -317,13 +305,13 @@ export function StoryIsland({
   const handleCookingComplete = () => {
     setCookingCompleted(true);
     setIsCookingOpen(false);
-    setCheckpointCount((prev: number) => prev + 1);
+    setCheckpointCount((prev) => prev + 1);
   };
 
   const handleLonghouseComplete = () => {
     setLonghouseCompleted(true);
     setIsLonghouseOpen(false);
-    setCheckpointCount((prev: number) => prev + 1);
+    setCheckpointCount((prev) => prev + 1);
   };
 
   const handleMapClick = (event: MouseEvent<HTMLDivElement>) => {
@@ -345,7 +333,6 @@ export function StoryIsland({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
-
       if (key === 'arrowup' || key === 'w') {
         keysRef.current.up = true;
         event.preventDefault();
@@ -366,7 +353,6 @@ export function StoryIsland({
 
     const handleKeyUp = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
-
       if (key === 'arrowup' || key === 'w') keysRef.current.up = false;
       if (key === 'arrowdown' || key === 's') keysRef.current.down = false;
       if (key === 'arrowleft' || key === 'a') keysRef.current.left = false;
@@ -381,39 +367,29 @@ export function StoryIsland({
       let nextY = yRef.current;
       isMovingRef.current = false;
 
-      if (keysRef.current.up) {
-        nextY -= speed * delta;
-        currentDirectionRef.current = 'back';
-        isMovingRef.current = true;
-      }
+      const moveX =
+        (keysRef.current.right ? 1 : 0) +
+        (keysRef.current.left ? -1 : 0);
 
-      if (keysRef.current.down) {
-        nextY += speed * delta;
-        currentDirectionRef.current = 'front';
-        isMovingRef.current = true;
-      }
+      const moveY =
+        (keysRef.current.down ? 1 : 0) +
+        (keysRef.current.up ? -1 : 0);
 
-      if (keysRef.current.left) {
-        nextX -= speed * delta;
-        currentDirectionRef.current = 'left';
-        isMovingRef.current = true;
-      }
-
-      if (keysRef.current.right) {
-        nextX += speed * delta;
-        currentDirectionRef.current = 'right';
-        isMovingRef.current = true;
-      }
-
-      const keyboardMoving =
-        keysRef.current.up ||
-        keysRef.current.down ||
-        keysRef.current.left ||
-        keysRef.current.right;
+      const keyboardMoving = moveX !== 0 || moveY !== 0;
 
       if (keyboardMoving) {
         clickMovingRef.current = false;
         clickTargetRef.current = null;
+
+        if (moveY < 0) currentDirectionRef.current = 'back';
+        else if (moveY > 0) currentDirectionRef.current = 'front';
+        else if (moveX < 0) currentDirectionRef.current = 'left';
+        else if (moveX > 0) currentDirectionRef.current = 'right';
+
+        const length = Math.hypot(moveX, moveY) || 1;
+        nextX = xRef.current + (moveX / length) * speed * delta;
+        nextY = yRef.current + (moveY / length) * speed * delta;
+        isMovingRef.current = true;
       }
 
       if (!keyboardMoving && clickMovingRef.current && clickTargetRef.current) {
@@ -427,11 +403,11 @@ export function StoryIsland({
           clickTargetRef.current = null;
         } else {
           const step = speed * delta;
-          const moveX = (dx / distance) * step;
-          const moveY = (dy / distance) * step;
+          const moveXClick = (dx / distance) * step;
+          const moveYClick = (dy / distance) * step;
 
-          nextX = xRef.current + moveX;
-          nextY = yRef.current + moveY;
+          nextX = xRef.current + moveXClick;
+          nextY = yRef.current + moveYClick;
           isMovingRef.current = true;
 
           if (Math.abs(dx) > Math.abs(dy)) {
@@ -488,7 +464,6 @@ export function StoryIsland({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
-
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -519,36 +494,7 @@ export function StoryIsland({
       </div>
 
       <main className="level-screen">
-
         <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
-
-          {/*
-          <div className="flex items-center gap-2 bg-gradient-to-r from-[#d4a574] to-[#b8860b] px-4 py-2 rounded-full border-3 border-[#f4ede1] shadow-xl">
-            <img
-              src="pics/dollar.png"
-              alt="Coins"
-              className="w-5 h-5 md:w-6 md:h-6 object-contain"
-            />
-            <span className="text-white font-bold text-base md:text-lg" style={{ fontFamily: 'var(--font-heading)' }}>
-              {points}
-            </span>
-          </div>
-
-
-          <button
-            onClick={onOpenShop}
-
-            className="flex items-center justify-center bg-gradient-to-r from-[#d4a574] to-[#b8860b] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden p-2"
-          >
-            <img
-              src="pics/money-bag.png"
-              alt="Inventory"
-              className="w-full h-full object-contain"
-            />
-          </button>
-          */}
-
-
           <button
             onClick={onEnterHouse}
             className="flex items-center justify-center bg-gradient-to-r from-[#d4a574] to-[#b8860b] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden p-2.5"
@@ -641,7 +587,6 @@ export function StoryIsland({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, ease: 'easeInOut' }}
             >
-
               <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
 
               <img

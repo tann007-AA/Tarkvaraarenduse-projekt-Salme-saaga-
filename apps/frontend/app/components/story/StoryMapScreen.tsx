@@ -8,59 +8,113 @@ import GotlandMap from './character/Gotland.svg';
 import SaaremaaMap from './character/Saaremaa.svg';
 
 type IslandStage = 'rootsi' | 'gotland' | 'saaremaa';
+type Direction = 'front' | 'back' | 'left' | 'right';
+
+type Zone = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+};
 
 interface StoryMapScreenProps {
   onBackToMenu: () => void;
 }
 
-export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
-  console.log('StoryMapScreen renderdab');
+const WALKABLE_ZONES: Record<IslandStage, Zone[]> = {
+  rootsi: [
+    { minX: 15, maxX: 78, minY: 27, maxY: 98 },
+    { minX: 15, maxX: 18, minY: 12, maxY: 29 },
+    { minX: 24, maxX: 88, minY: 12, maxY: 29 },
+    { minX: 78, maxX: 88, minY: 8, maxY: 45 },
+    { minX: 85, maxX: 95, minY: 28, maxY: 45 },
+  ],
+  gotland: [
+    { minX: 31, maxX: 75, minY: 20, maxY: 39 },
+    { minX: 75, maxX: 84, minY: 30, maxY: 39 },
+    { minX: 39, maxX: 90, minY: 11, maxY: 20 },
+    { minX: 22, maxX: 63, minY: 33, maxY: 63 },
+    { minX: 17, maxX: 63, minY: 43, maxY: 63 },
+    { minX: 63, maxX: 82, minY: 53, maxY: 64 },
+    { minX: 25, maxX: 70, minY: 63, maxY: 83 },
+    { minX: 45, maxX: 58, minY: 83, maxY: 93 },
+    { minX: 40, maxX: 58, minY: 93, maxY: 97 },
+  ],
+  saaremaa: [
+    { minX: 14, maxX: 84, minY: 34, maxY: 52 },
+    { minX: 11, maxX: 14, minY: 39, maxY: 48 },
+    { minX: 16, maxX: 78, minY: 52, maxY: 57 },
+    { minX: 19, maxX: 94, minY: 30, maxY: 34 },
+    { minX: 30, maxX: 99, minY: 24, maxY: 30 },
+    { minX: 30, maxX: 41, minY: 17, maxY: 24 },
+    { minX: 33, maxX: 41, minY: 12, maxY: 17 },
+    { minX: 16, maxX: 24, minY: 13, maxY: 21 },
+    { minX: 19, maxX: 24, minY: 21, maxY: 30 },
+    { minX: 22, maxX: 39, minY: 57, maxY: 63 },
+    { minX: 27, maxX: 37, minY: 63, maxY: 67 },
+    { minX: 27, maxX: 31, minY: 67, maxY: 86 },
+    { minX: 22, maxX: 29, minY: 83, maxY: 98 },
+    { minX: 64, maxX: 73, minY: 57, maxY: 59 },
+    { minX: 68, maxX: 73, minY: 59, maxY: 64 },
+    { minX: 84, maxX: 87, minY: 33, maxY: 45 },
+    { minX: 87, maxX: 92, minY: 33, maxY: 41 },
+    { minX: 47, maxX: 91, minY: 11, maxY: 16 },
+    { minX: 47, maxX: 94, minY: 16, maxY: 25 },
+    { minX: 60, maxX: 64, minY: 3, maxY: 11 },
+    { minX: 76, maxX: 86, minY: 5, maxY: 11 },
+  ],
+};
 
+export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
   const [hasSeenHouseScene, setHasSeenHouseScene] = useState(false);
   const [currentIsland, setCurrentIsland] = useState<IslandStage>('rootsi');
-  const [bjornPos, setBjornPos] = useState({ x: 20, y: 30 });
+  const [bjornPos, setBjornPos] = useState({ x: 74, y: 70 });
+  const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(null);
   const [isMoving, setIsMoving] = useState(false);
-  const [moveDuration, setMoveDuration] = useState(2000);
+  const [direction, setDirection] = useState<Direction>('front');
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
+  const lastTimeRef = useRef(0);
 
-  const isPositionAllowed = (x: number, y: number, island: IslandStage): boolean => {
-    if (x < 5 || x > 95 || y < 5 || y > 95) return false;
+  const speed = 0.02;
 
-    if (island === 'rootsi') {
-      if (x < 15 && y < 25) return false;
-      if (x > 85 && y < 20) return false;
-    }
-
-    return true;
+  const isInsideZone = (x: number, y: number, zone: Zone) => {
+    return x >= zone.minX && x <= zone.maxX && y >= zone.minY && y <= zone.maxY;
   };
 
-  const centerCameraOnBjorn = (smooth = true) => {
+  const isPositionAllowed = (x: number, y: number, island: IslandStage): boolean => {
+    return WALKABLE_ZONES[island].some((zone) => isInsideZone(x, y, zone));
+  };
+
+  const centerCameraOnPosition = (x: number, y: number, smooth = true) => {
     if (!viewportRef.current || !mapRef.current) return;
 
     const viewport = viewportRef.current;
     const map = mapRef.current;
 
-    const bjornElement = map.querySelector('.bjorn-character');
-    if (!bjornElement) return;
+    const mapWidth = map.scrollWidth;
+    const mapHeight = map.scrollHeight;
 
-    const bjornRect = bjornElement.getBoundingClientRect();
-    const mapRect = map.getBoundingClientRect();
+    const targetPixelX = (x / 100) * mapWidth;
+    const targetPixelY = (y / 100) * mapHeight;
 
-    const currentX = bjornRect.left - mapRect.left + bjornRect.width / 2;
-    const currentY = bjornRect.top - mapRect.top + bjornRect.height / 2;
+    const targetScrollLeft = targetPixelX - viewport.clientWidth / 2;
+    const targetScrollTop = targetPixelY - viewport.clientHeight / 2;
 
-    const targetScrollLeft = currentX - viewport.clientWidth / 2;
-    const targetScrollTop = currentY - viewport.clientHeight / 2;
+    const maxScrollLeft = mapWidth - viewport.clientWidth;
+    const maxScrollTop = mapHeight - viewport.clientHeight;
+
+    const clampedLeft = Math.max(0, Math.min(targetScrollLeft, maxScrollLeft));
+    const clampedTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
 
     if (smooth) {
-      viewport.scrollLeft += (targetScrollLeft - viewport.scrollLeft) * 0.08;
-      viewport.scrollTop += (targetScrollTop - viewport.scrollTop) * 0.08;
+      viewport.scrollLeft += (clampedLeft - viewport.scrollLeft) * 0.08;
+      viewport.scrollTop += (clampedTop - viewport.scrollTop) * 0.08;
     } else {
-      viewport.scrollLeft = targetScrollLeft;
-      viewport.scrollTop = targetScrollTop;
+      viewport.scrollLeft = clampedLeft;
+      viewport.scrollTop = clampedTop;
     }
   };
 
@@ -75,62 +129,107 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
 
     const dx = clickX - bjornPos.x;
     const dy = clickY - bjornPos.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
 
-    const speedFactor = 80;
-    const calculatedDuration = Math.max(400, distance * speedFactor);
+    if (Math.abs(dx) > Math.abs(dy)) {
+      setDirection(dx > 0 ? 'right' : 'left');
+    } else {
+      setDirection(dy > 0 ? 'front' : 'back');
+    }
 
-    setMoveDuration(calculatedDuration);
+    setTargetPos({ x: clickX, y: clickY });
     setIsMoving(true);
-    setBjornPos({ x: clickX, y: clickY });
   };
 
   useEffect(() => {
-    const tick = () => {
-      centerCameraOnBjorn(true);
-      animationRef.current = requestAnimationFrame(tick);
+    const gameLoop = (timestamp: number) => {
+      const delta = lastTimeRef.current ? timestamp - lastTimeRef.current : 16;
+      lastTimeRef.current = timestamp;
+
+      setBjornPos((prev) => {
+        if (!targetPos) {
+          setIsMoving(false);
+          centerCameraOnPosition(prev.x, prev.y, true);
+          return prev;
+        }
+
+        const dx = targetPos.x - prev.x;
+        const dy = targetPos.y - prev.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 0.35) {
+          setTargetPos(null);
+          setIsMoving(false);
+          centerCameraOnPosition(targetPos.x, targetPos.y, true);
+          return targetPos;
+        }
+
+        const moveX = (dx / distance) * speed * delta;
+        const moveY = (dy / distance) * speed * delta;
+
+        const nextX = prev.x + moveX;
+        const nextY = prev.y + moveY;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+          setDirection(dx > 0 ? 'right' : 'left');
+        } else {
+          setDirection(dy > 0 ? 'front' : 'back');
+        }
+
+        let updatedX = prev.x;
+        let updatedY = prev.y;
+
+        if (isPositionAllowed(nextX, prev.y, currentIsland)) {
+          updatedX = nextX;
+        }
+
+        if (isPositionAllowed(updatedX, nextY, currentIsland)) {
+          updatedY = nextY;
+        }
+
+        centerCameraOnPosition(updatedX, updatedY, true);
+
+        return { x: updatedX, y: updatedY };
+      });
+
+      animationRef.current = requestAnimationFrame(gameLoop);
     };
 
-    if (isMoving) {
-      animationRef.current = requestAnimationFrame(tick);
-    } else {
-      centerCameraOnBjorn(true);
-    }
+    animationRef.current = requestAnimationFrame(gameLoop);
 
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, [isMoving, bjornPos]);
-
-  useEffect(() => {
-    if (isMoving) {
-      const timer = setTimeout(() => {
-        setIsMoving(false);
-      }, moveDuration);
-
-      return () => clearTimeout(timer);
-    }
-  }, [bjornPos, moveDuration, isMoving]);
+  }, [targetPos, currentIsland]);
 
   const handleNextIsland = () => {
-    let startPos = { x: 20, y: 30 };
+    let nextIsland: IslandStage = currentIsland;
+    let startPos = { x: 74, y: 70 };
 
     if (currentIsland === 'rootsi') {
-      setCurrentIsland('gotland');
-      startPos = { x: 45, y: 40 };
+      nextIsland = 'gotland';
+      startPos = { x: 54, y: 50 };
     } else if (currentIsland === 'gotland') {
-      setCurrentIsland('saaremaa');
-      startPos = { x: 30, y: 60 };
+      nextIsland = 'saaremaa';
+      startPos = { x: 54, y: 50 };
     }
 
+    setCurrentIsland(nextIsland);
     setBjornPos(startPos);
+    setTargetPos(null);
     setIsMoving(false);
+    setDirection('front');
+    lastTimeRef.current = 0;
 
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    setTimeout(() => {
+      centerCameraOnPosition(startPos.x, startPos.y, false);
+    }, 100);
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => centerCameraOnBjorn(false), 100);
+    const timer = setTimeout(() => {
+      centerCameraOnPosition(bjornPos.x, bjornPos.y, false);
+    }, 100);
+
     return () => clearTimeout(timer);
   }, [currentIsland]);
 
@@ -182,20 +281,33 @@ export function StoryMapScreen({ onBackToMenu }: StoryMapScreenProps) {
           className="w-[200vw] h-[200vh] relative bg-[#111e2e] cursor-crosshair"
         >
           {currentIsland === 'rootsi' && (
-            <img src={SwedenMap} alt="Rootsi" className="w-full h-full object-cover animate-fadeIn pointer-events-none" />
+            <img
+              src={SwedenMap}
+              alt="Rootsi"
+              className="w-full h-full object-cover animate-fadeIn pointer-events-none"
+            />
           )}
           {currentIsland === 'gotland' && (
-            <img src={GotlandMap} alt="Gotland" className="w-full h-full object-cover animate-fadeIn pointer-events-none" />
+            <img
+              src={GotlandMap}
+              alt="Gotland"
+              className="w-full h-full object-cover animate-fadeIn pointer-events-none"
+            />
           )}
           {currentIsland === 'saaremaa' && (
-            <img src={SaaremaaMap} alt="Saaremaa" className="w-full h-full object-cover animate-fadeIn pointer-events-none" />
+            <img
+              src={SaaremaaMap}
+              alt="Saaremaa"
+              className="w-full h-full object-cover animate-fadeIn pointer-events-none"
+            />
           )}
 
           <Character
             x={bjornPos.x}
             y={bjornPos.y}
             isMoving={isMoving}
-            duration={moveDuration}
+            duration={0}
+            direction={direction}
             name="Björn"
           />
         </div>

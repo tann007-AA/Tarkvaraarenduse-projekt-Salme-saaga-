@@ -64,12 +64,12 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
   const frameDuration = 120;
 
   const houseWalkableZones: Zone[] = [
-    { minX: 5, maxX: 80, minY: 23, maxY: 85 },
+    { minX: 19, maxX: 71, minY: 19, maxY: 81 },
   ];
 
   const blockedZones: Zone[] = [
-    { minX: 14, maxX: 30, minY: 34, maxY: 73 }, // pikk laud vasakul
-    { minX: 63, maxX: 77, minY: 20, maxY: 28 },  // tünnid üleval paremal
+    { minX: 25, maxX: 36, minY: 30, maxY: 70 }, // pikk laud vasakul
+    { minX: 59, maxX: 69, minY: 19, maxY: 24 },  // tünnid üleval paremal
     //{ minX: 41.5, maxX: 53.5, minY: 82, maxY: 85 },
   ];
 

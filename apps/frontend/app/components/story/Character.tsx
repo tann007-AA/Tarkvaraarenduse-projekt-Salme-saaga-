@@ -1,48 +1,46 @@
-import React from 'react';
+import Front01 from './character/Front_01.png';
+import Back01 from './character/Back_01.png';
+import Left01 from './character/Left_01.png';
+import Right01 from './character/Right_01.png';
+
+type Direction = 'front' | 'back' | 'left' | 'right';
 
 interface CharacterProps {
   x: number;
   y: number;
   isMoving: boolean;
-  duration: number; // Dünaamiline kestus distantsi järgi
+  duration: number;
   name: string;
-  avatar?: string;
-  weapon?: string;
+  direction: Direction;
 }
 
-export function Character({ x, y, isMoving, duration, name, avatar = "🧔", weapon = "🪓" }: CharacterProps) {
+export function Character({
+  x,
+  y,
+  isMoving,
+  duration,
+  name,
+  direction,
+}: CharacterProps) {
+  const spriteMap = {
+    front: Front01,
+    back: Back01,
+    left: Left01,
+    right: Right01,
+  };
+
   return (
-    <div
-      className="bjorn-character absolute transition-all linear z-30"
+    <img
+      src={spriteMap[direction]}
+      alt={name}
+      className="bjorn-character absolute w-8 h-8 pointer-events-none"
       style={{
         left: `${x}%`,
         top: `${y}%`,
-        transform: 'translate(-50%, -85%)',
-        transitionDuration: `${duration}ms` // Reaalne aeg distantsi järgi asub nüüd siin
+        transform: 'translate(-50%, -50%)',
+        imageRendering: 'pixelated',
+        transition: isMoving && duration > 0 ? `left ${duration}ms linear, top ${duration}ms linear` : 'none',
       }}
-    >
-      <div className="flex flex-col items-center justify-center relative">
-        
-        {/* Hõljumise laine-efekt jalgade all, kui tegelane liigub */}
-        {isMoving && (
-          <span className="absolute bottom-0 w-14 h-5 bg-amber-500/10 border border-amber-500/20 rounded-full animate-ping z-0" />
-        )}
-
-        {/* Avatar */}
-        <div className="relative p-2 bg-stone-900/95 border-2 border-[#dfc18d] rounded-full shadow-2xl backdrop-blur-xs flex items-center justify-center w-14 h-14 z-10">
-          <span className="text-3xl filter drop-shadow-md">
-            {avatar}
-          </span>
-          {weapon && (
-            <span className="absolute -top-1.5 -right-1 text-sm">{weapon}</span>
-          )}
-        </div>
-
-        {/* Nimesilt */}
-        <span className="text-[10px] font-bold tracking-wider text-amber-200 uppercase mt-1 bg-stone-950/90 border border-stone-800 px-2 py-0.5 rounded font-serif shadow-md z-10">
-          {name}
-        </span>
-      </div>
-    </div>
+    />
   );
 }
