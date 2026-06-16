@@ -1,4 +1,3 @@
-// apps/frontend/app/components/story/cooking/CookingGame.tsx
 import React, { useState, useCallback, useEffect } from 'react';
 import { Draggable, DropZone } from '../Draggable';
 import './CookingGame.css';
@@ -31,14 +30,46 @@ const INGREDIENTS: Ingredient[] = [
 ];
 
 const DIALOGUES: Record<string, { speaker: string; avatar: string; text: string }> = {
-  start: { speaker: 'Haldor', avatar: '🧔', text: 'Björn, see leem on sul täna kuidagi õhuke... Aja suppi! Viska potti 3 õiget koostisosa.' },
-  hint: { speaker: 'Ivar', avatar: '⚔️', text: 'Viska sinna midagi rammusat sisse, muidu me ei jaksa homme isegi aeru tõsta.' },
-  wrong_arrow: { speaker: 'Ivar', avatar: '⚔️', text: 'Hei! Kas sa proovid meid nooleotsadega toita? Hoia need vaenlaste jaoks!' },
-  wrong_bone: { speaker: 'Ivar', avatar: '⚔️', text: 'See luu on juba korjatud puhtaks. Midagi söödavat seal pole!' },
-  wrong_generic: { speaker: 'Haldor', avatar: '🧔', text: 'See ei sobi suppi. Midagi tugevamat on vaja!' },
-  correct: { speaker: 'Haldor', avatar: '🧔', text: 'Jah, just seda vajasime! Supp pakseneb.' },
-  ready: { speaker: 'Gunnar', avatar: '🛡️', text: 'Supp on valmis! Mehed, söök ja siis laevale – Gotland ootab!' },
-  almost: { speaker: 'Ivar', avatar: '⚔️', text: 'Veel natuke! Meil on vaja 3 koostisosa.' },
+  start: {
+    speaker: 'Haldor',
+    avatar: '🧔',
+    text: 'Björn, see leem on sul täna kuidagi õhuke... Aja suppi! Viska potti 3 õiget koostisosa.',
+  },
+  hint: {
+    speaker: 'Ivar',
+    avatar: '⚔️',
+    text: 'Viska sinna midagi rammusat sisse, muidu me ei jaksa homme isegi aeru tõsta.',
+  },
+  wrong_arrow: {
+    speaker: 'Ivar',
+    avatar: '⚔️',
+    text: 'Hei! Kas sa proovid meid nooleotsadega toita? Hoia need vaenlaste jaoks!',
+  },
+  wrong_bone: {
+    speaker: 'Ivar',
+    avatar: '⚔️',
+    text: 'See luu on juba korjatud puhtaks. Midagi söödavat seal pole!',
+  },
+  wrong_generic: {
+    speaker: 'Haldor',
+    avatar: '🧔',
+    text: 'See ei sobi suppi. Midagi tugevamat on vaja!',
+  },
+  correct: {
+    speaker: 'Haldor',
+    avatar: '🧔',
+    text: 'Jah, just seda vajasime! Supp pakseneb.',
+  },
+  ready: {
+    speaker: 'Gunnar',
+    avatar: '🛡️',
+    text: 'Supp on valmis! Mehed, söök ja siis laevale – Gotland ootab!',
+  },
+  almost: {
+    speaker: 'Ivar',
+    avatar: '⚔️',
+    text: 'Veel natuke! Meil on vaja 3 koostisosa.',
+  },
 };
 
 export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
@@ -50,7 +81,6 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
   const [completed, setCompleted] = useState(false);
   const [steamParticles, setSteamParticles] = useState<number[]>([]);
 
-  // Shuffle ingredients on open
   useEffect(() => {
     if (isOpen) {
       setShuffled([...INGREDIENTS].sort(() => Math.random() - 0.5));
@@ -63,7 +93,6 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
     }
   }, [isOpen]);
 
-  // Add steam particles when ingredients added
   useEffect(() => {
     if (collected.length > 0 && collected.length < 3) {
       const newParticles = Array.from({ length: 2 }, (_, i) => Date.now() + i);
@@ -73,38 +102,41 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
     }
   }, [collected.length]);
 
-  const handleDrop = useCallback((ingredientId: string) => {
-    if (collected.includes(ingredientId) || completed) return;
+  const handleDrop = useCallback(
+    (ingredientId: string) => {
+      if (collected.includes(ingredientId) || completed) return;
 
-    const ingredient = INGREDIENTS.find((ing: Ingredient) => ing.id === ingredientId);
-    if (!ingredient) return;
+      const ingredient = INGREDIENTS.find((ing: Ingredient) => ing.id === ingredientId);
+      if (!ingredient) return;
 
-    if (ingredient.correct) {
-      const newCollected = [...collected, ingredientId];
-      setCollected(newCollected);
-      setDialogue(DIALOGUES.correct);
-      setSuccessPulse(true);
-      setTimeout(() => setSuccessPulse(false), 600);
+      if (ingredient.correct) {
+        const newCollected = [...collected, ingredientId];
+        setCollected(newCollected);
+        setDialogue(DIALOGUES.correct);
+        setSuccessPulse(true);
+        setTimeout(() => setSuccessPulse(false), 600);
 
-      if (newCollected.length >= 3) {
-        setTimeout(() => {
-          setDialogue(DIALOGUES.ready);
-          setCompleted(true);
-        }, 900);
-      } else if (newCollected.length === 2) {
-        setTimeout(() => setDialogue(DIALOGUES.almost), 1500);
-      }
-    } else {
-      setShakePot(true);
-      setTimeout(() => setShakePot(false), 500);
-      if (ingredient.humor === 'ivar') {
-        if (ingredient.id === 'arrow') setDialogue(DIALOGUES.wrong_arrow);
-        else if (ingredient.id === 'bone') setDialogue(DIALOGUES.wrong_bone);
+        if (newCollected.length >= 3) {
+          setTimeout(() => {
+            setDialogue(DIALOGUES.ready);
+            setCompleted(true);
+          }, 900);
+        } else if (newCollected.length === 2) {
+          setTimeout(() => setDialogue(DIALOGUES.almost), 1500);
+        }
       } else {
-        setDialogue(DIALOGUES.wrong_generic);
+        setShakePot(true);
+        setTimeout(() => setShakePot(false), 500);
+        if (ingredient.humor === 'ivar') {
+          if (ingredient.id === 'arrow') setDialogue(DIALOGUES.wrong_arrow);
+          else if (ingredient.id === 'bone') setDialogue(DIALOGUES.wrong_bone);
+        } else {
+          setDialogue(DIALOGUES.wrong_generic);
+        }
       }
-    }
-  }, [collected, completed]);
+    },
+    [collected, completed]
+  );
 
   const handleFinish = () => {
     if (collected.length < 3) return;
@@ -121,7 +153,9 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
       <div className="cooking-backdrop" onClick={onClose} />
 
       <div className="leather-panel">
-        <button className="close-btn" onClick={onClose}>✕</button>
+        <button className="close-btn" onClick={onClose}>
+          ✕
+        </button>
 
         <div className="panel-content">
           <div className="panel-title">🍲 Björni Paun</div>
@@ -136,14 +170,16 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
             <div className="recipe-info">
               <strong>Valmista retkele süüa!</strong> Lisa potti <strong>3 õiget</strong> koostisosa.
               <br />
-              <span className="hint-text">💡 Vihje: Lohista koostisosad potti või klõpsa neile</span>
+              <span className="hint-text">
+                💡 Vihje: Lohista koostisosad potti või klõpsa neile
+              </span>
             </div>
 
             <div className="soup-progress">
               <span className="soup-pot-mini">🍲</span>
               <div className="progress-track">
-                <div 
-                  className="progress-fill-soup" 
+                <div
+                  className="progress-fill-soup"
                   style={{ width: `${Math.min((collected.length / 3) * 100, 100)}%` }}
                 />
                 <div className="progress-text-soup">{collected.length} / 3</div>
@@ -153,7 +189,9 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
             <div className="pot-area">
               <DropZone
                 zoneId="pot"
-                className={`soup-pot ${shakePot ? 'shake' : ''} ${successPulse ? 'pulse-success' : ''} ${completed ? 'completed' : ''}`}
+                className={`soup-pot ${shakePot ? 'shake' : ''} ${
+                  successPulse ? 'pulse-success' : ''
+                } ${completed ? 'completed' : ''}`}
                 onDrop={(draggableId: string) => handleDrop(draggableId)}
               >
                 <div className="pot-content">
@@ -163,17 +201,17 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
                       key={id}
                       className="steam-particle"
                       aria-hidden="true"
-                      style={{
-                        '--steam-offset': `${index === 0 ? -14 : 14}px`,
-                        '--steam-delay': `${index * 120}ms`,
-                      } as React.CSSProperties}
+                      style={
+                        {
+                          '--steam-offset': `${index === 0 ? -14 : 14}px`,
+                          '--steam-delay': `${index * 120}ms`,
+                        } as React.CSSProperties
+                      }
                     />
                   ))}
                   {completed && <span className="completion-check">✅</span>}
                 </div>
-                <span className="soup-pot-label">
-                  {completed ? 'Valmis!' : 'Aja suppi'}
-                </span>
+                <span className="soup-pot-label">{completed ? 'Valmis!' : 'Aja suppi'}</span>
               </DropZone>
             </div>
 
@@ -186,7 +224,10 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
                   className={`ingredient-item ${isAdded(ing.id) ? 'added' : ''}`}
                   disabled={isAdded(ing.id) || completed}
                 >
-                  <div className="ingredient-inner" onClick={() => !isAdded(ing.id) && !completed && handleDrop(ing.id)}>
+                  <div
+                    className="ingredient-inner"
+                    onClick={() => !isAdded(ing.id) && !completed && handleDrop(ing.id)}
+                  >
                     <span className="ingredient-emoji">{ing.emoji}</span>
                     <span className="ingredient-name">{ing.name}</span>
                     {isAdded(ing.id) && <span className="added-check">✓</span>}
@@ -195,12 +236,14 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
               ))}
             </div>
 
-            <button 
+            <button
               className={`cook-btn ${collected.length >= 3 ? 'ready' : ''}`}
               onClick={handleFinish}
               disabled={collected.length < 3}
             >
-              {collected.length >= 3 ? '🎉 Supp on valmis! Naudi!' : `🔥 Lisa koostisosad (${collected.length}/3)`}
+              {collected.length >= 3
+                ? '🎉 Supp on valmis! Naudi!'
+                : `🔥 Lisa koostisosad (${collected.length}/3)`}
             </button>
           </div>
 

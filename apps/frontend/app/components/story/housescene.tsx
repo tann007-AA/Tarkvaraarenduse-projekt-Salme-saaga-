@@ -19,6 +19,8 @@ import Right01 from './character/Right_01.png';
 import Right02 from './character/Right_02.png';
 import Right03 from './character/Right_03.png';
 
+import { CookingGame } from '../story/cooking/CookingGame';
+
 type Direction = 'front' | 'back' | 'left' | 'right';
 
 type Zone = {
@@ -38,6 +40,7 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
   const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(null);
   const [direction, setDirection] = useState<Direction>('front');
   const [frameIndex, setFrameIndex] = useState(0);
+  const [isCookingOpen, setIsCookingOpen] = useState(false);
 
   const animationFrameRef = useRef<number | null>(null);
   const lastFrameChangeRef = useRef(0);
@@ -68,35 +71,33 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
   ];
 
   const blockedZones: Zone[] = [
-    { minX: 25, maxX: 36, minY: 30, maxY: 70 }, // pikk laud vasakul
-    { minX: 59, maxX: 69, minY: 19, maxY: 24 },  // tünnid üleval paremal
-    //{ minX: 41.5, maxX: 53.5, minY: 82, maxY: 85 },
+    { minX: 25, maxX: 36, minY: 30, maxY: 70 },
+    { minX: 59, maxX: 69, minY: 19, maxY: 24 },
   ];
 
+  const potZone: Zone = {
+    minX: 18,
+    maxX: 27,
+    minY: 18,
+    maxY: 30,
+  };
+
   const isInsideZone = (x: number, y: number, zone: Zone) => {
-    return (
-      x >= zone.minX &&
-      x <= zone.maxX &&
-      y >= zone.minY &&
-      y <= zone.maxY
-    );
+    return x >= zone.minX && x <= zone.maxX && y >= zone.minY && y <= zone.maxY;
   };
 
   const isHousePositionAllowed = (x: number, y: number) => {
-    const inWalkableZone = houseWalkableZones.some((zone) =>
-      isInsideZone(x, y, zone)
-    );
-
-    const inBlockedZone = blockedZones.some((zone) =>
-      isInsideZone(x, y, zone)
-    );
-
+    const inWalkableZone = houseWalkableZones.some((zone) => isInsideZone(x, y, zone));
+    const inBlockedZone = blockedZones.some((zone) => isInsideZone(x, y, zone));
     return inWalkableZone && !inBlockedZone;
   };
+
+  const isNearPot = isInsideZone(playerPos.x, playerPos.y, potZone);
 
   const handleHouseClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
     if (target.closest('.house-exit-btn')) return;
+    if (target.closest('.cook-interact-btn')) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = ((e.clientX - rect.left) / rect.width) * 100;
@@ -136,6 +137,12 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
         keysRef.current.right = true;
         event.preventDefault();
       }
+      if (key === 'e' && isNearPot && !isCookingOpen) {
+        setIsCookingOpen(true);
+      }
+      if (key === 'escape' && isCookingOpen) {
+        setIsCookingOpen(false);
+      }
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
@@ -154,7 +161,7 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, [isNearPot, isCookingOpen]);
 
   useEffect(() => {
     const gameLoop = (timestamp: number) => {
@@ -172,9 +179,7 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
         let moved = false;
 
         if (keyboardMoving) {
-          if (targetPos) {
-            setTargetPos(null);
-          }
+          if (targetPos) setTargetPos(null);
 
           let nextX = prev.x;
           let nextY = prev.y;
@@ -314,6 +319,27 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
             >
               Lahku majast
             </button>
+
+            {isNearPot && !isCookingOpen && (
+              <button
+                type="button"
+                className="cook-interact-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsCookingOpen(true);
+                }}
+              >
+                Vajuta E või klõpsa, et süüa teha
+              </button>
+            )}
+
+            <CookingGame
+              isOpen={isCookingOpen}
+              onClose={() => setIsCookingOpen(false)}
+              onComplete={() => {
+                setIsCookingOpen(false);
+              }}
+            />
 
             {houseWalkableZones.map((zone, index) => (
               <div
