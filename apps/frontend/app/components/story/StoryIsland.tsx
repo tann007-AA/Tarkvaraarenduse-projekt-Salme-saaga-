@@ -50,6 +50,7 @@ interface StoryIslandProps {
   currentIsland: StoryIsland;
   onBackToMenu: () => void;
   onGoToIsland?: (island: StoryIsland) => void;
+  onCompleteIsland?: (nextIsland: StoryIsland) => void;
   points: number;
   onOpenSettings?: () => void;
   onOpenShop?: () => void;
@@ -178,6 +179,7 @@ export function StoryIsland({
   currentIsland,
   onBackToMenu,
   onGoToIsland,
+  onCompleteIsland,
   points = 0,
   onOpenSettings,
   onOpenShop,
@@ -495,8 +497,8 @@ export function StoryIsland({
     setCurrentMarkerIndex(nextIndex);
     setCheckpointCount(nextIndex);
 
-    if (nextIndex >= island.markers.length && island.nextIsland && onGoToIsland) {
-      onGoToIsland(island.nextIsland);
+    if (nextIndex >= island.markers.length && island.nextIsland) {
+      onCompleteIsland?.(island.nextIsland);
     }
   };
 
@@ -614,74 +616,73 @@ export function StoryIsland({
           ← Back
         </button>
 
-        <div
-          ref={mapRef}
-          className={island.mapWrapClassName}
-          onClick={handleMapClick}
-        >
+        <div className="map-container">
+          <div
+            ref={mapRef}
+            className={island.mapWrapClassName}
+            onClick={handleMapClick}
+          >
 
-          <div className="map-container">
             <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
+
+            <img
+              ref={characterRef}
+              id="character"
+              src={Front01}
+              alt="Character"
+              className="character"
+            />
+
+            {HOUSE_POSITIONS[currentIsland] && (
+              <div
+                className={`house-marker ${showHousePrompt ? 'nearby' : ''} ${longhouseCompleted ? 'completed' : ''}`}
+                style={{ left: HOUSE_POSITIONS[currentIsland]!.left, top: HOUSE_POSITIONS[currentIsland]!.top }}
+                onClick={handleHouseClick}
+                title={
+                  !cookingCompleted
+                    ? 'Klõpsa, et süüa teha'
+                    : longhouseCompleted
+                      ? 'Pikkmaja on juba uuritud'
+                      : 'Klõpsa, et pikkmaja uurida'
+                }
+              >
+                <span className="house-emoji">🏘️</span>
+                {!longhouseCompleted && (
+                  <span className="house-indicator">
+                    {showHousePrompt ? '👆' : cookingCompleted ? '🗝️' : '🍲'}
+                  </span>
+                )}
+                {longhouseCompleted && <span className="house-indicator">✅</span>}
+
+                {showHousePrompt && !longhouseCompleted && (
+                  <div className="house-prompt">
+                    {!cookingCompleted ? '🍲 Aja suppi!' : '🗝️ Pikkmaja'}
+                    <br />
+                    <small>{!cookingCompleted ? 'Klõpsa majale' : 'Klõpsa uurimiseks'}</small>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {island.markers.map((marker, index) => (
+              <button
+                key={index}
+                className={`question-marker ${index === currentMarkerIndex ? 'active' : ''}`}
+                data-index={index}
+                style={{ left: marker.left, top: marker.top }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMarkerClick(index);
+                }}
+              >
+                <img
+                  src="pics/investigation.png"
+                  alt="Quest Marker"
+                  className="w-full h-full object-contain"
+                />
+              </button>
+            ))}
           </div>
-
-          <img
-            ref={characterRef}
-            id="character"
-            src={Front01}
-            alt="Character"
-            className="character"
-          />
-
-          {HOUSE_POSITIONS[currentIsland] && (
-            <div
-              className={`house-marker ${showHousePrompt ? 'nearby' : ''} ${longhouseCompleted ? 'completed' : ''}`}
-              style={{ left: HOUSE_POSITIONS[currentIsland]!.left, top: HOUSE_POSITIONS[currentIsland]!.top }}
-              onClick={handleHouseClick}
-              title={
-                !cookingCompleted
-                  ? 'Klõpsa, et süüa teha'
-                  : longhouseCompleted
-                    ? 'Pikkmaja on juba uuritud'
-                    : 'Klõpsa, et pikkmaja uurida'
-              }
-            >
-              <span className="house-emoji">🏘️</span>
-              {!longhouseCompleted && (
-                <span className="house-indicator">
-                  {showHousePrompt ? '👆' : cookingCompleted ? '🗝️' : '🍲'}
-                </span>
-              )}
-              {longhouseCompleted && <span className="house-indicator">✅</span>}
-
-              {showHousePrompt && !longhouseCompleted && (
-                <div className="house-prompt">
-                  {!cookingCompleted ? '🍲 Aja suppi!' : '🗝️ Pikkmaja'}
-                  <br />
-                  <small>{!cookingCompleted ? 'Klõpsa majale' : 'Klõpsa uurimiseks'}</small>
-                </div>
-              )}
-            </div>
-          )}
-
-          {island.markers.map((marker, index) => (
-            <button
-              key={index}
-              className={`question-marker ${index === currentMarkerIndex ? 'active' : ''}`}
-              data-index={index}
-              style={{ left: marker.left, top: marker.top }}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleMarkerClick(index);
-              }}
-            >
-              <img
-                src="pics/investigation.png"
-                alt="Quest Marker"
-                className="w-full h-full object-contain"
-              />
-            </button>
-          ))}
-        </div>
       </main>
 
       <CookingGame

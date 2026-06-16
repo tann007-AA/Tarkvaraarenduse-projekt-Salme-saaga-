@@ -306,8 +306,37 @@ body {
 }
 
 @keyframes waveF {
+<<<<<<< HEAD
   0%, 100% { transform: translateX(4%) translateY(0) scaleX(1.04); }
   50% { transform: translateX(-8%) translateY(-9px) scaleX(1.1); }
+=======
+
+    0%,
+    100% {
+        transform: translateX(4%) translateY(0) scaleX(1.04);
+    }
+
+    50% {
+        transform: translateX(-8%) translateY(-9px) scaleX(1.1);
+    }
+}
+
+.map-container {
+    position: relative;
+}
+
+.map-container::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at center,
+            rgba(0, 0, 0, 0.0) 0%,
+            rgba(0, 0, 0, 0.08) 50%,
+            rgba(0, 0, 0, 0.15) 100%);
+    pointer-events: none;
+    z-index: -1;
+>>>>>>> b64f42d4 (fix(frontend): better maps on storymode)
 }
 
 .saaremaa {
@@ -317,6 +346,8 @@ body {
     height: auto;
     margin: 40px auto 0;
     transform: translateX(40px);
+    filter:
+        drop-shadow(0 0 20px rgba(40, 90, 60, 0.25)) drop-shadow(0 8px 30px rgba(20, 40, 60, 0.25)) saturate(0.9) brightness(0.98) contrast(1.03);
 }
 
 .map-wrap-rootsi {
@@ -339,6 +370,8 @@ body {
     max-width: 1000px;
     height: 650px;
     margin: 0 auto;
+    filter:
+        drop-shadow(0 0 20px rgba(40, 90, 60, 0.25)) drop-shadow(0 8px 30px rgba(20, 40, 60, 0.25)) saturate(0.9) brightness(0.98) contrast(1.03);
 }
 
 .rootsi {
