@@ -23,7 +23,7 @@ import Right02 from './character/Right_02.png';
 import Right03 from './character/Right_03.png';
 
 import { CookingGame } from './cooking/CookingGame';
-import { SigridTest } from './SigridTest';
+import { LonghouseHotspots } from './cooking/LonghouseHotspots';
 
 type Direction = 'front' | 'back' | 'left' | 'right';
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
@@ -42,12 +42,6 @@ type Marker = {
 
 const HOUSE_POSITIONS: Record<StoryIsland, { left: string; top: string } | null> = {
   rootsi: { left: '16%', top: '12%' },
-  gotland: null,
-  saaremaa: null,
-};
-
-const SIGRID_POSITION: Record<StoryIsland, { left: string; top: string } | null> = {
-  rootsi: { left: '52%', top: '40%' },
   gotland: null,
   saaremaa: null,
 };
@@ -205,10 +199,8 @@ export function StoryIsland({
   const [isCookingOpen, setIsCookingOpen] = useState(false);
   const [cookingCompleted, setCookingCompleted] = useState(false);
   const [showHousePrompt, setShowHousePrompt] = useState(false);
-
-  const [showSigridTest, setShowSigridTest] = useState(false);
-  const [sigridTestCompleted, setSigridTestCompleted] = useState(false);
-  const [showSigridPrompt, setShowSigridPrompt] = useState(false);
+  const [isLonghouseOpen, setIsLonghouseOpen] = useState(false);
+  const [longhouseCompleted, setLonghouseCompleted] = useState(false);
 
   const xRef = useRef(island.startX);
   const yRef = useRef(island.startY);
@@ -249,9 +241,8 @@ export function StoryIsland({
     clickMovingRef.current = false;
     setCookingCompleted(false);
     setShowHousePrompt(false);
-    setShowSigridTest(false);
-    setSigridTestCompleted(false);
-    setShowSigridPrompt(false);
+    setLonghouseCompleted(false);
+    setIsLonghouseOpen(false);
 
     keysRef.current = {
       up: false,
@@ -287,12 +278,32 @@ export function StoryIsland({
     character.src = sprites[currentDirectionRef.current][currentFrameRef.current];
   };
 
-  const handleHouseClick = (e: MouseEvent<HTMLDivElement>) => {
+  const handleHouseClick = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
+
     const house = HOUSE_POSITIONS[currentIsland];
     if (!house) return;
+
+    const houseX = parseFloat(house.left);
+    const houseY = parseFloat(house.top);
+    const distToHouse = Math.sqrt(
+      Math.pow(xRef.current - houseX, 2) +
+      Math.pow(yRef.current - houseY, 2)
+    );
+
+    if (distToHouse >= 8) {
+      clickTargetRef.current = { x: houseX, y: houseY };
+      clickMovingRef.current = true;
+      return;
+    }
+
     if (!cookingCompleted) {
       setIsCookingOpen(true);
+      return;
+    }
+
+    if (!longhouseCompleted) {
+      setIsLonghouseOpen(true);
     }
   };
 
@@ -302,15 +313,9 @@ export function StoryIsland({
     setCheckpointCount((prev: number) => prev + 1);
   };
 
-  const handleSigridClick = () => {
-    if (!sigridTestCompleted) {
-      setShowSigridTest(true);
-    }
-  };
-
-  const handleSigridTestComplete = () => {
-    setSigridTestCompleted(true);
-    setShowSigridTest(false);
+  const handleLonghouseComplete = () => {
+    setLonghouseCompleted(true);
+    setIsLonghouseOpen(false);
     setCheckpointCount((prev: number) => prev + 1);
   };
 
@@ -456,26 +461,13 @@ export function StoryIsland({
           Math.pow(yRef.current - houseY, 2)
         );
 
-        if (distToHouse < 8 && !cookingCompleted) {
+        if (distToHouse < 8 && !longhouseCompleted) {
           setShowHousePrompt(true);
         } else {
           setShowHousePrompt(false);
         }
       } else {
         setShowHousePrompt(false);
-      }
-
-      const sigridPos = SIGRID_POSITION[currentIsland];
-      if (sigridPos && !sigridTestCompleted) {
-        const sigridX = parseFloat(sigridPos.left);
-        const sigridY = parseFloat(sigridPos.top);
-        const distToSigrid = Math.sqrt(
-          Math.pow(xRef.current - sigridX, 2) +
-          Math.pow(yRef.current - sigridY, 2)
-        );
-        setShowSigridPrompt(distToSigrid < 8);
-      } else {
-        setShowSigridPrompt(false);
       }
 
       renderCharacter();
@@ -494,7 +486,7 @@ export function StoryIsland({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [sprites, currentIsland, island, cookingCompleted]);
+  }, [sprites, currentIsland, island, cookingCompleted, longhouseCompleted]);
 
   const handleMarkerClick = (index: number) => {
     if (index !== currentMarkerIndex) return;
@@ -642,49 +634,30 @@ export function StoryIsland({
 
           {HOUSE_POSITIONS[currentIsland] && (
             <div
-              className={`house-marker ${showHousePrompt ? 'nearby' : ''} ${cookingCompleted ? 'completed' : ''}`}
+              className={`house-marker ${showHousePrompt ? 'nearby' : ''} ${longhouseCompleted ? 'completed' : ''}`}
               style={{ left: HOUSE_POSITIONS[currentIsland]!.left, top: HOUSE_POSITIONS[currentIsland]!.top }}
               onClick={handleHouseClick}
-              title={cookingCompleted ? 'Supp on juba tehtud!' : 'Klõpsa, et süüa teha'}
+              title={
+                !cookingCompleted
+                  ? 'Klõpsa, et süüa teha'
+                  : longhouseCompleted
+                    ? 'Pikkmaja on juba uuritud'
+                    : 'Klõpsa, et pikkmaja uurida'
+              }
             >
-              <span className="house-emoji">🏠</span>
-              {!cookingCompleted && (
+              <span className="house-emoji">🏘️</span>
+              {!longhouseCompleted && (
                 <span className="house-indicator">
-                  {showHousePrompt ? '👆 Klõpsa!' : '🍲'}
+                  {showHousePrompt ? '👆' : cookingCompleted ? '🗝️' : '🍲'}
                 </span>
               )}
-              {cookingCompleted && <span className="house-indicator">✅</span>}
+              {longhouseCompleted && <span className="house-indicator">✅</span>}
 
-              {showHousePrompt && !cookingCompleted && (
+              {showHousePrompt && !longhouseCompleted && (
                 <div className="house-prompt">
-                  🍲 Aja suppi!
+                  {!cookingCompleted ? '🍲 Aja suppi!' : '🗝️ Pikkmaja'}
                   <br />
-                  <small>Klõpsa majale</small>
-                </div>
-              )}
-            </div>
-          )}
-
-          {SIGRID_POSITION[currentIsland] && (
-            <div
-              className={`sigrid-marker ${showSigridPrompt && !sigridTestCompleted ? 'nearby' : ''} ${sigridTestCompleted ? 'completed' : ''}`}
-              style={{ left: SIGRID_POSITION[currentIsland]!.left, top: SIGRID_POSITION[currentIsland]!.top }}
-              onClick={handleSigridClick}
-              title={sigridTestCompleted ? 'Sigrid on juba testinud' : 'Klõpsa, et rääkida Sigridiga'}
-            >
-              <span className="sigrid-emoji">🧑</span>
-              {!sigridTestCompleted && (
-                <span className="sigrid-indicator">
-                  {showSigridPrompt ? '👆' : '💬'}
-                </span>
-              )}
-              {sigridTestCompleted && <span className="sigrid-indicator" style={{ background: 'rgba(34, 139, 34, 0.8)', animation: 'none' }}>✅</span>}
-
-              {showSigridPrompt && !sigridTestCompleted && (
-                <div className="sigrid-prompt">
-                  👤 Sigrid — klõpsa rääkimiseks
-                  <br />
-                  <small>Kontrolltest</small>
+                  <small>{!cookingCompleted ? 'Klõpsa majale' : 'Klõpsa uurimiseks'}</small>
                 </div>
               )}
             </div>
@@ -730,10 +703,10 @@ export function StoryIsland({
         onComplete={handleCookingComplete}
       />
 
-      <SigridTest
-        isOpen={showSigridTest}
-        onClose={() => setShowSigridTest(false)}
-        onComplete={handleSigridTestComplete}
+      <LonghouseHotspots
+        isOpen={isLonghouseOpen}
+        onClose={() => setIsLonghouseOpen(false)}
+        onComplete={handleLonghouseComplete}
       />
     </React.Fragment>
   );

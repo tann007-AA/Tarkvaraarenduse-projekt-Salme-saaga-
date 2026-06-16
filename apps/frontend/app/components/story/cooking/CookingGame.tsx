@@ -1,5 +1,5 @@
 // apps/frontend/app/components/story/cooking/CookingGame.tsx
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Draggable, DropZone } from '../Draggable';
 import './CookingGame.css';
 
@@ -66,9 +66,9 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
   // Add steam particles when ingredients added
   useEffect(() => {
     if (collected.length > 0 && collected.length < 3) {
-      const newParticles = Array.from({ length: 5 }, (_, i) => Date.now() + i);
+      const newParticles = Array.from({ length: 2 }, (_, i) => Date.now() + i);
       setSteamParticles(newParticles);
-      const timer = setTimeout(() => setSteamParticles([]), 2000);
+      const timer = setTimeout(() => setSteamParticles([]), 1300);
       return () => clearTimeout(timer);
     }
   }, [collected.length]);
@@ -107,10 +107,9 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
   }, [collected, completed]);
 
   const handleFinish = () => {
-    if (collected.length >= 3) {
-      onComplete();
-      setTimeout(() => onClose(), 500);
-    }
+    if (collected.length < 3) return;
+    onComplete();
+    setTimeout(() => onClose(), 500);
   };
 
   const isAdded = (id: string) => collected.includes(id);
@@ -159,8 +158,16 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
               >
                 <div className="pot-content">
                   <span className="pot-emoji">🍲</span>
-                  {steamParticles.map((id) => (
-                    <span key={id} className="steam-particle">♨️</span>
+                  {steamParticles.map((id, index) => (
+                    <span
+                      key={id}
+                      className="steam-particle"
+                      aria-hidden="true"
+                      style={{
+                        '--steam-offset': `${index === 0 ? -14 : 14}px`,
+                        '--steam-delay': `${index * 120}ms`,
+                      } as React.CSSProperties}
+                    />
                   ))}
                   {completed && <span className="completion-check">✅</span>}
                 </div>
