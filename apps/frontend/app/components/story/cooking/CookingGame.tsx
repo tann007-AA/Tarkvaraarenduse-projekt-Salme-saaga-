@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Draggable, DropZone } from '../Draggable';
+import { DialogueBox } from '../DialogueBox';
 import './CookingGame.css';
 
 interface CookingGameProps {
@@ -23,13 +24,19 @@ const INGREDIENTS: Ingredient[] = [
   { id: 'turnip', emoji: '🥔', name: 'Naerid', correct: true },
   { id: 'arrow', emoji: '🏹', name: 'Nooleots', correct: false, humor: 'ivar' },
   { id: 'bone', emoji: '🦴', name: 'Luu', correct: false, humor: 'ivar' },
+  { id: 'fish', emoji: '🐟', name: 'Heeringas', correct: false },
   { id: 'bread', emoji: '🍞', name: 'Leib', correct: false },
   { id: 'cheese', emoji: '🧀', name: 'Juust', correct: false },
-  { id: 'fish', emoji: '🐟', name: 'Heeringas', correct: true },
   { id: 'apple', emoji: '🍎', name: 'Õun', correct: false },
 ];
 
-const DIALOGUES: Record<string, { speaker: string; avatar: string; text: string }> = {
+interface DialogueLine {
+  speaker: string;
+  avatar: string;
+  text: string;
+}
+
+const DIALOGUES: Record<string, DialogueLine> = {
   start: {
     speaker: 'Haldor',
     avatar: '🧔',
@@ -60,11 +67,6 @@ const DIALOGUES: Record<string, { speaker: string; avatar: string; text: string 
     avatar: '🧔',
     text: 'Jah, just seda vajasime! Supp pakseneb.',
   },
-  ready: {
-    speaker: 'Gunnar',
-    avatar: '🛡️',
-    text: 'Supp on valmis! Mehed, söök ja siis laevale – Gotland ootab!',
-  },
   almost: {
     speaker: 'Ivar',
     avatar: '⚔️',
@@ -72,26 +74,55 @@ const DIALOGUES: Record<string, { speaker: string; avatar: string; text: string 
   },
 };
 
+const EPILOGUE: DialogueLine[] = [
+  {
+    speaker: 'Gunnar',
+    avatar: '🛡️',
+    text: 'Sööge kõhud täis. Björn... seekord lükkad sa laeva vette koos meiega. Sa oled meeskonnas.',
+  },
+  {
+    speaker: 'Björn',
+    avatar: '🧑',
+    text: 'Lõpuks ometi! Ma juba kartsin, et pean jälle Sigridiga võid kloppima!',
+  },
+  {
+    speaker: 'Haldor',
+    avatar: '🧔',
+    text: 'Ära kirtsuta nina, Björn. See võiklopsimine on su käevarred sitkeks teinud.',
+  },
+  {
+    speaker: 'Ivar',
+    avatar: '⚔️',
+    text: 'Tõeline viiking on peremees, kes teab, millal põldu künda. Ta on strateeg, kes teab, millal rünnata ja millal taanduda. Ja ta on mees, kes on igal hetkel valmis astuma Valhalla väravatest sisse.',
+  },
+];
+
 export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
   const [collected, setCollected] = useState<string[]>([]);
-  const [dialogue, setDialogue] = useState(DIALOGUES.start);
+  const [dialogue, setDialogue] = useState<DialogueLine>(DIALOGUES.start);
   const [shuffled, setShuffled] = useState<Ingredient[]>([]);
   const [shakePot, setShakePot] = useState(false);
   const [successPulse, setSuccessPulse] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [steamParticles, setSteamParticles] = useState<number[]>([]);
+  const [epilogueIndex, setEpilogueIndex] = useState<number | null>(null);
+
+  const resetGame = useCallback(() => {
+    setShuffled([...INGREDIENTS].sort(() => Math.random() - 0.5));
+    setCollected([]);
+    setDialogue(DIALOGUES.start);
+    setCompleted(false);
+    setShakePot(false);
+    setSuccessPulse(false);
+    setSteamParticles([]);
+    setEpilogueIndex(null);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
-      setShuffled([...INGREDIENTS].sort(() => Math.random() - 0.5));
-      setCollected([]);
-      setDialogue(DIALOGUES.start);
-      setCompleted(false);
-      setShakePot(false);
-      setSuccessPulse(false);
-      setSteamParticles([]);
+      resetGame();
     }
-  }, [isOpen]);
+  }, [isOpen, resetGame]);
 
   useEffect(() => {
     if (collected.length > 0 && collected.length < 3) {
@@ -118,8 +149,9 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
 
         if (newCollected.length >= 3) {
           setTimeout(() => {
-            setDialogue(DIALOGUES.ready);
             setCompleted(true);
+            setEpilogueIndex(0);
+            setDialogue(EPILOGUE[0]);
           }, 900);
         } else if (newCollected.length === 2) {
           setTimeout(() => setDialogue(DIALOGUES.almost), 1500);
@@ -138,13 +170,28 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
     [collected, completed]
   );
 
-  const handleFinish = () => {
-    if (collected.length < 3) return;
-    onComplete();
-    setTimeout(() => onClose(), 500);
+  const handleAdvance = () => {
+    if (epilogueIndex === null) return;
+
+    if (epilogueIndex < EPILOGUE.length - 1) {
+      const nextIndex = epilogueIndex + 1;
+      setEpilogueIndex(nextIndex);
+      setDialogue(EPILOGUE[nextIndex]);
+    } else {
+      onComplete();
+      setTimeout(() => onClose(), 350);
+    }
   };
 
   const isAdded = (id: string) => collected.includes(id);
+
+  const getMainButtonLabel = () => {
+    if (completed) {
+      if (epilogueIndex === null) return '🎉 Supp on valmis!';
+      return epilogueIndex < EPILOGUE.length - 1 ? 'Järgmine →' : '✅ Valmis';
+    }
+    return `🔥 Lisa koostisosad (${collected.length}/3)`;
+  };
 
   if (!isOpen) return null;
 
@@ -237,23 +284,19 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
             </div>
 
             <button
-              className={`cook-btn ${collected.length >= 3 ? 'ready' : ''}`}
-              onClick={handleFinish}
-              disabled={collected.length < 3}
+              className={`cook-btn ${completed ? 'ready' : ''}`}
+              onClick={completed ? handleAdvance : undefined}
+              disabled={!completed}
             >
-              {collected.length >= 3
-                ? '🎉 Supp on valmis! Naudi!'
-                : `🔥 Lisa koostisosad (${collected.length}/3)`}
+              {getMainButtonLabel()}
             </button>
           </div>
 
-          <div className="dialogue-box">
-            <div className="dialogue-avatar">{dialogue.avatar}</div>
-            <div className="dialogue-content">
-              <div className="dialogue-speaker">{dialogue.speaker}</div>
-              <div className="dialogue-text">"{dialogue.text}"</div>
-            </div>
-          </div>
+          <DialogueBox
+            speaker={dialogue.speaker}
+            avatar={dialogue.avatar}
+            text={dialogue.text}
+          />
         </div>
       </div>
     </div>

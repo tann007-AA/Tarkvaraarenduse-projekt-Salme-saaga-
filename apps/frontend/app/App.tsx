@@ -41,6 +41,13 @@ function GameContent() {
   // Story mode state
   const [currentStoryIsland, setCurrentStoryIsland] = useState<StoryIsland>('rootsi');
   const [showHouseScene, setShowHouseScene] = useState(true);
+  const [storyRewards, setStoryRewards] = useState<string[]>([]);
+
+  const handleStoryRewardCollect = (rewardId: string) => {
+    setStoryRewards((current) =>
+      current.includes(rewardId) ? current : [...current, rewardId]
+    );
+  };
 
   const handleGuideClick = () => {
     setShowGuideModal(true);
@@ -100,7 +107,8 @@ function GameContent() {
             currentIsland={currentStoryIsland}
             onBackToMenu={() => setGameState('mode-select')}
             onGoToIsland={setCurrentStoryIsland}
-            onEnterHouse={() => setShowHouseScene(true)}
+            storyRewards={storyRewards}
+            onStoryRewardCollect={handleStoryRewardCollect}
           />
         ))}
 
