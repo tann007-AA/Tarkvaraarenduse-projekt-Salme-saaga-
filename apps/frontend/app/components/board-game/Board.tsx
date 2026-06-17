@@ -189,8 +189,8 @@ export function Board({ grid, selectedPiece, onCellClick, gameOver, winner, stat
   const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const cellX = Math.floor((e.clientX - rect.left) / CELL_SIZE);
-    const cellY = Math.floor((e.clientY - rect.top) / CELL_SIZE);
+    const cellX = Math.floor(((e.clientX - rect.left) / rect.width) * BOARD_SIZE);
+    const cellY = Math.floor(((e.clientY - rect.top) / rect.height) * BOARD_SIZE);
     onCellClick(cellX, cellY);
   }, [onCellClick]);
 

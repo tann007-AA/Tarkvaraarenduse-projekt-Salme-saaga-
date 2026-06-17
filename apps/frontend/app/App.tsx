@@ -12,6 +12,7 @@ import { Settings, ShoppingBag } from 'lucide-react';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 import { StoryLevel } from './components/story/StoryIsland';
 import { HouseScene } from './components/story/housescene';
+import { BeachScene } from './components/story/beach/BeachScene';
 
 // Island story type
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
@@ -41,6 +42,7 @@ function GameContent() {
   // Story mode state
   const [currentStoryIsland, setCurrentStoryIsland] = useState<StoryIsland>('rootsi');
   const [showHouseScene, setShowHouseScene] = useState(true);
+  const [showBeachScene, setShowBeachScene] = useState(true);
   const [storyRewards, setStoryRewards] = useState<string[]>([]);
 
   const handleStoryRewardCollect = (rewardId: string) => {
@@ -62,6 +64,7 @@ function GameContent() {
     setGameState('menu');
     setCurrentStoryIsland('rootsi');
     setShowHouseScene(true);
+    setShowBeachScene(true);
   };
 
 
@@ -95,12 +98,19 @@ function GameContent() {
       )}
 
 
-      {/* STORY MODE – maja enne esimest saart */}
+      {/* STORY MODE – maja → rand → saar */}
       {gameState === 'story-mode' &&
         (showHouseScene ? (
           <HouseScene
             onBackToMenu={() => setGameState('mode-select')}
             onExitHouse={() => setShowHouseScene(false)}
+            onRewardCollect={handleStoryRewardCollect}
+          />
+        ) : showBeachScene ? (
+          <BeachScene
+            onBackToMenu={() => setGameState('mode-select')}
+            onExitBeach={() => setShowBeachScene(false)}
+            onRewardCollect={handleStoryRewardCollect}
           />
         ) : (
           <StoryLevel

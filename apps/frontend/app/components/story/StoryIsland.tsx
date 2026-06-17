@@ -530,6 +530,15 @@ export function StoryIsland({
               </div>
             )}
 
+            {storyRewards.includes('whalebone-dice') && (
+              <div
+                className="flex items-center justify-center bg-gradient-to-r from-[#5c4a6b] to-[#7a5f8d] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl"
+                title="Vaalaluust täringud"
+              >
+                <span className="text-lg md:text-xl">🎲</span>
+              </div>
+            )}
+
             <button
               onClick={onOpenSettings}
               className="flex items-center justify-center bg-gradient-to-r from-[#d4a574] to-[#b8860b] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden p-2.5"

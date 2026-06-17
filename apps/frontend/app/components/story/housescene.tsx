@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import './level.css';
 
 import HouseImage from './character/Interior.svg';
+import HouseImageDark from './character/Interior_dark.svg';
 
 import Front01 from './character/Front_01.png';
 import Front02 from './character/Front_02.png';
@@ -21,6 +22,10 @@ import Right03 from './character/Right_03.png';
 
 import { CookingGame } from '../story/cooking/CookingGame';
 import { LonghouseHotspots } from '../story/cooking/LonghouseHotspots';
+import { MythologyHotspots } from '../story/cooking/MythologyHotspots';
+import { HnefataflStory } from '../story/hnefatafl/HnefataflStory';
+import { HnefataflLoopChoice } from '../story/hnefatafl/HnefataflLoopChoice';
+import { RaidhoTransition } from '../story/transition/RaidhoTransition';
 
 type Direction = 'front' | 'back' | 'left' | 'right';
 
@@ -34,9 +39,12 @@ type Zone = {
 interface HouseSceneProps {
   onExitHouse: () => void;
   onBackToMenu: () => void;
+  onRewardCollect?: (rewardId: string) => void;
 }
 
-export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
+type HousePhase = 'etapp1' | 'etapp2' | 'hnefatafl' | 'loop' | 'raidho' | 'done';
+
+export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect }: HouseSceneProps) {
   const [playerPos, setPlayerPos] = useState({ x: 48.5, y: 80 });
   const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(null);
   const [direction, setDirection] = useState<Direction>('front');
@@ -44,6 +52,11 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
 
   const [isCookingOpen, setIsCookingOpen] = useState(false);
   const [isLonghouseOpen, setIsLonghouseOpen] = useState(false);
+  const [isMythologyOpen, setIsMythologyOpen] = useState(false);
+  const [isHnefataflOpen, setIsHnefataflOpen] = useState(false);
+  const [isLoopChoiceOpen, setIsLoopChoiceOpen] = useState(false);
+  const [showRaidho, setShowRaidho] = useState(false);
+  const [housePhase, setHousePhase] = useState<HousePhase>('etapp1');
   const [hasTriggeredInteraction, setHasTriggeredInteraction] = useState(false);
   const [hasFinishedHouseGames, setHasFinishedHouseGames] = useState(false);
   const [hasTriggeredExit, setHasTriggeredExit] = useState(false);
@@ -142,6 +155,10 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
           setIsLonghouseOpen(false);
         } else if (isCookingOpen) {
           setIsCookingOpen(false);
+        } else if (isMythologyOpen) {
+          setIsMythologyOpen(false);
+        } else if (isHnefataflOpen) {
+          setIsHnefataflOpen(false);
         }
       }
     };
@@ -162,10 +179,10 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isCookingOpen, isLonghouseOpen]);
+  }, [isCookingOpen, isLonghouseOpen, isMythologyOpen, isHnefataflOpen]);
 
   const handleHouseClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isCookingOpen || isLonghouseOpen) return;
+    if (isCookingOpen || isLonghouseOpen || isMythologyOpen || isHnefataflOpen || isLoopChoiceOpen || showRaidho) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = ((e.clientX - rect.left) / rect.width) * 100;
@@ -186,17 +203,33 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
   };
 
   useEffect(() => {
-    if (isCookingOpen || isLonghouseOpen) {
+    if (isCookingOpen || isLonghouseOpen || isMythologyOpen || isHnefataflOpen || isLoopChoiceOpen || showRaidho) {
       setTargetPos(null);
     }
-  }, [isCookingOpen, isLonghouseOpen]);
+  }, [isCookingOpen, isLonghouseOpen, isMythologyOpen, isHnefataflOpen, isLoopChoiceOpen, showRaidho]);
+
+  // ETAPP 2 story beats are mandatory — auto-reopen if player closes them
+  useEffect(() => {
+    if (housePhase === 'etapp2' && !isMythologyOpen && !isLonghouseOpen && !isCookingOpen) {
+      const timer = setTimeout(() => setIsMythologyOpen(true), 50);
+      return () => clearTimeout(timer);
+    }
+    if (housePhase === 'hnefatafl' && !isHnefataflOpen && !isMythologyOpen) {
+      const timer = setTimeout(() => setIsHnefataflOpen(true), 50);
+      return () => clearTimeout(timer);
+    }
+    if (housePhase === 'loop' && !isLoopChoiceOpen && !isHnefataflOpen) {
+      const timer = setTimeout(() => setIsLoopChoiceOpen(true), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [housePhase, isMythologyOpen, isHnefataflOpen, isLoopChoiceOpen, isLonghouseOpen, isCookingOpen]);
 
   useEffect(() => {
     const gameLoop = (timestamp: number) => {
       const delta = lastTimeRef.current ? timestamp - lastTimeRef.current : 16;
       lastTimeRef.current = timestamp;
 
-      if (isCookingOpen || isLonghouseOpen) {
+      if (isCookingOpen || isLonghouseOpen || isMythologyOpen || isHnefataflOpen || isLoopChoiceOpen || showRaidho) {
         animationFrameRef.current = requestAnimationFrame(gameLoop);
         return;
       }
@@ -213,6 +246,7 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
 
         const runZoneChecks = (pos: { x: number; y: number }) => {
           const isTouchingQuestionMark =
+            housePhase === 'etapp1' &&
             !hasFinishedHouseGames &&
             !isCookingOpen &&
             !isLonghouseOpen &&
@@ -236,8 +270,13 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
 
           const isTouchingExit =
             hasLeftDoorAreaRef.current &&
+            housePhase === 'done' &&
             !isCookingOpen &&
             !isLonghouseOpen &&
+            !isMythologyOpen &&
+            !isHnefataflOpen &&
+            !isLoopChoiceOpen &&
+            !showRaidho &&
             isInsideZone(pos.x, pos.y, exitZone);
 
           if (isTouchingExit && !hasTriggeredExit) {
@@ -360,9 +399,14 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
     };
   }, [
     targetPos,
+    housePhase,
     hasFinishedHouseGames,
     isCookingOpen,
     isLonghouseOpen,
+    isMythologyOpen,
+    isHnefataflOpen,
+    isLoopChoiceOpen,
+    showRaidho,
     hasTriggeredInteraction,
     hasTriggeredExit,
     onExitHouse,
@@ -381,11 +425,14 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
 
       <section className="house-scene-only">
         <div className="house-scene-map">
-          <div className="house-scene-stage" onClick={handleHouseClick}>
+          <div
+            className={`house-scene-stage ${housePhase !== 'etapp1' ? 'dark-active' : ''}`}
+            onClick={handleHouseClick}
+          >
             <img
-              src={HouseImage}
+              src={housePhase === 'etapp1' ? HouseImage : HouseImageDark}
               alt="Maja sisemus"
-              className="house-scene-image"
+              className={`house-scene-image ${housePhase !== 'etapp1' ? 'dark-house' : ''}`}
             />
 
             <img
@@ -398,7 +445,7 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
               }}
             />
 
-            {hasFinishedHouseGames && (
+            {housePhase === 'done' && (
               <div
                 className="house-exit-btn"
                 style={{
@@ -441,8 +488,55 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
               onComplete={() => {
                 setIsLonghouseOpen(false);
                 setHasFinishedHouseGames(true);
+                setHousePhase('etapp2');
+                setTimeout(() => setIsMythologyOpen(true), 350);
+              }}
+              onRewardCollect={() => onRewardCollect?.('kodumulla-paun')}
+            />
+
+            <MythologyHotspots
+              isOpen={isMythologyOpen}
+              onClose={() => setIsMythologyOpen(false)}
+              onComplete={() => {
+                setIsMythologyOpen(false);
+                setHousePhase('hnefatafl');
+                setTimeout(() => setIsHnefataflOpen(true), 350);
               }}
             />
+
+            <HnefataflStory
+              isOpen={isHnefataflOpen}
+              onComplete={() => {
+                setIsHnefataflOpen(false);
+                setHousePhase('loop');
+                setTimeout(() => setIsLoopChoiceOpen(true), 350);
+              }}
+            />
+
+            <HnefataflLoopChoice
+              isOpen={isLoopChoiceOpen}
+              onClose={() => setIsLoopChoiceOpen(false)}
+              onRetry={() => {
+                setIsLoopChoiceOpen(false);
+                setHousePhase('hnefatafl');
+                setTimeout(() => setIsHnefataflOpen(true), 350);
+              }}
+              onEnough={() => {
+                setIsLoopChoiceOpen(false);
+                setHousePhase('raidho');
+                setShowRaidho(true);
+              }}
+            />
+
+            {showRaidho && (
+              <RaidhoTransition
+                onComplete={() => {
+                  setShowRaidho(false);
+                  setHousePhase('done');
+                  queueMicrotask(onExitHouse);
+                }}
+              />
+            )}
           </div>
         </div>
       </section>

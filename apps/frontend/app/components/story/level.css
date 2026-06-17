@@ -687,6 +687,61 @@ body {
     object-position: center center;
 }
 
+.house-scene-image.dark-house {
+    filter: brightness(0.55) contrast(1.1) saturate(0.85);
+}
+
+.house-scene-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+        ellipse at 50% 70%,
+        rgba(251, 191, 36, 0.12) 0%,
+        transparent 45%
+    );
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+.house-scene-stage.dark-active::after {
+    opacity: 1;
+}
+
+.mythology-section {
+    background: rgba(15, 10, 22, 0.75);
+    border-color: #4a3a5c;
+}
+
+.mythology-scene {
+    background:
+        radial-gradient(circle at 50% 55%, rgba(251, 191, 36, 0.12) 0 10%, transparent 30%),
+        linear-gradient(180deg, #251a30 0%, #120a18 58%, #08050a 100%);
+}
+
+.mythology-wall {
+    background:
+        repeating-linear-gradient(90deg, rgba(80, 60, 95, 0.45) 0 10px, rgba(35, 22, 45, 0.42) 10px 20px),
+        linear-gradient(180deg, rgba(65, 45, 75, 0.95), rgba(22, 12, 28, 0.96));
+}
+
+.mythology-hearth {
+    background: radial-gradient(ellipse, rgba(130, 80, 30, 0.7), rgba(60, 30, 10, 0.5) 46%, transparent 70%);
+}
+
+.mythology-hotspot {
+    background: radial-gradient(circle at 45% 35%, rgba(90, 60, 110, 0.96), rgba(20, 10, 28, 0.94) 68%);
+    border-color: rgba(210, 180, 230, 0.78);
+}
+
+.mythology-hotspot:hover,
+.mythology-hotspot.active {
+    background: rgba(50, 30, 65, 0.96);
+    border-color: #c084fc;
+    box-shadow: 0 0 0 4px rgba(192, 132, 252, 0.14), 0 0 20px rgba(192, 132, 252, 0.58), 0 8px 16px rgba(0,0,0,0.48);
+}
+
 
 .house-player-sprite {
   position: absolute;

@@ -7,6 +7,7 @@ interface LonghouseHotspotsProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete: () => void;
+  onRewardCollect?: () => void;
 }
 
 interface LonghouseHotspot {
@@ -112,6 +113,7 @@ export function LonghouseHotspots({
   isOpen,
   onClose,
   onComplete,
+  onRewardCollect,
 }: LonghouseHotspotsProps) {
   const [visitedHotspots, setVisitedHotspots] = useState<string[]>([]);
   const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
@@ -165,6 +167,7 @@ export function LonghouseHotspots({
 
     if (!quizComplete) return;
 
+    onRewardCollect?.();
     onComplete();
     setTimeout(() => onClose(), 350);
   };
