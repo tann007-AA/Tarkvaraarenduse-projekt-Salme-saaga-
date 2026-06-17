@@ -28,6 +28,7 @@ import { HnefataflLoopChoice } from '../story/hnefatafl/HnefataflLoopChoice';
 import { RaidhoTransition } from '../story/transition/RaidhoTransition';
 import { DIALOGUE_TRIGGERS } from './dialogue/dialogues';
 import { DialogueBox } from './dialogue/DialogueBox';
+import { loadStoryProgress, saveStoryProgress, patchStoryProgress, type HousePhase } from './progress';
 
 type Direction = 'front' | 'back' | 'left' | 'right';
 
@@ -45,7 +46,6 @@ interface HouseSceneProps {
   onDialogueStart?: (id: string) => void;
 }
 
-type HousePhase = 'etapp1' | 'etapp2' | 'hnefatafl' | 'loop' | 'raidho' | 'done';
 
 export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialogueStart }: HouseSceneProps) {
   const [playerPos, setPlayerPos] = useState({ x: 48.5, y: 43 });
@@ -59,12 +59,20 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
   const [isHnefataflOpen, setIsHnefataflOpen] = useState(false);
   const [isLoopChoiceOpen, setIsLoopChoiceOpen] = useState(false);
   const [showRaidho, setShowRaidho] = useState(false);
-  const [housePhase, setHousePhase] = useState<HousePhase>('etapp1');
+  const [housePhase, setHousePhase] = useState<HousePhase>(() => {
+    const saved = loadStoryProgress();
+    return saved?.housePhase ?? 'etapp1';
+  });
   const [hasTriggeredInteraction, setHasTriggeredInteraction] = useState(false);
-  const [hasFinishedHouseGames, setHasFinishedHouseGames] = useState(false);
+  const [hasFinishedHouseGames, setHasFinishedHouseGames] = useState(() => {
+    const saved = loadStoryProgress();
+    const savedPhase = saved?.housePhase ?? 'etapp1';
+    return savedPhase !== 'etapp1' && savedPhase !== 'longhouse';
+  });
   const [hasTriggeredExit, setHasTriggeredExit] = useState(false);
   const hasLeftDoorAreaRef = useRef(false);
   const [activeDialogueId, setActiveDialogueId] = useState<string | null>(null);
+  const hasAutoTriggeredAfterCookingRef = useRef(false);
 
   const animationFrameRef = useRef<number | null>(null);
   const lastFrameChangeRef = useRef(0);
@@ -214,6 +222,15 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
 
   // ETAPP 2 story beats are mandatory — auto-reopen if player closes them
   useEffect(() => {
+    if (housePhase === 'longhouse' && !isLonghouseOpen && !isCookingOpen && !activeDialogueId) {
+      if (!hasAutoTriggeredAfterCookingRef.current) {
+        hasAutoTriggeredAfterCookingRef.current = true;
+        const timer = setTimeout(() => setActiveDialogueId(DIALOGUE_TRIGGERS.afterCooking), 50);
+        return () => clearTimeout(timer);
+      }
+      const timer = setTimeout(() => setIsLonghouseOpen(true), 50);
+      return () => clearTimeout(timer);
+    }
     if (housePhase === 'etapp2' && !isMythologyOpen && !isLonghouseOpen && !isCookingOpen) {
       const timer = setTimeout(() => setIsMythologyOpen(true), 50);
       return () => clearTimeout(timer);
@@ -226,7 +243,7 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
       const timer = setTimeout(() => setIsLoopChoiceOpen(true), 50);
       return () => clearTimeout(timer);
     }
-  }, [housePhase, isMythologyOpen, isHnefataflOpen, isLoopChoiceOpen, isLonghouseOpen, isCookingOpen]);
+  }, [housePhase, isMythologyOpen, isHnefataflOpen, isLoopChoiceOpen, isLonghouseOpen, isCookingOpen, activeDialogueId]);
 
   useEffect(() => {
     const gameLoop = (timestamp: number) => {
@@ -462,7 +479,7 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
               </div>
             )}
 
-            {!hasFinishedHouseGames && !isCookingOpen && !isLonghouseOpen && (
+            {housePhase === 'etapp1' && !isCookingOpen && !isLonghouseOpen && (
               <div
                 className="question-mark-trigger"
                 style={{
@@ -480,7 +497,10 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
               onClose={() => setIsCookingOpen(false)}
               onComplete={() => {
                 setIsCookingOpen(false);
+                setHousePhase('longhouse');
+                patchStoryProgress({ housePhase: 'longhouse' });
                 setActiveDialogueId(DIALOGUE_TRIGGERS.afterCooking);
+                hasAutoTriggeredAfterCookingRef.current = true;
               }}
             />
 
@@ -491,6 +511,7 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
                 setIsLonghouseOpen(false);
                 setHasFinishedHouseGames(true);
                 setHousePhase('etapp2');
+                patchStoryProgress({ housePhase: 'etapp2' });
                 setTimeout(() => setIsMythologyOpen(true), 350);
               }}
               onRewardCollect={() => onRewardCollect?.('kodumulla-paun')}
@@ -502,6 +523,7 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
               onComplete={() => {
                 setIsMythologyOpen(false);
                 setHousePhase('hnefatafl');
+                patchStoryProgress({ housePhase: 'hnefatafl' });
                 setTimeout(() => setIsHnefataflOpen(true), 350);
               }}
             />
@@ -511,6 +533,7 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
               onComplete={() => {
                 setIsHnefataflOpen(false);
                 setHousePhase('loop');
+                patchStoryProgress({ housePhase: 'loop' });
                 setTimeout(() => setIsLoopChoiceOpen(true), 350);
               }}
             />
@@ -521,11 +544,13 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
               onRetry={() => {
                 setIsLoopChoiceOpen(false);
                 setHousePhase('hnefatafl');
+                patchStoryProgress({ housePhase: 'hnefatafl' });
                 setTimeout(() => setIsHnefataflOpen(true), 350);
               }}
               onEnough={() => {
                 setIsLoopChoiceOpen(false);
                 setHousePhase('raidho');
+                patchStoryProgress({ housePhase: 'raidho' });
                 setShowRaidho(true);
               }}
             />
@@ -535,6 +560,7 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
                 onComplete={() => {
                   setShowRaidho(false);
                   setHousePhase('done');
+                  patchStoryProgress({ housePhase: 'done' });
                   queueMicrotask(onExitHouse);
                 }}
               />
@@ -549,7 +575,8 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
                 }, 250);
               }}
               onChoice={(label, nextId) => {
-                console.log(`Mängija valis: "${label}" → ${nextId}`);
+                // Sigridi valik: e1_bjorn_lugupidav või e1_bjorn_ulbe
+                // Dialoog süsteem jätkub automaatselt järgmise stseeni kaudu
               }}
             />
           </div>

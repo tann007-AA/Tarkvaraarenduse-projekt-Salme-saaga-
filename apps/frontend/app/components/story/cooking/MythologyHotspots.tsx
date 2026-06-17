@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { DialogueBox } from '../DialogueBox';
+import { DialogueBox } from '../dialogue/DialogueBox';
+import { DIALOGUE_TRIGGERS } from '../dialogue/dialogues';
 import './CookingGame.css';
 
 interface MythologyHotspotsProps {
@@ -12,8 +13,7 @@ interface MythologyHotspot {
   id: string;
   icon: string;
   title: string;
-  speaker: string;
-  text: string;
+  dialogueId: string;
   left: string;
   top: string;
 }
@@ -23,8 +23,7 @@ const MYTHOLOGY_HOTSPOTS: MythologyHotspot[] = [
     id: '2-2',
     icon: '🔨',
     title: 'Thori vasar',
-    speaker: 'Haldor',
-    text: 'See on Mjölnir — mitte lihtsalt haamer, vaid looduse jõud ise. Thor kaitses sellega nii inimesi kui ka Asgardi. Kui ta seda heitis, läks see alati tagasi tema kätte.',
+    dialogueId: DIALOGUE_TRIGGERS.mythologyThor,
     left: '28%',
     top: '62%',
   },
@@ -32,8 +31,7 @@ const MYTHOLOGY_HOTSPOTS: MythologyHotspot[] = [
     id: '2-3',
     icon: '👁️',
     title: 'Odini kuju',
-    speaker: 'Gunnar',
-    text: 'Odin andis ühe silma ära, et saada tarkust. Ta teab, et Ragnarök tuleb — viimane sõda, kus suur osa maailmast hävib ja uus ajastu algab. Aga seni valmistume meie.',
+    dialogueId: DIALOGUE_TRIGGERS.mythologyOdin,
     left: '72%',
     top: '38%',
   },
@@ -41,8 +39,7 @@ const MYTHOLOGY_HOTSPOTS: MythologyHotspot[] = [
     id: '2-4',
     icon: '🛡️',
     title: 'Valhalla kilbid',
-    speaker: 'Ivar',
-    text: 'Need kilbid kuuluvad neile, kes langenuksid au sees lahingus. Valhalla uksed on neile lahti. Kas sina, Björn, oled valmis oma kohta seal välja teenima?',
+    dialogueId: DIALOGUE_TRIGGERS.mythologyValhalla,
     left: '50%',
     top: '28%',
   },
@@ -50,24 +47,21 @@ const MYTHOLOGY_HOTSPOTS: MythologyHotspot[] = [
 
 export function MythologyHotspots({ isOpen, onClose, onComplete }: MythologyHotspotsProps) {
   const [visitedHotspots, setVisitedHotspots] = useState<string[]>([]);
-  const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
+  const [activeDialogueId, setActiveDialogueId] = useState<string | null>(null);
   const [phase, setPhase] = useState<'intro' | 'hotspots'>('intro');
 
-  const activeHotspot = MYTHOLOGY_HOTSPOTS.find(
-    (hotspot) => hotspot.id === activeHotspotId
-  );
   const allHotspotsVisited = visitedHotspots.length >= MYTHOLOGY_HOTSPOTS.length;
 
   useEffect(() => {
     if (isOpen) {
       setPhase('intro');
       setVisitedHotspots([]);
-      setActiveHotspotId(null);
+      setActiveDialogueId(DIALOGUE_TRIGGERS.mythologyIntro);
     }
   }, [isOpen]);
 
   const handleHotspotClick = (hotspot: MythologyHotspot) => {
-    setActiveHotspotId(hotspot.id);
+    setActiveDialogueId(hotspot.dialogueId);
     setVisitedHotspots((current) =>
       current.includes(hotspot.id) ? current : [...current, hotspot.id]
     );
@@ -76,6 +70,7 @@ export function MythologyHotspots({ isOpen, onClose, onComplete }: MythologyHots
   const handleFinish = () => {
     if (phase === 'intro') {
       setPhase('hotspots');
+      setActiveDialogueId(null);
       return;
     }
 
@@ -146,13 +141,12 @@ export function MythologyHotspots({ isOpen, onClose, onComplete }: MythologyHots
 
                   {MYTHOLOGY_HOTSPOTS.map((hotspot) => {
                     const isVisited = visitedHotspots.includes(hotspot.id);
-                    const isActive = activeHotspotId === hotspot.id;
 
                     return (
                       <button
                         key={hotspot.id}
                         type="button"
-                        className={`longhouse-hotspot mythology-hotspot ${isVisited ? 'visited' : ''} ${isActive ? 'active' : ''}`}
+                        className={`longhouse-hotspot mythology-hotspot ${isVisited ? 'visited' : ''}`}
                         style={{ left: hotspot.left, top: hotspot.top }}
                         onClick={() => handleHotspotClick(hotspot)}
                         aria-pressed={isVisited}
@@ -168,13 +162,12 @@ export function MythologyHotspots({ isOpen, onClose, onComplete }: MythologyHots
                 <div className="hotspot-list" aria-label="Mütoloogilised esemed">
                   {MYTHOLOGY_HOTSPOTS.map((hotspot) => {
                     const isVisited = visitedHotspots.includes(hotspot.id);
-                    const isActive = activeHotspotId === hotspot.id;
 
                     return (
                       <button
                         key={hotspot.id}
                         type="button"
-                        className={`hotspot-list-item ${isVisited ? 'visited' : ''} ${isActive ? 'active' : ''}`}
+                        className={`hotspot-list-item ${isVisited ? 'visited' : ''}`}
                         onClick={() => handleHotspotClick(hotspot)}
                       >
                         <span className="hotspot-list-icon">{hotspot.icon}</span>
@@ -183,25 +176,13 @@ export function MythologyHotspots({ isOpen, onClose, onComplete }: MythologyHots
                     );
                   })}
                 </div>
-
-                <div className="hotspot-fact-card">
-                  {activeHotspot ? (
-                    <>
-                      <div className="hotspot-fact-title">{activeHotspot.title}</div>
-                      <p>{activeHotspot.text}</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="hotspot-fact-title">Vali ese</div>
-                      <p>
-                        Iga ese peidab endas jumalate tarkust. Klõpsa esemetel, et
-                        kuulda vendade jutte.
-                      </p>
-                    </>
-                  )}
-                </div>
               </>
             )}
+
+            <DialogueBox
+              dialogueId={activeDialogueId}
+              onComplete={() => setActiveDialogueId(null)}
+            />
 
             <button
               className={`cook-btn ${phase === 'hotspots' && allHotspotsVisited ? 'ready' : ''}`}
@@ -214,19 +195,6 @@ export function MythologyHotspots({ isOpen, onClose, onComplete }: MythologyHots
                   ? '⚔️ Mängi hnefataflit'
                   : `⚡ Uuri veel (${visitedHotspots.length}/${MYTHOLOGY_HOTSPOTS.length})`}
             </button>
-          </div>
-
-          <div className="dialogue-box">
-            <div className="dialogue-avatar">⚡</div>
-            <div className="dialogue-content">
-              <div className="dialogue-speaker">{activeHotspot?.speaker ?? 'Haldor'}</div>
-              <div className="dialogue-text">
-                "
-                {activeHotspot?.text ??
-                  'Tuli on kustunud ja jumalad kuulevad. Vali ese, et kuulda, mida nad meile öelda tahavad.'}
-                "
-              </div>
-            </div>
           </div>
         </div>
       </div>

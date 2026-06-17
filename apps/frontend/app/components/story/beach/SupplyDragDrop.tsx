@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { DialogueBox } from '../DialogueBox';
+import { DialogueBox } from '../dialogue/DialogueBox';
+import { DIALOGUE_TRIGGERS } from '../dialogue/dialogues';
 import { Draggable, DropZone } from '../Draggable';
 
 interface SupplyDragDropProps {
@@ -12,10 +13,7 @@ interface SupplyCrate {
   id: string;
   icon: string;
   title: string;
-  speaker: string;
-  avatar: string;
-  dialogue: string;
-  fact: string;
+  dialogueId: string;
   weight: number;
   correctZone: ZoneId | ZoneId[];
 }
@@ -25,10 +23,7 @@ const SUPPLY_CRATES: SupplyCrate[] = [
     id: 'food',
     icon: '🐟',
     title: 'Toiduvarud',
-    speaker: 'Haldor',
-    avatar: '🧔',
-    dialogue: 'Soolakala ja kuivatatud liha lähevad masti lähedale keskele.',
-    fact: 'Salme laevadest leiti loomaluid (veised, sead, lambad). Peamine toit pikal retkel: kuivatatud kala (tursk) ja herned — säilisid kuid.',
+    dialogueId: DIALOGUE_TRIGGERS.supplyFood,
     weight: 3,
     correctZone: 'center',
   },
@@ -36,10 +31,7 @@ const SUPPLY_CRATES: SupplyCrate[] = [
     id: 'weapons',
     icon: '⚔️',
     title: 'Relvad + kilbid',
-    speaker: 'Ivar',
-    avatar: '⚔️',
-    dialogue: 'Mõõgad ja kirved jäävad kirstudesse, aga kilbid kinnitame parda külge.',
-    fact: 'Salme II laevast leiti kümneid kilbikuplaid ja luksuslikke mõõku. Kilbid parda välisküljele (shield-rack) — vabastas ruumi ja andis kaitsekihi.',
+    dialogueId: DIALOGUE_TRIGGERS.supplyWeapons,
     weight: 3,
     correctZone: ['port', 'starboard'],
   },
@@ -47,10 +39,7 @@ const SUPPLY_CRATES: SupplyCrate[] = [
     id: 'gaming',
     icon: '🎲',
     title: 'Mängunuppude kirst',
-    speaker: 'Haldor',
-    avatar: '🧔',
-    dialogue: 'Ivar ei lähe kuhugi ilma oma luust nuppudeta.',
-    fact: 'Salme laevadest leiti üle 100 vaalaluust ja sarvest mängunupu — viikingid mängisid strateegimänge pika merereisi ajal.',
+    dialogueId: DIALOGUE_TRIGGERS.supplyGaming,
     weight: 2,
     correctZone: ['port', 'starboard', 'stern', 'center'],
   },
@@ -58,10 +47,7 @@ const SUPPLY_CRATES: SupplyCrate[] = [
     id: 'amulets',
     icon: '🔨',
     title: 'Amuletid / õnnistatud esemed',
-    speaker: 'Gunnar',
-    avatar: '🛡️',
-    dialogue: 'Aseta see raudne vits vööri. Jumalate pilk ei tee paha.',
-    fact: 'Viikingid kandsid Thori vasaraid, ruunidega esemeid. Salme laevadest leiti ka koerte ja pistrike luid — ohvriannid või staatusesümbolid.',
+    dialogueId: DIALOGUE_TRIGGERS.supplyAmulets,
     weight: 1,
     correctZone: 'bow',
   },
@@ -77,19 +63,21 @@ const ZONE_LABELS: Record<ZoneId, string> = {
 
 export function SupplyDragDrop({ onComplete }: SupplyDragDropProps) {
   const [placements, setPlacements] = useState<Record<string, ZoneId | null>>({});
-  const [activeCrate, setActiveCrate] = useState<SupplyCrate | null>(null);
+  const [activeDialogueId, setActiveDialogueId] = useState<string | null>(DIALOGUE_TRIGGERS.supplyIntro);
   const [attempted, setAttempted] = useState(false);
 
   useEffect(() => {
     setPlacements({});
-    setActiveCrate(null);
+    setActiveDialogueId(DIALOGUE_TRIGGERS.supplyIntro);
     setAttempted(false);
   }, []);
 
   const handleDrop = (crateId: string, zoneId: ZoneId) => {
     setPlacements((current) => ({ ...current, [crateId]: zoneId }));
     const crate = SUPPLY_CRATES.find((c) => c.id === crateId) ?? null;
-    setActiveCrate(crate);
+    if (crate) {
+      setActiveDialogueId(crate.dialogueId);
+    }
   };
 
   const zoneWeight = (zoneId: ZoneId) => {
@@ -117,7 +105,7 @@ export function SupplyDragDrop({ onComplete }: SupplyDragDropProps) {
 
   const sideDiff = Math.abs(portWeight - starboardWeight);
   const sidesBalanced = sideDiff <= 1;
-  const endsBalanced = bowWeight + centerWeight / 2 <= sternWeight + centerWeight / 2 + 2;
+  const endsBalanced = Math.abs(bowWeight - sternWeight) <= 2;
   const isBalanced = sidesBalanced && endsBalanced;
 
   const canContinue = allPlaced && allCorrect && isBalanced;
@@ -128,7 +116,7 @@ export function SupplyDragDrop({ onComplete }: SupplyDragDropProps) {
 
   const handleReset = () => {
     setPlacements({});
-    setActiveCrate(null);
+    setActiveDialogueId(DIALOGUE_TRIGGERS.supplyIntro);
     setAttempted(false);
   };
 
@@ -243,28 +231,10 @@ export function SupplyDragDrop({ onComplete }: SupplyDragDropProps) {
             </div>
           </div>
 
-          <div className="beach-dialogue-wrap">
-            {activeCrate ? (
-              <DialogueBox
-                speaker={activeCrate.speaker}
-                avatar={activeCrate.avatar}
-                text={
-                  <>
-                    {activeCrate.dialogue}
-                    <br />
-                    <br />
-                    <em className="beach-fact">{activeCrate.fact}</em>
-                  </>
-                }
-              />
-            ) : (
-              <DialogueBox
-                speaker="Gunnar"
-                avatar="🛡️"
-                text="Lohista iga kirst õigesse kohta. Mäletad, mida vennad õpetasid: madal raskuskese, tasakaalunud pardad."
-              />
-            )}
-          </div>
+          <DialogueBox
+            dialogueId={activeDialogueId}
+            onComplete={() => setActiveDialogueId(null)}
+          />
         </div>
       </div>
     </div>

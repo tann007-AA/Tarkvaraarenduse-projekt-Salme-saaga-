@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { dialogues, type DialogueLine, type DialogueScene } from './dialogues';
 import './DialogueBox.css';
 import GunnarPortree from '../character/Gunnar.png';
@@ -187,10 +188,9 @@ export function DialogueBox({ dialogueId, onComplete, onChoice, className = '' }
   const speakerColor = SPEAKER_COLORS[currentLine.speaker] ?? '#f4ede1';
   const speakerAvatar = SPEAKER_AVATARS[currentLine.speaker] ?? '💬';
 
-  return (
+  const content = (
     <div className={`dialogue-overlay ${className}`} aria-live="polite" aria-atomic="false">
-
-      
+      {/* Choice Buttons */}
       {showChoices && (
         <div className="dialogue-choices">
           {scene.choices!.map((choice) => (
@@ -205,24 +205,27 @@ export function DialogueBox({ dialogueId, onComplete, onChoice, className = '' }
         </div>
       )}
 
-      
+      {/* Main Bar */}
       <div
         className="dialogue-bar"
         onClick={showChoices ? undefined : skipOrAdvance}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') skipOrAdvance(); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') skipOrAdvance();
+        }}
         aria-label="Dialoog — klõpsa jätkamiseks"
       >
-        
+        {/* Avatar */}
         <div className="dialogue-avatar" style={{ borderColor: speakerColor }}>
-          {speakerAvatar
-            ? <img src={speakerAvatar} alt={currentLine.speaker} className="dialogue-avatar-img" />
-            : <span className="dialogue-avatar-emoji">📜</span>
-          }
+          {speakerAvatar ? (
+            <img src={speakerAvatar} alt={currentLine.speaker} className="dialogue-avatar-img" />
+          ) : (
+            <span className="dialogue-avatar-emoji">📜</span>
+          )}
         </div>
 
-        
+        {/* Content */}
         <div className="dialogue-content">
           <span className="dialogue-speaker" style={{ color: speakerColor }}>
             {currentLine.speaker}
@@ -233,7 +236,7 @@ export function DialogueBox({ dialogueId, onComplete, onChoice, className = '' }
           </p>
         </div>
 
-        
+        {/* Next Arrow */}
         {showNext && (
           <div className="dialogue-next-arrow" aria-hidden="true">
             ▼
@@ -242,4 +245,10 @@ export function DialogueBox({ dialogueId, onComplete, onChoice, className = '' }
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined') {
+    return createPortal(content, document.body);
+  }
+
+  return content;
 }

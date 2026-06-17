@@ -17,13 +17,54 @@ export interface DialogueScene {
   nextId?: string; // automaatne jätk ilma valikuta
 }
 
-// ─────────────────────────────────────────────
-// ETAPP 1 — Pikkmaja: Suur teadaanne ja edasi
-// ─────────────────────────────────────────────
+  // ─────────────────────────────────────────────
+  // ETAPP 1 — Pikkmaja: Suur teadaanne ja edasi
+  // ─────────────────────────────────────────────
 
-export const dialogues: Record<string, DialogueScene> = {
+  export const dialogues: Record<string, DialogueScene> = {
 
-  
+  'e1_hotspot_thread': {
+    id: 'e1_hotspot_thread',
+    lines: [
+      { speaker: 'Sigrid', text: 'Ilma naiste käte ja kedveta poleks teil purjesid, mis teid kohale viiks, ega kuubesid, mis teid merel soojas hoiaks.' },
+    ],
+  },
+
+  'e1_hotspot_keys': {
+    id: 'e1_hotspot_keys',
+    lines: [
+      { speaker: 'Sigrid', text: 'Võtmed minu vööl tähendavad, et mina valitsen seda vara. Kui peremees on merel, on naise sõna siin majas seadus.' },
+    ],
+  },
+
+  'e1_hotspot_salted': {
+    id: 'e1_hotspot_salted',
+    lines: [
+      { speaker: 'Sigrid', text: 'Sool ja suits, Björn. Ilma toidutagavarata ei jõua te isegi poolele merele. Meie muudame suvise saagi talviseks ellujäämiseks.' },
+    ],
+  },
+
+  'e1_hotspot_chest': {
+    id: 'e1_hotspot_chest',
+    lines: [
+      { speaker: 'Sigrid', text: 'See pole lihtsalt sära. See on kaubandus. Viiking on pooleldi sõdalane, pooleldi kaupmees.' },
+    ],
+  },
+
+  'e1_hotspot_fire': {
+    id: 'e1_hotspot_fire',
+    lines: [
+      { speaker: 'Sigrid', text: 'Tuli on pikkmaja süda. Kui sa oled merel ligunenud ja külmunud, on see tuli ainus asi, mis su hinge kehas hoiab.' },
+    ],
+  },
+
+  'e1_hotspot_trough': {
+    id: 'e1_hotspot_trough',
+    lines: [
+      { speaker: 'Sigrid', text: 'Vili ja humal. Meie põllud toidavad meid, mitte meri. Retk algab põllult ja lõpeb põllul.' },
+    ],
+  },
+
   'e1_suur_teadaanne': {
     id: 'e1_suur_teadaanne',
     lines: [
@@ -34,13 +75,61 @@ export const dialogues: Record<string, DialogueScene> = {
     nextId: 'e1_ivari_monoloog',
   },
 
+  'e1_cooking_start': {
+    id: 'e1_cooking_start',
+    lines: [
+      { speaker: 'Haldor', text: 'Björn, see leem on sul täna kuidagi õhuke... Aja suppi! Viska potti 3 õiget koostisosa.' },
+    ],
+  },
+
+  'e1_cooking_hint': {
+    id: 'e1_cooking_hint',
+    lines: [
+      { speaker: 'Ivar', text: 'Viska sinna midagi rammusat sisse, muidu me ei jaksa homme isegi aeru tõsta.' },
+    ],
+  },
+
+  'e1_cooking_wrong_arrow': {
+    id: 'e1_cooking_wrong_arrow',
+    lines: [
+      { speaker: 'Ivar', text: 'Hei! Kas sa proovid meid nooleotsadega toita? Hoia need vaenlaste jaoks!' },
+    ],
+  },
+
+  'e1_cooking_wrong_bone': {
+    id: 'e1_cooking_wrong_bone',
+    lines: [
+      { speaker: 'Ivar', text: 'See luu on juba korjatud puhtaks. Midagi söödavat seal pole!' },
+    ],
+  },
+
+  'e1_cooking_wrong_generic': {
+    id: 'e1_cooking_wrong_generic',
+    lines: [
+      { speaker: 'Haldor', text: 'See ei sobi suppi. Midagi tugevamat on vaja!' },
+    ],
+  },
+
+  'e1_cooking_correct': {
+    id: 'e1_cooking_correct',
+    lines: [
+      { speaker: 'Haldor', text: 'Jah, just seda vajasime! Supp pakseneb.' },
+    ],
+  },
+
+  'e1_cooking_almost': {
+    id: 'e1_cooking_almost',
+    lines: [
+      { speaker: 'Ivar', text: 'Veel natuke! Meil on vaja 3 koostisosa.' },
+    ],
+  },
+
   
   'e1_ivari_monoloog': {
     id: 'e1_ivari_monoloog',
     lines: [
       { speaker: 'Ivar', text: 'Tõeline viiking on peremees, kes teab, millal põldu künda. Ta on strateeg, kes teab, millal rünnata ja millal taanduda. Ja ta on mees, kes on igal hetkel valmis astuma Valhalla väravatest sisse.' },
     ],
-    nextId: 'e1_sigrid_sisse',
   },
 
   
@@ -61,7 +150,6 @@ export const dialogues: Record<string, DialogueScene> = {
     lines: [
       { speaker: 'Narrator', text: 'Sigrid noogutab heakskiitvalt.' },
     ],
-    nextId: 'e2_tuli_madalaks',
   },
 
   
@@ -70,7 +158,6 @@ export const dialogues: Record<string, DialogueScene> = {
     lines: [
       { speaker: 'Sigrid', text: 'Siis võid sa harjutada põranda nühkimist, enne kui minu pikkmajast jalga lased.' },
     ],
-    nextId: 'e2_tuli_madalaks',
   },
 
   // ─────────────────────────────────────────────
@@ -85,7 +172,37 @@ export const dialogues: Record<string, DialogueScene> = {
     nextId: 'e2_hnefatafl_algus',
   },
 
-  
+  'e2_mythology_intro': {
+    id: 'e2_mythology_intro',
+    lines: [
+      { speaker: 'Narrator', text: 'Tuli on kustunud ja pikkmajas on pime. Vennad räägivad jumalatest ja Valhallast.' },
+    ],
+  },
+
+  'e2_mythology_thor': {
+    id: 'e2_mythology_thor',
+    lines: [
+      { speaker: 'Haldor', text: 'See on Mjölnir — mitte lihtsalt haamer, vaid looduse jõud ise. Thor kaitses sellega nii inimesi kui ka Asgardi. Kui ta seda heitis, läks see alati tagasi tema kätte.' },
+      { speaker: 'Narrator', text: 'Fakt: Thori vasar Mjölnir oli üks tähtsamaid pühasid sümboleid. Seda kanti amuletina kaelas kogu Skandinaavias.' },
+    ],
+  },
+
+  'e2_mythology_odin': {
+    id: 'e2_mythology_odin',
+    lines: [
+      { speaker: 'Gunnar', text: 'Odin andis ühe silma ära, et saada tarkust. Ta teab, et Ragnarök tuleb — viimane sõda, kus suur osa maailmast hävib ja uus ajastu algab. Aga seni valmistume meie.' },
+      { speaker: 'Narrator', text: 'Fakt: Ragnarök on skandinaavia mütoloogias ettekuulutatud maailmalõpp, mil paljud jumalad ja koletised hukkuvad.' },
+    ],
+  },
+
+  'e2_mythology_valhalla': {
+    id: 'e2_mythology_valhalla',
+    lines: [
+      { speaker: 'Ivar', text: 'Need kilbid kuuluvad neile, kes langenuksid au sees lahingus. Valhalla uksed on neile lahti. Kas sina, Björn, oled valmis oma kohta seal välja teenima?' },
+      { speaker: 'Narrator', text: 'Fakt: Valhalla on Odini saal, kuhu pääsevad langenud sõdalased. Seal valmistutakse viimaseks sõjaks Ragnaröki ajal.' },
+    ],
+  },
+
   'e2_hnefatafl_algus': {
     id: 'e2_hnefatafl_algus',
     lines: [
@@ -157,6 +274,92 @@ export const dialogues: Record<string, DialogueScene> = {
   // ETAPP 3 — Sveamaa rannik: laev ja Ormar
   // ─────────────────────────────────────────────
 
+  'e3_beach_intro': {
+    id: 'e3_beach_intro',
+    lines: [
+      { speaker: 'Narrator', text: 'Koidik. Tuul puhub idast — märk, et meri kutsub Eysysla poole. Ees seisab poolenisti vees suur pikklaev.' },
+    ],
+  },
+
+  'e3_ship_prow': {
+    id: 'e3_ship_prow',
+    lines: [
+      { speaker: 'Gunnar', text: 'See hirmutab maavaime ja näitab vaenlasele, kes on merede isand.' },
+      { speaker: 'Narrator', text: 'Fakt: Viikingilaevade madal süvis (0,5–1 m) võimaldas randuda otse liivarandadel ja tungida madalatesse jõgedesse, kuhu suured kaubalaevad ei pääsenud.' },
+    ],
+  },
+
+  'e3_ship_mast': {
+    id: 'e3_ship_mast',
+    lines: [
+      { speaker: 'Haldor', text: 'Selle purje kudusid küla naised terve talve. Kui tuul tõuseb, on see puri meie mootor.' },
+      { speaker: 'Narrator', text: 'Fakt: Villane puri vilditi ja määriti rasva/tõrvaga. Ühe purje valmistamiseks kulus ~200 lamba vill — sageli kallim kui laeva puitkere.' },
+    ],
+  },
+
+  'e3_ship_planks': {
+    id: 'e3_ship_planks',
+    lines: [
+      { speaker: 'Ivar', text: 'Need needid hoiavad lauda koos, aga lasevad kerel painduda. Jäik laev murdub tormis, meie "Lohetapja" paindub koos lainega.' },
+      { speaker: 'Narrator', text: 'Fakt: Salme laevadest leiti tuhandeid raudneete. Klinker-ehitusviis andis laevale uskumatu elastsuse.' },
+    ],
+  },
+
+  'e3_ship_oars': {
+    id: 'e3_ship_oars',
+    lines: [
+      { speaker: 'Haldor', text: 'Kui tuul meid reedab, on need aerud meie ainus lootus. Sõudmine on meeskonna ühine rütm.' },
+      { speaker: 'Narrator', text: 'Fakt: Salme I laevalt leiti märke 12 sõudjapaarist (24 sõudjat). Aerud toetusid tullidele ja sai sekunditega sisse tõmmata.' },
+    ],
+  },
+
+  'e3_ship_rudder': {
+    id: 'e3_ship_rudder',
+    lines: [
+      { speaker: 'Gunnar', text: 'Üks mees ja üks mõla juhivad tervet seda lohet. Me hoiame tüüri alati paremal pool.' },
+      { speaker: 'Narrator', text: 'Fakt: Tüür alati paremas pardas (starboard / stjornbori — "juhtimispool").' },
+    ],
+  },
+
+  'e3_supply_intro': {
+    id: 'e3_supply_intro',
+    lines: [
+      { speaker: 'Narrator', text: 'Gunnar hoiab käes ruunipulka. Iga ese tuleb paigutada nii, et laev püsiks tasakaalus.' },
+    ],
+  },
+
+  'e3_supply_food': {
+    id: 'e3_supply_food',
+    lines: [
+      { speaker: 'Haldor', text: 'Soolakala ja kuivatatud liha lähevad masti lähedale keskele.' },
+      { speaker: 'Narrator', text: 'Fakt: Salme laevadest leiti loomaluid (veised, sead, lambad). Peamine toit pikal retkel: kuivatatud kala (tursk) ja herned — säilisid kuid.' },
+    ],
+  },
+
+  'e3_supply_weapons': {
+    id: 'e3_supply_weapons',
+    lines: [
+      { speaker: 'Ivar', text: 'Mõõgad ja kirved jäävad kirstudesse, aga kilbid kinnitame parda külge.' },
+      { speaker: 'Narrator', text: 'Fakt: Salme II laevast leiti kümneid kilbikuplaid ja luksuslikke mõõku. Kilbid parda välisküljele (shield-rack) — vabastas ruumi ja andis kaitsekihi.' },
+    ],
+  },
+
+  'e3_supply_gaming': {
+    id: 'e3_supply_gaming',
+    lines: [
+      { speaker: 'Haldor', text: 'Ivar ei lähe kuhugi ilma oma luust nuppudeta.' },
+      { speaker: 'Narrator', text: 'Fakt: Salme laevadest leiti üle 100 vaalaluust ja sarvest mängunupu — viikingid mängisid strateegimänge pika merereisi ajal.' },
+    ],
+  },
+
+  'e3_supply_amulets': {
+    id: 'e3_supply_amulets',
+    lines: [
+      { speaker: 'Gunnar', text: 'Aseta see raudne vits vööri. Jumalate pilk ei tee paha.' },
+      { speaker: 'Narrator', text: 'Fakt: Viikingid kandsid Thori vasaraid, ruunidega esemeid. Salme laevadest leiti ka koerte ja pistrike luid — ohvriannid või staatusesümbolid.' },
+    ],
+  },
+
   // Pealik Ormar saabub
   'e3_ormar_saabub': {
     id: 'e3_ormar_saabub',
@@ -172,7 +375,6 @@ export const dialogues: Record<string, DialogueScene> = {
       { speaker: 'Ormar', text: 'Kui meri muutub igavaks, siis veereta neid. Need toovad meelde, et elu on mäng õnne ja tarkusega.' },
       { speaker: 'Narrator', text: 'Ormar kingib Björnile vaalaluust täringud. (Saadud: vaalaluust täringud 🎲)' },
     ],
-    nextId: 'e3_ulemin_merele',
   },
 
   
@@ -365,23 +567,50 @@ export const dialogues: Record<string, DialogueScene> = {
 
 
 export const DIALOGUE_TRIGGERS = {
-  
+
   afterCooking: 'e1_suur_teadaanne',
+  cookingStart: 'e1_cooking_start',
+  cookingHint: 'e1_cooking_hint',
+  cookingWrongArrow: 'e1_cooking_wrong_arrow',
+  cookingWrongBone: 'e1_cooking_wrong_bone',
+  cookingWrongGeneric: 'e1_cooking_wrong_generic',
+  cookingCorrect: 'e1_cooking_correct',
+  cookingAlmost: 'e1_cooking_almost',
+  sigridChoice: 'e1_sigrid_sisse',
+  hotspotThread: 'e1_hotspot_thread',
+  hotspotKeys: 'e1_hotspot_keys',
+  hotspotSalted: 'e1_hotspot_salted',
+  hotspotChest: 'e1_hotspot_chest',
+  hotspotFire: 'e1_hotspot_fire',
+  hotspotTrough: 'e1_hotspot_trough',
 
-  
   hnefataflIntro: 'e2_tuli_madalaks',
+  mythologyIntro: 'e2_mythology_intro',
+  mythologyThor: 'e2_mythology_thor',
+  mythologyOdin: 'e2_mythology_odin',
+  mythologyValhalla: 'e2_mythology_valhalla',
 
-  
   hnefataflRisky: 'e2_hnefatafl_riskantne',
   hnefataflCautious: 'e2_hnefatafl_ettevaatlik',
   hnefataflDecisive: 'e2_hnefatafl_otsustav',
+  hnefataflLoop: 'e2_hnefatafl_mangimise_ajal',
 
-  
+  beachIntro: 'e3_beach_intro',
+  shipProw: 'e3_ship_prow',
+  shipMast: 'e3_ship_mast',
+  shipPlanks: 'e3_ship_planks',
+  shipOars: 'e3_ship_oars',
+  shipRudder: 'e3_ship_rudder',
+  supplyIntro: 'e3_supply_intro',
+  supplyFood: 'e3_supply_food',
+  supplyWeapons: 'e3_supply_weapons',
+  supplyGaming: 'e3_supply_gaming',
+  supplyAmulets: 'e3_supply_amulets',
+
   ormarArrival: 'e3_ormar_saabub',
+  pushOff: 'e3_ulemin_merele',
 
-  
   openSea: 'e4_avameri',
 
-  
   nightWatch: 'e5_valvekord',
 } as const;

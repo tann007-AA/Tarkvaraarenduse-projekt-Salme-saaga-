@@ -1,56 +1,23 @@
 import { useState } from 'react';
-import { ChoiceBox } from '../ChoiceBox';
-import { DialogueBox } from '../DialogueBox';
+import { DialogueBox } from '../dialogue/DialogueBox';
+import { DIALOGUE_TRIGGERS } from '../dialogue/dialogues';
 import './HnefataflStory.css';
 
 interface HnefataflLoopChoiceProps {
   isOpen: boolean;
+  onClose: () => void;
   onRetry: () => void;
   onEnough: () => void;
-  onClose: () => void;
 }
 
-const GUNNAR_ADVICE = [
-  {
-    speaker: 'Gunnar',
-    avatar: '🛡️',
-    text: 'Hnefataflis on kõige tähtsam kannatlikkus. Ärgu kuningas ruttu liigu — las ta ootab õiget hetke.',
-  },
-  {
-    speaker: 'Gunnar',
-    avatar: '🛡️',
-    text: 'Kaitsjad peavad kaitsma kuningat ja looma talle tee nurka. Ründajad peavad teda piirama.',
-  },
-  {
-    speaker: 'Gunnar',
-    avatar: '🛡️',
-    text: 'Kui vastane seab enda nupu kahe suure vahele, võid ta võtta. Aga ära unusta — sama kehtib ka sinu kohta.',
-  },
-];
-
-export function HnefataflLoopChoice({ isOpen, onRetry, onEnough, onClose }: HnefataflLoopChoiceProps) {
-  const [gunnarIndex, setGunnarIndex] = useState<number | null>(null);
+export function HnefataflLoopChoice({ isOpen, onRetry, onEnough }: HnefataflLoopChoiceProps) {
+  const [dialogueId, setDialogueId] = useState<string | null>(DIALOGUE_TRIGGERS.hnefataflLoop ?? 'e2_hnefatafl_mangimise_ajal');
 
   if (!isOpen) return null;
 
-  const handleChoice = (choiceId: string) => {
-    if (choiceId === 'retry') {
-      setGunnarIndex(null);
-      onRetry();
-    } else if (choiceId === 'enough') {
-      setGunnarIndex(null);
-      onEnough();
-    } else if (choiceId === 'ask-gunnar') {
-      setGunnarIndex((current) => {
-        const next = current === null ? 0 : (current + 1) % GUNNAR_ADVICE.length;
-        return next;
-      });
-    }
-  };
-
   return (
     <div className="cooking-overlay">
-      <div className="cooking-backdrop" onClick={(e) => { e.stopPropagation(); onClose(); }} />
+      <div className="cooking-backdrop" />
 
       <div className="leather-panel hnefatafl-story-panel">
         <div className="panel-content">
@@ -63,30 +30,24 @@ export function HnefataflLoopChoice({ isOpen, onRetry, onEnough, onClose }: Hnef
               <h3>VALIK</h3>
             </div>
 
-            <div className="recipe-info">
-              <strong>Björn mängis hnefataflit.</strong> Kas proovid uuesti, küsid
-              Gunnarilt nõu või oled piisavalt õppinud?
-            </div>
-
-            <ChoiceBox
-              options={[
-                { id: 'retry', label: '🔁 Proovi uuesti' },
-                { id: 'ask-gunnar', label: '❓ Küsi Gunnarilt' },
-                { id: 'enough', label: '✅ Piisab' },
-              ]}
-              onSelect={handleChoice}
-              selectedId={null}
+            <DialogueBox
+              dialogueId={dialogueId}
+              onChoice={(label, nextId) => {
+                if (nextId === 'e2_hnefatafl_uuesti') {
+                  setDialogueId(null);
+                  onRetry();
+                } else if (nextId === 'e2_ulemin_rannikule') {
+                  setDialogueId(null);
+                  onEnough();
+                } else if (nextId === 'e2_gunnari_selgitus') {
+                  setDialogueId('e2_gunnari_selgitus');
+                }
+              }}
+              onComplete={() => {
+                setDialogueId(null);
+                onEnough();
+              }}
             />
-
-            {gunnarIndex !== null && (
-              <div className="mt-4">
-                <DialogueBox
-                  speaker={GUNNAR_ADVICE[gunnarIndex].speaker}
-                  avatar={GUNNAR_ADVICE[gunnarIndex].avatar}
-                  text={GUNNAR_ADVICE[gunnarIndex].text}
-                />
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { PieceType } from '../../board-game/types';
 import { useGameEngine } from '../../board-game/useGameEngine';
 import { Board } from '../../board-game/Board';
 import { useAI } from '../../board-game/useAI';
-import { ChoiceBox } from '../ChoiceBox';
+
 import './HnefataflStory.css';
 
 interface HnefataflStoryProps {
@@ -144,13 +144,9 @@ export function HnefataflStory({ isOpen, onComplete }: HnefataflStoryProps) {
 
             {engine.gameOver && (
               <div className="hnefatafl-result">
-                <ChoiceBox
-                  options={[
-                    { id: 'continue', label: 'Jätka' },
-                  ]}
-                  onSelect={handleContinue}
-                  selectedId={null}
-                />
+                <button className="cook-btn ready" onClick={handleContinue}>
+                  Jätka
+                </button>
               </div>
             )}
           </div>

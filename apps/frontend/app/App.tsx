@@ -1,18 +1,16 @@
 import { useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
 import { MainMenuScreen } from './components/MainMenuScreen';
 import { SettingsModal } from './components/SettingsModal';
-import { StartScreen } from './components/StartScreen';
 import { TutorialModal } from './components/TutorialModal';
-import { SailingTransition } from './components/SailingTransition';
-import { Toaster, toast } from 'sonner';
+import { Toaster } from 'sonner';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
-import { Settings, ShoppingBag } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 import { StoryLevel } from './components/story/StoryIsland';
-import { HouseScene } from './components/story/housescene';
+import { HouseScene } from './components/story/HouseScene';
 import { BeachScene } from './components/story/beach/BeachScene';
+import { loadStoryProgress, saveStoryProgress, resetStoryProgress, patchStoryProgress } from './components/story/progress';
 
 // Island story type
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
@@ -40,15 +38,29 @@ function GameContent() {
 
 
   // Story mode state
-  const [currentStoryIsland, setCurrentStoryIsland] = useState<StoryIsland>('rootsi');
+  const [currentStoryIsland, setCurrentStoryIsland] = useState<StoryIsland>(() => {
+    const saved = loadStoryProgress();
+    return saved?.currentStoryIsland ?? 'rootsi';
+  });
   const [showHouseScene, setShowHouseScene] = useState(true);
-  const [showBeachScene, setShowBeachScene] = useState(true);
+  const [showBeachScene, setShowBeachScene] = useState(false);
+  const [completedBeachIslands, setCompletedBeachIslands] = useState<Set<StoryIsland>>(() => {
+    const saved = loadStoryProgress();
+    return new Set(saved?.completedBeachIslands ?? []);
+  });
   const [storyRewards, setStoryRewards] = useState<string[]>([]);
 
   const handleStoryRewardCollect = (rewardId: string) => {
     setStoryRewards((current) =>
       current.includes(rewardId) ? current : [...current, rewardId]
     );
+  };
+
+  const saveIslandProgress = (island: StoryIsland, completedBeaches: Set<StoryIsland>) => {
+    patchStoryProgress({
+      currentStoryIsland: island,
+      completedBeachIslands: Array.from(completedBeaches),
+    });
   };
 
   const handleGuideClick = () => {
@@ -64,7 +76,9 @@ function GameContent() {
     setGameState('menu');
     setCurrentStoryIsland('rootsi');
     setShowHouseScene(true);
-    setShowBeachScene(true);
+    setShowBeachScene(false);
+    setCompletedBeachIslands(new Set());
+    resetStoryProgress();
   };
 
 
@@ -89,8 +103,18 @@ function GameContent() {
           onSelectMode={(mode) => {
             setGameState(mode);
             if (mode === 'story-mode') {
-              setCurrentStoryIsland('rootsi');
-              setShowHouseScene(true);
+              const saved = loadStoryProgress();
+              if (saved) {
+                setCurrentStoryIsland(saved.currentStoryIsland ?? 'rootsi');
+                setCompletedBeachIslands(new Set(saved.completedBeachIslands ?? []));
+                setShowHouseScene(saved.housePhase !== 'done');
+              } else {
+                resetStoryProgress();
+                setCurrentStoryIsland('rootsi');
+                setShowHouseScene(true);
+                setCompletedBeachIslands(new Set());
+              }
+              setShowBeachScene(false);
             }
           }}
           onBack={() => setGameState('menu')}
@@ -98,28 +122,58 @@ function GameContent() {
       )}
 
 
-      {/* STORY MODE – maja → rand → saar */}
+      {/* STORY MODE – maja → saar, laadimismäng käivitub viikingilaeva juures */}
       {gameState === 'story-mode' &&
         (showHouseScene ? (
           <HouseScene
             onBackToMenu={() => setGameState('mode-select')}
-            onExitHouse={() => setShowHouseScene(false)}
-            onRewardCollect={handleStoryRewardCollect}
-          />
-        ) : showBeachScene ? (
-          <BeachScene
-            onBackToMenu={() => setGameState('mode-select')}
-            onExitBeach={() => setShowBeachScene(false)}
+            onExitHouse={() => {
+              setShowHouseScene(false);
+              saveIslandProgress(currentStoryIsland, completedBeachIslands);
+            }}
             onRewardCollect={handleStoryRewardCollect}
           />
         ) : (
-          <StoryLevel
-            currentIsland={currentStoryIsland}
-            onBackToMenu={() => setGameState('mode-select')}
-            onGoToIsland={setCurrentStoryIsland}
-            storyRewards={storyRewards}
-            onStoryRewardCollect={handleStoryRewardCollect}
-          />
+          <>
+            <StoryLevel
+              currentIsland={currentStoryIsland}
+              completedBeachIslands={completedBeachIslands}
+              onBackToMenu={() => setGameState('mode-select')}
+              onGoToIsland={(island) => {
+                setCurrentStoryIsland(island);
+                saveIslandProgress(island, completedBeachIslands);
+              }}
+              onCompleteIsland={(island) => {
+                setCurrentStoryIsland(island);
+                saveIslandProgress(island, completedBeachIslands);
+              }}
+              onGoToBeach={() => {
+                if (!completedBeachIslands.has(currentStoryIsland)) {
+                  setShowBeachScene(true);
+                }
+              }}
+              isPaused={showBeachScene}
+              storyRewards={storyRewards}
+              onStoryRewardCollect={handleStoryRewardCollect}
+              onOpenSettings={() => setShowSettingsModal(true)}
+            />
+            {showBeachScene && (
+              <div className="fixed inset-0 z-50">
+                <BeachScene
+                  onBackToMenu={() => setGameState('mode-select')}
+                  onExitBeach={() => {
+                    setShowBeachScene(false);
+                    setCompletedBeachIslands((prev) => {
+                      const next = new Set(prev).add(currentStoryIsland);
+                      saveIslandProgress(currentStoryIsland, next);
+                      return next;
+                    });
+                  }}
+                  onRewardCollect={handleStoryRewardCollect}
+                />
+              </div>
+            )}
+          </>
         ))}
 
 

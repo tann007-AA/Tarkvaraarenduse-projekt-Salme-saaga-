@@ -1,10 +1,14 @@
-import { DialogueBox } from '../DialogueBox';
+import { useState } from 'react';
+import { DialogueBox } from '../dialogue/DialogueBox';
+import { DIALOGUE_TRIGGERS } from '../dialogue/dialogues';
 
 interface PushOffDialogueProps {
   onComplete: () => void;
 }
 
 export function PushOffDialogue({ onComplete }: PushOffDialogueProps) {
+  const [dialogueId, setDialogueId] = useState<string | null>(DIALOGUE_TRIGGERS.pushOff ?? 'e3_ulemin_merele');
+
   return (
     <div className="pushoff-overlay">
       <div className="pushoff-scene">
@@ -13,19 +17,19 @@ export function PushOffDialogue({ onComplete }: PushOffDialogueProps) {
           <span className="pushoff-splash">🌊</span>
         </div>
 
-        <div className="pushoff-dialogue-panel">
-          <DialogueBox
-            speaker="Ormar Raudhabe"
-            avatar="🧔‍♂️"
-            text="LÜKKAME! Meie saatus ootab lainete taga!"
-          />
+        <DialogueBox
+          dialogueId={dialogueId}
+          onComplete={() => {
+            setDialogueId(null);
+            onComplete();
+          }}
+        />
 
-          <p className="pushoff-sfx">Puidu krigin, laev vette...</p>
-
+        {!dialogueId && (
           <button className="beach-phase-btn pushoff-btn" onClick={onComplete}>
             🌊 Avamerelle
           </button>
-        </div>
+        )}
       </div>
     </div>
   );

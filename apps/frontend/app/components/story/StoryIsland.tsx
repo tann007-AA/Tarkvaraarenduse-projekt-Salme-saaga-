@@ -4,8 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import './level.css';
 import { DialogueBox } from './dialogue/DialogueBox';
 import { DIALOGUE_TRIGGERS } from './dialogue/dialogues';
-
-import { HouseScene } from './housescene';
+import { type StoryIsland } from './progress';
 
 import SwedenMap from './character/Sweden.svg';
 import GotlandMap from './character/Gotland.svg';
@@ -27,8 +26,9 @@ import Right01 from './character/Right_01.png';
 import Right02 from './character/Right_02.png';
 import Right03 from './character/Right_03.png';
 
+import VikingShip from './character/VikingShip.png';
+
 type Direction = 'front' | 'back' | 'left' | 'right';
-type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
 
 type Zone = {
   minX: number;
@@ -42,17 +42,16 @@ type Marker = {
   top: string;
 };
 
-const HOUSE_POSITIONS: Record<StoryIsland, { left: string; top: string } | null> = {
-  rootsi: { left: '22.2%', top: '25%' },
-  gotland: null,
-  saaremaa: null,
-};
+const VikingShipPos = { left: '95%', top: '35%' };
 
 interface StoryIslandProps {
   currentIsland: StoryIsland;
+  completedBeachIslands?: Set<StoryIsland>;
   onBackToMenu: () => void;
   onGoToIsland?: (island: StoryIsland) => void;
   onCompleteIsland?: (nextIsland: StoryIsland) => void;
+  onGoToBeach?: () => void;
+  isPaused?: boolean;
   points?: number;
   onOpenSettings?: () => void;
   onOpenShop?: () => void;
@@ -179,10 +178,14 @@ const storyIslandData: Record<
 
 export function StoryIsland({
   currentIsland,
+  completedBeachIslands = new Set(),
   onBackToMenu,
   onGoToIsland,
   onCompleteIsland,
+  onGoToBeach,
+  isPaused = false,
   onOpenSettings,
+  onOpenShop,
   storyRewards = [],
   onStoryRewardCollect,
 }: StoryIslandProps) {
@@ -195,13 +198,12 @@ export function StoryIsland({
   const clickTargetRef = useRef<{ x: number; y: number } | null>(null);
   const clickMovingRef = useRef(false);
 
-  const hasEnteredHouseRef = useRef(false);
-  const [isHouseOpen, setIsHouseOpen] = useState(false);
-  const isHouseOpenRef = useRef(false);
+  const isPausedRef = useRef(isPaused);
+  const hasTriggeredShipRef = useRef(false);
 
   useEffect(() => {
-    isHouseOpenRef.current = isHouseOpen;
-  }, [isHouseOpen]);
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
 
   const island = storyIslandData[currentIsland];
 
@@ -223,7 +225,7 @@ export function StoryIsland({
     right: false,
   });
 
-  const speed = 0.015;
+  const speed = 0.022;
   const frameDuration = 140;
 
   const sprites = useMemo(
@@ -249,7 +251,7 @@ export function StoryIsland({
     clickMovingRef.current = false;
     keysRef.current = { up: false, down: false, left: false, right: false };
 
-    hasEnteredHouseRef.current = false;
+    hasTriggeredShipRef.current = false;
 
     if (characterRef.current) {
       characterRef.current.style.left = `${xRef.current}%`;
@@ -279,8 +281,7 @@ export function StoryIsland({
 
 
   const handleMapClick = (event: MouseEvent<HTMLDivElement>) => {
-    if (isHouseOpen) return;
-
+    if (activeDialogueId) return;
     const map = mapRef.current;
     if (!map) return;
 
@@ -329,7 +330,7 @@ export function StoryIsland({
       const delta = lastTimeRef.current ? timestamp - lastTimeRef.current : 16;
       lastTimeRef.current = timestamp;
 
-      if (isHouseOpenRef.current) {
+      if (isPausedRef.current) {
         animationFrameRef.current = requestAnimationFrame(gameLoop);
         return;
       }
@@ -409,26 +410,21 @@ export function StoryIsland({
 
       renderCharacter();
 
-      const housePos = HOUSE_POSITIONS[currentIsland];
+      const shipX = parseFloat(VikingShipPos.left);
+      const shipY = parseFloat(VikingShipPos.top);
+      const dxShip = xRef.current - shipX;
+      const dyShip = yRef.current - shipY;
+      const shipDistance = Math.sqrt(dxShip * dxShip + dyShip * dyShip);
 
-      if (housePos) {
-        const hx = parseFloat(housePos.left);
-        const hy = parseFloat(housePos.top);
+      const beachCompleted = completedBeachIslands.has(currentIsland);
 
-        const dx = xRef.current - hx;
-        const dy = yRef.current - hy;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+      if (shipDistance < 10 && !hasTriggeredShipRef.current && !beachCompleted) {
+        hasTriggeredShipRef.current = true;
+        onGoToBeach?.();
+      }
 
-        // Enter trigger once when crossing into the radius
-        if (distance < 8 && !hasEnteredHouseRef.current) {
-          hasEnteredHouseRef.current = true;
-          setIsHouseOpen(true);
-        }
-
-        // Reset trigger after walking away
-        if (distance >= 8) {
-          hasEnteredHouseRef.current = false;
-        }
+      if (shipDistance >= 10 || beachCompleted) {
+        hasTriggeredShipRef.current = false;
       }
 
       animationFrameRef.current = requestAnimationFrame(gameLoop);
@@ -445,7 +441,7 @@ export function StoryIsland({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [sprites, currentIsland, island]);
+  }, [sprites, currentIsland, island, completedBeachIslands, onGoToBeach]);
 
   const handleMarkerClick = (index: number) => {
     if (index !== currentMarkerIndex) return;
@@ -466,8 +462,6 @@ export function StoryIsland({
       setPendingIsland(nextIsland);
     }
   };
-
-  const housePos = HOUSE_POSITIONS[currentIsland];
 
   return (
     <React.Fragment>
@@ -597,6 +591,18 @@ export function StoryIsland({
                 className="character"
               />
 
+              <img
+                src={VikingShip}
+                alt="Viking Ship"
+                className="character"
+                style={{
+                  left: VikingShipPos.left,
+                  top: VikingShipPos.top,
+                  width: "150px",
+                  height: "auto",
+                }}
+              />
+
               {island.markers.map((marker, index) => (
                 <button
                   key={index}
@@ -604,6 +610,7 @@ export function StoryIsland({
                   data-index={index}
                   style={{ left: marker.left, top: marker.top }}
                   onClick={(e) => {
+                    if (activeDialogueId) return;
                     e.stopPropagation();
                     handleMarkerClick(index);
                   }}
@@ -631,15 +638,6 @@ export function StoryIsland({
           }}
         />
       </main>
-
-      {isHouseOpen && (
-        <div className="fixed inset-0 z-50">
-          <HouseScene
-            onBackToMenu={() => setIsHouseOpen(false)}
-            onExitHouse={() => setIsHouseOpen(false)}
-          />
-        </div>
-      )}
     </React.Fragment>
   );
 }
