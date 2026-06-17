@@ -10,6 +10,14 @@ svg {
   -webkit-touch-callout: none;
 }
 
+/* Ship-loading / drag minigames: put draggable imgs in [draggable="true"] or .draggable */
+[draggable="true"] img,
+[draggable="true"] svg,
+.draggable img,
+.draggable svg {
+  -webkit-user-drag: auto;
+}
+
 body {
   -webkit-user-select: none;
   -moz-user-select: none;
