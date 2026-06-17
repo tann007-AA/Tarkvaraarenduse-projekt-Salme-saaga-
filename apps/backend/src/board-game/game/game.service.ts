@@ -2,8 +2,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { eq, or, and } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { DbService } from '../db/db.service';
-import { gameSessions, moves, lobbies, type GameSession, type Move, type NewMove } from '../db/schema';
+import { DbService } from '../../db/db.service';
+import { gameSessions, moves, lobbies, type GameSession, type Move, type NewMove } from '../../db/schema';
 import { HnefataflEngine } from '../hnefatafl/hnefatafl.engine';
 
 export interface MoveRequest {

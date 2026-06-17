@@ -20,6 +20,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
   const [gameState, setGameState] = useState<BoardGameState>('menu');
   const [selectedPiece, setSelectedPiece] = useState<[number, number] | null>(null);
   const [aiSide, setAiSide] = useState<PieceType>(PieceType.None);
+  const [playerSide, setPlayerSide] = useState<PieceType | null>(null);
   const [aiDifficulty, setAiDifficulty] = useState<number>(3);
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
     setGameState('side-select');
   }, []);
 
-  const makeAIMoveRef = useRef<() => Promise<void>>();
+  const makeAIMoveRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
     if (isMultiplayer) return;
@@ -76,6 +77,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
   }, [engine, aiDifficulty, aiSide, isAiThinking, computeBestMove]);
 
   const handleSideSelect = useCallback((side: PieceType) => {
+    setPlayerSide(side);
     setAiSide(side === PieceType.Attacker ? PieceType.Defender : PieceType.Attacker);
     setGameState('playing');
     engine.reset();
@@ -126,6 +128,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
     setIsMultiplayer(true);
     setCurrentSessionId(session.sessionId);
     setPlayerRole(session.role);
+    setPlayerSide(session.role === 'attacker' ? PieceType.Attacker : PieceType.Defender);
     setAiSide(PieceType.None);
     setGameState('playing');
     updateGameStateFromSession(session);
@@ -250,10 +253,20 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
     setGameState('menu');
     setIsMultiplayer(false);
     setPlayerRole(null);
+    setPlayerSide(null);
     setCurrentSessionId(null);
     multiplayerService.disconnectGame();
     multiplayerService.disconnectLobby();
   }, [engine, multiplayerService]);
+
+  const handlePlayAgain = useCallback(() => {
+    engine.reset();
+    setSelectedPiece(null);
+    setLastMove(null);
+    setIsAiThinking(false);
+    setStatusMessage(null);
+    setGameState('playing');
+  }, [engine]);
 
   const winnerMessages = t.boardGame.game.winner;
   const translatedWinner = engine.winner
@@ -266,6 +279,15 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
   const roleLabel = playerRole === 'attacker'
     ? t.boardGame.game.attackers
     : t.boardGame.game.defenders;
+
+  const isPlayerWinner =
+    engine.gameOver &&
+    ((playerSide === PieceType.Attacker &&
+      (engine.winner === 'attackersWinCaptured' || engine.winner === 'attackersWinSurrounded')) ||
+      (playerSide === PieceType.Defender && engine.winner === 'defendersWinEscaped') ||
+      (playerRole === 'attacker' &&
+        (engine.winner === 'attackersWinCaptured' || engine.winner === 'attackersWinSurrounded')) ||
+      (playerRole === 'defender' && engine.winner === 'defendersWinEscaped'));
 
   let turnStatus: string | null = null;
   if (isMultiplayer && playerRole) {
@@ -293,6 +315,11 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
       </span>
     </>
   );
+
+  const resultTitle = isPlayerWinner ? 'Võit!' : 'Kaotus';
+  const resultSubtitle = isPlayerWinner
+    ? 'Tubli mäng! Sa saavutasid võidu.'
+    : 'Mäng on läbi. Proovi järgmisel korral paremini.';
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden p-4">
@@ -373,19 +400,48 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
             </span>
           </div>
 
-          <Board
-            grid={engine.grid}
-            selectedPiece={selectedPiece}
-            lastMove={lastMove}
-            onCellClick={handleCellClick}
-            gameOver={engine.gameOver}
-            winner={translatedWinner}
-            statusMessage={statusMessage}
-          />
+          <div className="relative">
+            <Board
+              grid={engine.grid}
+              selectedPiece={selectedPiece}
+              lastMove={lastMove}
+              onCellClick={handleCellClick}
+              gameOver={engine.gameOver}
+              winner={translatedWinner}
+              statusMessage={statusMessage}
+            />
 
-          <button onClick={handleReset} className={backButtonClass}>
-            {buttonContent(t.boardGame.game.mainMenu)}
-          </button>
+            {engine.gameOver && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute inset-0 z-20 flex items-center justify-center bg-[#0d1a2f]/80 backdrop-blur-sm"
+              >
+                <motion.div
+                  initial={{ y: 20, scale: 0.95 }}
+                  animate={{ y: 0, scale: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className="w-[min(90vw,420px)] rounded-2xl border border-white/10 bg-[#f7eed7] p-6 text-center shadow-2xl"
+                >
+                  <div className="mb-3 text-4xl">{isPlayerWinner ? '🏆' : '⚔️'}</div>
+                  <h2 className="text-3xl font-bold text-[#1f2a44]" style={{ fontFamily: 'var(--font-display)' }}>
+                    {resultTitle}
+                  </h2>
+                  <p className="mt-2 text-sm text-[#4b5563]">{resultSubtitle}</p>
+                  <p className="mt-3 text-base font-semibold text-[#1f2a44]">{translatedWinner}</p>
+
+                  <div className="mt-5 flex flex-col gap-3">
+                    <button onClick={handlePlayAgain} className={primaryButtonClass}>
+                      {buttonContent('Mängi uuesti')}
+                    </button>
+                    <button onClick={handleReset} className={backButtonClass}>
+                      {buttonContent(t.boardGame.game.mainMenu)}
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </div>
         </motion.div>
       )}
     </div>

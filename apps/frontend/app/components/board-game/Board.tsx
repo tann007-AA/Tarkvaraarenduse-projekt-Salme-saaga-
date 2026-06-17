@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, type MouseEvent } from 'react';
 import { PieceType } from './types';
 
 const CELL_SIZE = 50;
@@ -151,11 +151,19 @@ export function Board({ grid, selectedPiece, lastMove, onCellClick, gameOver, wi
     ctx.lineWidth = 8;
     ctx.strokeRect(0, 0, 550, 550);
 
-    // 2. Valitud ruudu sinine kuma
-    if (selectedPiece) {
+    // 2. Valitud ruudu selge marker
+    if (selectedPiece && !gameOver) {
       const [sx, sy] = selectedPiece;
-      ctx.fillStyle = 'rgba(41, 128, 185, 0.22)';
+      ctx.fillStyle = 'rgba(41, 128, 185, 0.18)';
       ctx.fillRect(sx * CELL_SIZE, sy * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      ctx.strokeStyle = '#2d98da';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(
+        sx * CELL_SIZE + 1.5,
+        sy * CELL_SIZE + 1.5,
+        CELL_SIZE - 3,
+        CELL_SIZE - 3,
+      );
     }
 
     // 3. Chess.com heleroheline viimase käigu kuma
@@ -215,8 +223,12 @@ export function Board({ grid, selectedPiece, lastMove, onCellClick, gameOver, wi
 
         const cx = x * CELL_SIZE + CELL_SIZE / 2;
         const cy = y * CELL_SIZE + CELL_SIZE / 2;
-        const isSelected = selectedPiece && selectedPiece[0] === x && selectedPiece[1] === y;
-        
+        const isSelected = Boolean(
+          selectedPiece &&
+          selectedPiece[0] === x &&
+          selectedPiece[1] === y
+        );
+
         drawSinglePiece(ctx, piece, cx, cy, isSelected);
       }
     }
@@ -230,24 +242,32 @@ export function Board({ grid, selectedPiece, lastMove, onCellClick, gameOver, wi
     if (gameOver) {
       ctx.save();
       ctx.shadowColor = 'transparent';
-      ctx.fillStyle = 'rgba(18, 34, 56, 0.85)';
+      ctx.fillStyle = 'rgba(18, 34, 56, 0.88)';
       ctx.fillRect(0, 0, 550, 550);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = "bold 26px 'Segoe UI', Arial, sans-serif";
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(winner, 275, 260);
+
+      ctx.fillStyle = '#f5d98d';
+      ctx.font = "bold 30px 'Segoe UI', Arial, sans-serif";
+      ctx.fillText(winner || 'Game over', 275, 225);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = "600 18px 'Segoe UI', Arial, sans-serif";
+      ctx.fillText('Mäng on läbi', 275, 270);
       ctx.restore();
     }
 
     // Status message
     if (statusMessage) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(50, 200, 450, 100);
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+      ctx.fillRect(50, 305, 450, 80);
       ctx.fillStyle = '#fff';
-      ctx.font = 'bold 20px Arial';
+      ctx.font = 'bold 18px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText(statusMessage, 275, 255);
+      ctx.textBaseline = 'middle';
+      ctx.fillText(statusMessage, 275, 345);
+      ctx.restore();
     }
   }, [grid, selectedPiece, lastMove, gameOver, winner, statusMessage]);
 
@@ -288,7 +308,7 @@ export function Board({ grid, selectedPiece, lastMove, onCellClick, gameOver, wi
     }
   }, [lastMove, render]);
 
-  const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleClick = useCallback((e: MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     const cellX = Math.floor((e.clientX - rect.left) / CELL_SIZE);
