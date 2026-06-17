@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { DialogueBox } from '../dialogue/DialogueBox';
+import { DIALOGUE_TRIGGERS } from '../dialogue/dialogues';
 import './CookingGame.css';
 
 interface LonghouseHotspotsProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete: () => void;
+  onRewardCollect?: () => void;
 }
 
 interface LonghouseHotspot {
   id: string;
   icon: string;
   title: string;
-  speaker: string;
-  text: string;
+  dialogueId: string;
   left: string;
   top: string;
 }
@@ -30,8 +32,7 @@ const LONGHOUSE_HOTSPOTS: LonghouseHotspot[] = [
     id: '1-11',
     icon: '🧶',
     title: 'Lõngakera',
-    speaker: 'Sigrid',
-    text: 'Ilma naiste käte ja kedveta poleks teil purjesid, mis teid kohale viiks, ega kuubesid, mis teid merel soojas hoiaks.',
+    dialogueId: DIALOGUE_TRIGGERS.hotspotThread,
     left: '23%',
     top: '67%',
   },
@@ -39,8 +40,7 @@ const LONGHOUSE_HOTSPOTS: LonghouseHotspot[] = [
     id: '1-12',
     icon: '🔑',
     title: 'Uksevõtmed',
-    speaker: 'Sigrid',
-    text: 'Võtmed minu vööl tähendavad, et mina valitsen seda vara. Kui peremees on merel, on naise sõna siin majas seadus.',
+    dialogueId: DIALOGUE_TRIGGERS.hotspotKeys,
     left: '77%',
     top: '42%',
   },
@@ -48,17 +48,15 @@ const LONGHOUSE_HOTSPOTS: LonghouseHotspot[] = [
     id: '1-13',
     icon: '🌾',
     title: 'Kahlud seinal',
-    speaker: 'Sigrid',
-    text: 'Sool ja suits, Björn. Ilma toidutagavarata ei jõua te isegi poolele merele. Meie muudame suvise saagi talviseks ellujäämiseks.',
+    dialogueId: DIALOGUE_TRIGGERS.hotspotSalted,
     left: '25%',
     top: '35%',
   },
   {
     id: '1-14',
     icon: '⚖️',
-    title: 'Kirst ja kaalud',
-    speaker: 'Sigrid',
-    text: 'See pole lihtsalt sära. See on kaubandus. Viiking on pooleldi sõdalane, pooleldi kaupmees.',
+    title: 'Kirst (hõbe + kaalud)',
+    dialogueId: DIALOGUE_TRIGGERS.hotspotChest,
     left: '76%',
     top: '74%',
   },
@@ -66,8 +64,7 @@ const LONGHOUSE_HOTSPOTS: LonghouseHotspot[] = [
     id: '1-15',
     icon: '🔥',
     title: 'Suitsuava ja kolle',
-    speaker: 'Sigrid',
-    text: 'Tuli on pikkmaja süda. Kui sa oled merel ligunenud ja külmunud, on see tuli ainus asi, mis su hinge kehas hoiab.',
+    dialogueId: DIALOGUE_TRIGGERS.hotspotFire,
     left: '50%',
     top: '54%',
   },
@@ -75,8 +72,7 @@ const LONGHOUSE_HOTSPOTS: LonghouseHotspot[] = [
     id: '1-16',
     icon: '🪣',
     title: 'Puidust küna',
-    speaker: 'Sigrid',
-    text: 'Vili ja humal. Meie põllud toidavad meid, mitte meri. Retk algab põllult ja lõpeb põllul.',
+    dialogueId: DIALOGUE_TRIGGERS.hotspotTrough,
     left: '50%',
     top: '77%',
   },
@@ -100,9 +96,9 @@ const LONGHOUSE_QUESTIONS: LonghouseQuestion[] = [
   {
     id: '1-17-3',
     question: 'Mis lükkab laeva edasi, kui tuult ei ole?',
-    answers: ['Lohepea vööris', 'Aerud ja meeskonna ühine rütm', 'Kirstud laeva põhjas'],
+    answers: ['Lohepea vööris', 'Villased purjed ja rõivad', 'Kirstud laeva põhjas'],
     correctIndex: 1,
-    explanation: 'Kui tuul vaibub, liigub pikklaev edasi sõudjate jõu ja ühise rütmi abil.',
+    explanation: 'Ilma naiste käte ja kedveta poleks laeval purjesid ega kuubesid, mis merel eluks vajalikud.',
   },
 ];
 
@@ -110,16 +106,14 @@ export function LonghouseHotspots({
   isOpen,
   onClose,
   onComplete,
+  onRewardCollect,
 }: LonghouseHotspotsProps) {
   const [visitedHotspots, setVisitedHotspots] = useState<string[]>([]);
-  const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
-  const [phase, setPhase] = useState<'hotspots' | 'quiz'>('hotspots');
+  const [activeDialogueId, setActiveDialogueId] = useState<string | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
+  const [phase, setPhase] = useState<'intro' | 'choice' | 'hotspots' | 'quiz' | 'transition'>('intro');
 
-  const activeHotspot = LONGHOUSE_HOTSPOTS.find(
-    (hotspot) => hotspot.id === activeHotspotId
-  );
   const allHotspotsVisited = visitedHotspots.length >= LONGHOUSE_HOTSPOTS.length;
   const currentQuestion = LONGHOUSE_QUESTIONS[questionIndex];
   const selectedAnswer = currentQuestion ? selectedAnswers[currentQuestion.id] : undefined;
@@ -131,22 +125,28 @@ export function LonghouseHotspots({
 
   useEffect(() => {
     if (isOpen) {
+      setPhase('intro');
       setVisitedHotspots([]);
-      setActiveHotspotId(null);
-      setPhase('hotspots');
+      setActiveDialogueId(null);
       setQuestionIndex(0);
       setSelectedAnswers({});
     }
   }, [isOpen]);
 
   const handleHotspotClick = (hotspot: LonghouseHotspot) => {
-    setActiveHotspotId(hotspot.id);
+    setActiveDialogueId(hotspot.dialogueId);
     setVisitedHotspots((current) =>
       current.includes(hotspot.id) ? current : [...current, hotspot.id]
     );
   };
 
   const handleFinish = () => {
+    if (phase === 'intro') {
+      setPhase('choice');
+      setActiveDialogueId(DIALOGUE_TRIGGERS.sigridChoice);
+      return;
+    }
+
     if (phase === 'hotspots') {
       if (!allHotspotsVisited) return;
       setPhase('quiz');
@@ -156,6 +156,7 @@ export function LonghouseHotspots({
 
     if (!quizComplete) return;
 
+    onRewardCollect?.();
     onComplete();
     setTimeout(() => onClose(), 350);
   };
@@ -178,6 +179,11 @@ export function LonghouseHotspots({
   };
 
   const handleActionButton = () => {
+    if (phase === 'intro') {
+      handleFinish();
+      return;
+    }
+
     if (phase === 'hotspots') {
       handleFinish();
       return;
@@ -198,7 +204,13 @@ export function LonghouseHotspots({
 
   return (
     <div className="cooking-overlay">
-      <div className="cooking-backdrop" onClick={onClose} />
+      <div
+        className="cooking-backdrop"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+      />
 
       <div className="leather-panel">
         <button className="close-btn" onClick={onClose}>
@@ -208,16 +220,42 @@ export function LonghouseHotspots({
         <div className="panel-content">
           <div className="panel-title">🗝️ Pikkmaja</div>
           <div className="panel-subtitle">
-            {phase === 'hotspots' ? 'Sigridi õpetus' : 'Kontrolltest'}
+            {phase === 'intro' || phase === 'choice'
+              ? 'Sigrid saabub'
+              : phase === 'hotspots'
+                ? 'Sigridi õpetus'
+                : phase === 'quiz'
+                  ? 'Kontrolltest'
+                  : 'Tasu'}
           </div>
 
           <div className="longhouse-section">
             <div className="kitchen-header">
               <span className="fire-icon">🗝️</span>
-              <h3>{phase === 'hotspots' ? 'PIKKMAJA' : 'KONTROLLTEST'}</h3>
+              <h3>
+                {phase === 'intro' || phase === 'choice'
+                  ? 'SIGRID'
+                  : phase === 'hotspots'
+                    ? 'PIKKMAJA'
+                    : phase === 'quiz'
+                      ? 'KONTROLLTEST'
+                      : 'KODUMULLA PAUN'}
+              </h3>
             </div>
 
-            {phase === 'hotspots' ? (
+            {phase === 'intro' && (
+              <div className="recipe-info">
+                <strong>Sigrid astub pikkmaja.</strong> Kuula, mida tal öelda on, ja vali, kuidas Björn vastab.
+              </div>
+            )}
+
+            {phase === 'choice' && (
+              <div className="recipe-info">
+                <strong>Valik on sinu.</strong> Kuidas Björn Sigridile vastab? See määrab sinu suhted majarahvaga.
+              </div>
+            )}
+
+            {phase === 'hotspots' && (
               <>
                 <div className="recipe-info">
                   <strong>Sigridi õpetus.</strong> Klõpsa pikkmaja esemetel ja kuula,
@@ -235,7 +273,7 @@ export function LonghouseHotspots({
 
                   {LONGHOUSE_HOTSPOTS.map((hotspot) => {
                     const isVisited = visitedHotspots.includes(hotspot.id);
-                    const isActive = activeHotspotId === hotspot.id;
+                    const isActive = activeDialogueId === hotspot.dialogueId;
 
                     return (
                       <button
@@ -257,13 +295,12 @@ export function LonghouseHotspots({
                 <div className="hotspot-list" aria-label="Pikkmaja esemed">
                   {LONGHOUSE_HOTSPOTS.map((hotspot) => {
                     const isVisited = visitedHotspots.includes(hotspot.id);
-                    const isActive = activeHotspotId === hotspot.id;
 
                     return (
                       <button
                         key={hotspot.id}
                         type="button"
-                        className={`hotspot-list-item ${isVisited ? 'visited' : ''} ${isActive ? 'active' : ''}`}
+                        className={`hotspot-list-item ${isVisited ? 'visited' : ''}`}
                         onClick={() => handleHotspotClick(hotspot)}
                       >
                         <span className="hotspot-list-icon">{hotspot.icon}</span>
@@ -272,25 +309,10 @@ export function LonghouseHotspots({
                     );
                   })}
                 </div>
-
-                <div className="hotspot-fact-card">
-                  {activeHotspot ? (
-                    <>
-                      <div className="hotspot-fact-title">{activeHotspot.title}</div>
-                      <p>{activeHotspot.text}</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="hotspot-fact-title">Vali ese</div>
-                      <p>
-                        Sigrid selgitab iga pikkmaja eseme tähendust ja miks kodu tarkus
-                        retke õnnestumiseks vajalik on.
-                      </p>
-                    </>
-                  )}
-                </div>
               </>
-            ) : (
+            )}
+
+            {phase === 'quiz' && (
               <div className="sigrid-quiz" aria-live="polite">
                 <div className="quiz-count">
                   Küsimus {questionIndex + 1} / {LONGHOUSE_QUESTIONS.length}
@@ -310,9 +332,8 @@ export function LonghouseHotspots({
                           <button
                             key={answer}
                             type="button"
-                            className={`quiz-answer ${isSelected ? 'selected' : ''} ${
-                              showResult && isCorrect ? 'correct' : ''
-                            } ${showResult && isSelected && !isCorrect ? 'wrong' : ''}`}
+                            className={`quiz-answer ${isSelected ? 'selected' : ''} ${showResult && isCorrect ? 'correct' : ''}
+                              ${showResult && isSelected && !isCorrect ? 'wrong' : ''}`}
                             onClick={() => handleQuizAnswer(index)}
                             disabled={showResult}
                           >
@@ -327,11 +348,10 @@ export function LonghouseHotspots({
 
                     {selectedAnswer !== undefined && (
                       <div
-                        className={`quiz-feedback ${
-                          selectedAnswer === currentQuestion.correctIndex
+                        className={`quiz-feedback ${selectedAnswer === currentQuestion.correctIndex
                             ? 'correct'
                             : 'wrong'
-                        }`}
+                          }`}
                       >
                         <strong>
                           {selectedAnswer === currentQuestion.correctIndex
@@ -352,47 +372,46 @@ export function LonghouseHotspots({
               </div>
             )}
 
-            <button
-              className={`cook-btn ${
-                (phase === 'hotspots' && allHotspotsVisited) || quizComplete ? 'ready' : ''
-              }`}
-              onClick={handleActionButton}
-              disabled={
-                phase === 'hotspots'
-                  ? !allHotspotsVisited
-                  : selectedAnswer === undefined
-              }
-            >
-              {phase === 'hotspots'
-                ? allHotspotsVisited
-                  ? '🧠 Alusta Sigridi kontrolltesti'
-                  : `🗝️ Uuri veel (${visitedHotspots.length}/${LONGHOUSE_HOTSPOTS.length})`
-                : quizComplete
-                  ? '🎒 Võta Kodumulla paun kaasa'
-                  : questionIndex === LONGHOUSE_QUESTIONS.length - 1
-                    ? 'Lõpeta'
-                    : 'Järgmine küsimus'}
-            </button>
+            {phase !== 'choice' && (
+              <button
+                className={`cook-btn ${(phase === 'hotspots' && allHotspotsVisited) || quizComplete ? 'ready' : ''}`}
+                onClick={handleActionButton}
+                disabled={
+                  phase === 'intro'
+                    ? false
+                    : phase === 'hotspots'
+                      ? !allHotspotsVisited
+                      : selectedAnswer === undefined
+                }
+              >
+                {phase === 'intro'
+                  ? 'Kuula Sigridit'
+                  : phase === 'hotspots'
+                    ? allHotspotsVisited
+                      ? '🧠 Alusta Sigridi kontrolltesti'
+                      : `🗝️ Uuri veel (${visitedHotspots.length}/${LONGHOUSE_HOTSPOTS.length})`
+                    : quizComplete
+                      ? '🎒 Võta Kodumulla paun kaasa'
+                      : questionIndex === LONGHOUSE_QUESTIONS.length - 1
+                        ? 'Lõpeta'
+                        : 'Järgmine küsimus'}
+              </button>
+            )}
           </div>
 
-          <div className="dialogue-box">
-            <div className="dialogue-avatar">🗝️</div>
-            <div className="dialogue-content">
-              <div className="dialogue-speaker">{activeHotspot?.speaker ?? 'Sigrid'}</div>
-              <div className="dialogue-text">
-                "
-                {phase === 'quiz'
-                  ? selectedAnswer === undefined
-                    ? 'Vaatame, kas sa kuulasid või ainult noogutasid.'
-                    : selectedAnswer === currentQuestion?.correctIndex
-                      ? 'Nii on. Pikkmajas jääb ellu see, kes märkab.'
-                      : 'Mõtle veel, Björn. Tööriist räägib, kui sa teda kuulad.'
-                  : activeHotspot?.text ??
-                    'Nüüd vaata ringi, Björn. Pikkmaja õpetab rohkem kui mõõk, kui sa oskad märgata.'}
-                "
-              </div>
-            </div>
-          </div>
+          <DialogueBox
+            dialogueId={activeDialogueId}
+            onComplete={() => {
+              setActiveDialogueId(null);
+              if (phase === 'choice') {
+                setTimeout(() => setPhase('hotspots'), 400);
+              }
+            }}
+            onChoice={(label, nextId) => {
+              // Sigridi A/B valik: e1_bjorn_lugupidav või e1_bjorn_ulbe
+              // Dialoog süsteem jätkub automaatselt järgmise stseeni kaudu
+            }}
+          />
         </div>
       </div>
     </div>

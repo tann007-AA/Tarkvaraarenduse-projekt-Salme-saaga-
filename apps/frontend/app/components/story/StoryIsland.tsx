@@ -1,8 +1,10 @@
 import React from 'react';
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Home } from 'lucide-react';
 import './level.css';
+import { DialogueBox } from './dialogue/DialogueBox';
+import { DIALOGUE_TRIGGERS } from './dialogue/dialogues';
+import { type StoryIsland } from './progress';
 
 import SwedenMap from './character/Sweden.svg';
 import GotlandMap from './character/Gotland.svg';
@@ -24,8 +26,9 @@ import Right01 from './character/Right_01.png';
 import Right02 from './character/Right_02.png';
 import Right03 from './character/Right_03.png';
 
+import VikingShip from './character/VikingShip.png';
+
 type Direction = 'front' | 'back' | 'left' | 'right';
-type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
 
 type Zone = {
   minX: number;
@@ -39,21 +42,21 @@ type Marker = {
   top: string;
 };
 
-const HOUSE_POSITIONS: Record<StoryIsland, { left: string; top: string } | null> = {
-  rootsi: { left: '16%', top: '12%' },
-  gotland: null,
-  saaremaa: null,
-};
+const VikingShipPos = { left: '95%', top: '35%' };
 
 interface StoryIslandProps {
   currentIsland: StoryIsland;
+  completedBeachIslands?: Set<StoryIsland>;
   onBackToMenu: () => void;
   onGoToIsland?: (island: StoryIsland) => void;
   onCompleteIsland?: (nextIsland: StoryIsland) => void;
-  points: number;
+  onGoToBeach?: () => void;
+  isPaused?: boolean;
+  points?: number;
   onOpenSettings?: () => void;
   onOpenShop?: () => void;
-  onEnterHouse?: () => void;
+  storyRewards?: string[];
+  onStoryRewardCollect?: (rewardId: string) => void;
 }
 
 const storyIslandData: Record<
@@ -175,11 +178,16 @@ const storyIslandData: Record<
 
 export function StoryIsland({
   currentIsland,
+  completedBeachIslands = new Set(),
   onBackToMenu,
   onGoToIsland,
   onCompleteIsland,
+  onGoToBeach,
+  isPaused = false,
   onOpenSettings,
-  onEnterHouse,
+  onOpenShop,
+  storyRewards = [],
+  onStoryRewardCollect,
 }: StoryIslandProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const characterRef = useRef<HTMLImageElement | null>(null);
@@ -190,10 +198,19 @@ export function StoryIsland({
   const clickTargetRef = useRef<{ x: number; y: number } | null>(null);
   const clickMovingRef = useRef(false);
 
+  const isPausedRef = useRef(isPaused);
+  const hasTriggeredShipRef = useRef(false);
+
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
   const island = storyIslandData[currentIsland];
 
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(0);
   const [checkpointCount, setCheckpointCount] = useState(0);
+  const [activeDialogueId, setActiveDialogueId] = useState<string | null>(null);
+  const [pendingIsland, setPendingIsland] = useState<StoryIsland | null>(null);
 
   const xRef = useRef(island.startX);
   const yRef = useRef(island.startY);
@@ -208,7 +225,7 @@ export function StoryIsland({
     right: false,
   });
 
-  const speed = 0.015;
+  const speed = 0.022;
   const frameDuration = 140;
 
   const sprites = useMemo(
@@ -233,6 +250,8 @@ export function StoryIsland({
     clickTargetRef.current = null;
     clickMovingRef.current = false;
     keysRef.current = { up: false, down: false, left: false, right: false };
+
+    hasTriggeredShipRef.current = false;
 
     if (characterRef.current) {
       characterRef.current.style.left = `${xRef.current}%`;
@@ -262,6 +281,7 @@ export function StoryIsland({
 
 
   const handleMapClick = (event: MouseEvent<HTMLDivElement>) => {
+    if (activeDialogueId) return;
     const map = mapRef.current;
     if (!map) return;
 
@@ -309,6 +329,11 @@ export function StoryIsland({
     const gameLoop = (timestamp: number) => {
       const delta = lastTimeRef.current ? timestamp - lastTimeRef.current : 16;
       lastTimeRef.current = timestamp;
+
+      if (isPausedRef.current) {
+        animationFrameRef.current = requestAnimationFrame(gameLoop);
+        return;
+      }
 
       let nextX = xRef.current;
       let nextY = yRef.current;
@@ -384,6 +409,24 @@ export function StoryIsland({
 
 
       renderCharacter();
+
+      const shipX = parseFloat(VikingShipPos.left);
+      const shipY = parseFloat(VikingShipPos.top);
+      const dxShip = xRef.current - shipX;
+      const dyShip = yRef.current - shipY;
+      const shipDistance = Math.sqrt(dxShip * dxShip + dyShip * dyShip);
+
+      const beachCompleted = completedBeachIslands.has(currentIsland);
+
+      if (shipDistance < 10 && !hasTriggeredShipRef.current && !beachCompleted) {
+        hasTriggeredShipRef.current = true;
+        onGoToBeach?.();
+      }
+
+      if (shipDistance >= 10 || beachCompleted) {
+        hasTriggeredShipRef.current = false;
+      }
+
       animationFrameRef.current = requestAnimationFrame(gameLoop);
     };
 
@@ -398,7 +441,7 @@ export function StoryIsland({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [sprites, currentIsland, island]);
+  }, [sprites, currentIsland, island, completedBeachIslands, onGoToBeach]);
 
   const handleMarkerClick = (index: number) => {
     if (index !== currentMarkerIndex) return;
@@ -408,7 +451,15 @@ export function StoryIsland({
     setCheckpointCount(nextIndex);
 
     if (nextIndex >= island.markers.length && island.nextIsland) {
-      onCompleteIsland?.(island.nextIsland);
+      const nextIsland = island.nextIsland; // salvesta muutujasse
+      if (currentIsland === 'rootsi') {
+        setActiveDialogueId(DIALOGUE_TRIGGERS.ormarArrival);
+      } else if (currentIsland === 'gotland') {
+        setActiveDialogueId(DIALOGUE_TRIGGERS.openSea);
+      } else if (currentIsland === 'saaremaa') {
+        setActiveDialogueId(DIALOGUE_TRIGGERS.nightWatch);
+      }
+      setPendingIsland(nextIsland);
     }
   };
 
@@ -424,82 +475,95 @@ export function StoryIsland({
       </div>
 
       <main className="level-screen">
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
-          <button
-            onClick={onEnterHouse}
-            className="flex items-center justify-center bg-gradient-to-r from-[#d4a574] to-[#b8860b] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden p-2.5"
-            title="Maja"
-          >
-            <Home className="w-full h-full text-white" />
-          </button>
+        <header className="level-header">
+          <aside className="level-info-card">
+            <h1>{island.title}</h1>
+            <p className="level-topic">Viking Journeys</p>
+            <p className="level-progress">
+              {checkpointCount} / {island.markers.length} Checkpoints
+            </p>
+          </aside>
 
-          <button
-            onClick={onOpenSettings}
-            className="flex items-center justify-center bg-gradient-to-r from-[#d4a574] to-[#b8860b] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden p-2.5"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={3}
-              stroke="currentColor"
-              className="w-full h-full text-white"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.77a1.119 1.119 0 0 0-.362.853v.052c0 .31.13.602.362.853l1.003.77a1.125 1.125 0 0 1 .26 1.43l-1.296 2.247a1.125 1.125 0 0 1-1.37.49l-1.216-.456a1.125 1.125 0 0 0-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281a1.125 1.125 0 0 0-.645-.87a6.528 6.528 0 0 1-.22-.127a1.125 1.125 0 0 0-1.075-.124l-1.217.456a1.125 1.125 0 0 1-1.37-.49l-1.296-2.247a1.125 1.125 0 0 1 .26-1.43l1.003-.77a1.119 1.119 0 0 0 .362-.852v-.052c0-.31-.13-.602-.362-.853l-1.003-.77a1.125 1.125 0 0 1-.26-1.43l1.296-2.247a1.125 1.125 0 0 1 1.37-.49l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128c.332-.183.582-.495.644-.869l.214-1.28Z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-            </svg>
-          </button>
-        </div>
+          <section className="top-progress" aria-labelledby="islandProgressTitle">
+            <h2 id="islandProgressTitle" className="sr-only">
+              Island progression
+            </h2>
 
-        <aside className="level-info-card">
-          <h1>{island.title}</h1>
-          <p className="level-topic">Viking Journeys</p>
-          <p className="level-progress">
-            {checkpointCount} / {island.markers.length} Checkpoints
-          </p>
-        </aside>
+            <div className="island-progress">
+              <button
+                type="button"
+                className={`progress-step ${currentIsland === 'rootsi' ? 'active' : ''}`}
+                aria-current={currentIsland === 'rootsi' ? 'step' : undefined}
+                onClick={() => onGoToIsland?.('rootsi')}
+              >
+                <span className="step-icon">1</span>
+                <span className="step-label">Rootsi</span>
+              </button>
 
-        <section className="top-progress" aria-labelledby="islandProgressTitle">
-          <h2 id="islandProgressTitle" className="sr-only">
-            Island progression
-          </h2>
+              <div className="progress-line" aria-hidden="true"></div>
 
-          <div className="island-progress">
+              <button
+                type="button"
+                className={`progress-step ${currentIsland === 'gotland' ? 'active' : ''}`}
+                aria-current={currentIsland === 'gotland' ? 'step' : undefined}
+                onClick={() => onGoToIsland?.('gotland')}
+              >
+                <span className="step-icon">2</span>
+                <span className="step-label">Gotland</span>
+              </button>
+
+              <div className="progress-line" aria-hidden="true"></div>
+
+              <button
+                type="button"
+                className={`progress-step ${currentIsland === 'saaremaa' ? 'active' : ''}`}
+                aria-current={currentIsland === 'saaremaa' ? 'step' : undefined}
+                onClick={() => onGoToIsland?.('saaremaa')}
+              >
+                <span className="step-icon">3</span>
+                <span className="step-label">Saaremaa</span>
+              </button>
+            </div>
+          </section>
+
+          <div className="level-header-actions">
+            {storyRewards.includes('kodumulla-paun') && (
+              <div
+                className="flex items-center justify-center bg-gradient-to-r from-[#2d6a4f] to-[#40916c] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl"
+                title="Kodumulla paun"
+              >
+                <span className="text-lg md:text-xl">🪙</span>
+              </div>
+            )}
+
+            {storyRewards.includes('whalebone-dice') && (
+              <div
+                className="flex items-center justify-center bg-gradient-to-r from-[#5c4a6b] to-[#7a5f8d] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl"
+                title="Vaalaluust täringud"
+              >
+                <span className="text-lg md:text-xl">🎲</span>
+              </div>
+            )}
+
             <button
-              type="button"
-              className={`progress-step ${currentIsland === 'rootsi' ? 'active' : ''}`}
-              aria-current={currentIsland === 'rootsi' ? 'step' : undefined}
-              onClick={() => onGoToIsland?.('rootsi')}
+              onClick={onOpenSettings}
+              className="flex items-center justify-center bg-gradient-to-r from-[#d4a574] to-[#b8860b] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden p-2.5"
+              aria-label="Seaded"
             >
-              <span className="step-icon">1</span>
-              <span className="step-label">Rootsi</span>
-            </button>
-
-            <div className="progress-line" aria-hidden="true"></div>
-
-            <button
-              type="button"
-              className={`progress-step ${currentIsland === 'gotland' ? 'active' : ''}`}
-              aria-current={currentIsland === 'gotland' ? 'step' : undefined}
-              onClick={() => onGoToIsland?.('gotland')}
-            >
-              <span className="step-icon">2</span>
-              <span className="step-label">Gotland</span>
-            </button>
-
-            <div className="progress-line" aria-hidden="true"></div>
-
-            <button
-              type="button"
-              className={`progress-step ${currentIsland === 'saaremaa' ? 'active' : ''}`}
-              aria-current={currentIsland === 'saaremaa' ? 'step' : undefined}
-              onClick={() => onGoToIsland?.('saaremaa')}
-            >
-              <span className="step-icon">3</span>
-              <span className="step-label">Saaremaa</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={3}
+                stroke="currentColor"
+                className="w-full h-full text-white"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.77a1.119 1.119 0 0 0-.362.853v.052c0 .31.13.602.362.853l1.003.77a1.125 1.125 0 0 1 .26 1.43l-1.296 2.247a1.125 1.125 0 0 1-1.37.49l-1.216-.456a1.125 1.125 0 0 0-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281a1.125 1.125 0 0 0-.645-.87a6.528 6.528 0 0 1-.22-.127a1.125 1.125 0 0 0-1.075-.124l-1.217.456a1.125 1.125 0 0 1-1.37-.49l-1.296-2.247a1.125 1.125 0 0 1 .26-1.43l1.003-.77a1.119 1.119 0 0 0 .362-.852v-.052c0-.31-.13-.602-.362-.853l-1.003-.77a1.125 1.125 0 0 1-.26-1.43l1.296-2.247a1.125 1.125 0 0 1 1.37-.49l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128c.332-.183.582-.495.644-.869l.214-1.28Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              </svg>
             </button>
           </div>
-        </section>
+        </header>
 
         <button id="backBtn" className="back-btn" type="button" onClick={onBackToMenu}>
           ← Tagasi
@@ -527,6 +591,18 @@ export function StoryIsland({
                 className="character"
               />
 
+              <img
+                src={VikingShip}
+                alt="Viking Ship"
+                className="character"
+                style={{
+                  left: VikingShipPos.left,
+                  top: VikingShipPos.top,
+                  width: "150px",
+                  height: "auto",
+                }}
+              />
+
               {island.markers.map((marker, index) => (
                 <button
                   key={index}
@@ -534,6 +610,7 @@ export function StoryIsland({
                   data-index={index}
                   style={{ left: marker.left, top: marker.top }}
                   onClick={(e) => {
+                    if (activeDialogueId) return;
                     e.stopPropagation();
                     handleMarkerClick(index);
                   }}
@@ -545,11 +622,22 @@ export function StoryIsland({
                   />
                 </button>
               ))}
+
             </motion.div>
           </AnimatePresence>
         </div>
-      </main>
 
+        <DialogueBox
+          dialogueId={activeDialogueId}
+          onComplete={() => {
+            setActiveDialogueId(null);
+            if (pendingIsland) {
+              onCompleteIsland?.(pendingIsland);
+              setPendingIsland(null);
+            }
+          }}
+        />
+      </main>
     </React.Fragment>
   );
 }

@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Draggable, DropZone } from '../Draggable';
+import { DialogueBox } from '../dialogue/DialogueBox';
+import { DIALOGUE_TRIGGERS } from '../dialogue/dialogues';
 import './CookingGame.css';
 
 interface CookingGameProps {
@@ -23,75 +25,36 @@ const INGREDIENTS: Ingredient[] = [
   { id: 'turnip', emoji: '🥔', name: 'Naerid', correct: true },
   { id: 'arrow', emoji: '🏹', name: 'Nooleots', correct: false, humor: 'ivar' },
   { id: 'bone', emoji: '🦴', name: 'Luu', correct: false, humor: 'ivar' },
+  { id: 'fish', emoji: '🐟', name: 'Heeringas', correct: false },
   { id: 'bread', emoji: '🍞', name: 'Leib', correct: false },
   { id: 'cheese', emoji: '🧀', name: 'Juust', correct: false },
-  { id: 'fish', emoji: '🐟', name: 'Heeringas', correct: true },
   { id: 'apple', emoji: '🍎', name: 'Õun', correct: false },
 ];
 
-const DIALOGUES: Record<string, { speaker: string; avatar: string; text: string }> = {
-  start: {
-    speaker: 'Haldor',
-    avatar: '🧔',
-    text: 'Björn, see leem on sul täna kuidagi õhuke... Aja suppi! Viska potti 3 õiget koostisosa.',
-  },
-  hint: {
-    speaker: 'Ivar',
-    avatar: '⚔️',
-    text: 'Viska sinna midagi rammusat sisse, muidu me ei jaksa homme isegi aeru tõsta.',
-  },
-  wrong_arrow: {
-    speaker: 'Ivar',
-    avatar: '⚔️',
-    text: 'Hei! Kas sa proovid meid nooleotsadega toita? Hoia need vaenlaste jaoks!',
-  },
-  wrong_bone: {
-    speaker: 'Ivar',
-    avatar: '⚔️',
-    text: 'See luu on juba korjatud puhtaks. Midagi söödavat seal pole!',
-  },
-  wrong_generic: {
-    speaker: 'Haldor',
-    avatar: '🧔',
-    text: 'See ei sobi suppi. Midagi tugevamat on vaja!',
-  },
-  correct: {
-    speaker: 'Haldor',
-    avatar: '🧔',
-    text: 'Jah, just seda vajasime! Supp pakseneb.',
-  },
-  ready: {
-    speaker: 'Gunnar',
-    avatar: '🛡️',
-    text: 'Supp on valmis! Mehed, söök ja siis laevale – Gotland ootab!',
-  },
-  almost: {
-    speaker: 'Ivar',
-    avatar: '⚔️',
-    text: 'Veel natuke! Meil on vaja 3 koostisosa.',
-  },
-};
-
 export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
   const [collected, setCollected] = useState<string[]>([]);
-  const [dialogue, setDialogue] = useState(DIALOGUES.start);
+  const [dialogueId, setDialogueId] = useState<string | null>(DIALOGUE_TRIGGERS.cookingStart);
   const [shuffled, setShuffled] = useState<Ingredient[]>([]);
   const [shakePot, setShakePot] = useState(false);
   const [successPulse, setSuccessPulse] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [steamParticles, setSteamParticles] = useState<number[]>([]);
 
+  const resetGame = useCallback(() => {
+    setShuffled([...INGREDIENTS].sort(() => Math.random() - 0.5));
+    setCollected([]);
+    setDialogueId(DIALOGUE_TRIGGERS.cookingStart);
+    setCompleted(false);
+    setShakePot(false);
+    setSuccessPulse(false);
+    setSteamParticles([]);
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
-      setShuffled([...INGREDIENTS].sort(() => Math.random() - 0.5));
-      setCollected([]);
-      setDialogue(DIALOGUES.start);
-      setCompleted(false);
-      setShakePot(false);
-      setSuccessPulse(false);
-      setSteamParticles([]);
+      resetGame();
     }
-  }, [isOpen]);
+  }, [isOpen, resetGame]);
 
   useEffect(() => {
     if (collected.length > 0 && collected.length < 3) {
@@ -112,45 +75,50 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
       if (ingredient.correct) {
         const newCollected = [...collected, ingredientId];
         setCollected(newCollected);
-        setDialogue(DIALOGUES.correct);
+        setDialogueId(DIALOGUE_TRIGGERS.cookingCorrect);
         setSuccessPulse(true);
         setTimeout(() => setSuccessPulse(false), 600);
 
         if (newCollected.length >= 3) {
           setTimeout(() => {
-            setDialogue(DIALOGUES.ready);
             setCompleted(true);
+            setDialogueId(DIALOGUE_TRIGGERS.afterCooking);
           }, 900);
         } else if (newCollected.length === 2) {
-          setTimeout(() => setDialogue(DIALOGUES.almost), 1500);
+          setTimeout(() => setDialogueId(DIALOGUE_TRIGGERS.cookingAlmost), 1500);
         }
       } else {
         setShakePot(true);
         setTimeout(() => setShakePot(false), 500);
         if (ingredient.humor === 'ivar') {
-          if (ingredient.id === 'arrow') setDialogue(DIALOGUES.wrong_arrow);
-          else if (ingredient.id === 'bone') setDialogue(DIALOGUES.wrong_bone);
+          if (ingredient.id === 'arrow') setDialogueId(DIALOGUE_TRIGGERS.cookingWrongArrow);
+          else if (ingredient.id === 'bone') setDialogueId(DIALOGUE_TRIGGERS.cookingWrongBone);
         } else {
-          setDialogue(DIALOGUES.wrong_generic);
+          setDialogueId(DIALOGUE_TRIGGERS.cookingWrongGeneric);
         }
       }
     },
     [collected, completed]
   );
 
-  const handleFinish = () => {
-    if (collected.length < 3) return;
-    onComplete();
-    setTimeout(() => onClose(), 500);
-  };
-
   const isAdded = (id: string) => collected.includes(id);
+
+  const getMainButtonLabel = () => {
+    if (completed) return '✅ Valmis';
+    return `🔥 Lisa koostisosad (${collected.length}/3)`;
+  };
 
   if (!isOpen) return null;
 
   return (
     <div className="cooking-overlay">
-      <div className="cooking-backdrop" onClick={onClose} />
+      <div
+        className="cooking-backdrop"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+      />
 
       <div className="leather-panel">
         <button className="close-btn" onClick={onClose}>
@@ -158,9 +126,6 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
         </button>
 
         <div className="panel-content">
-          <div className="panel-title">🍲 Björni Paun</div>
-          <div className="panel-subtitle">Viikingi varustus</div>
-
           <div className="kitchen-section">
             <div className="kitchen-header">
               <span className="fire-icon">🔥</span>
@@ -168,10 +133,10 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
             </div>
 
             <div className="recipe-info">
-              <strong>Valmista retkele süüa!</strong> Lisa potti <strong>3 õiget</strong> koostisosa.
+              <strong>Valmista retkele süüa!</strong> Pane potti <strong>3 õiget</strong> koostisosa.
               <br />
               <span className="hint-text">
-                💡 Vihje: Lohista koostisosad potti või klõpsa neile
+                Lohista koostisosad potti või klõpsa neile
               </span>
             </div>
 
@@ -186,74 +151,85 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
               </div>
             </div>
 
-            <div className="pot-area">
-              <DropZone
-                zoneId="pot"
-                className={`soup-pot ${shakePot ? 'shake' : ''} ${
-                  successPulse ? 'pulse-success' : ''
-                } ${completed ? 'completed' : ''}`}
-                onDrop={(draggableId: string) => handleDrop(draggableId)}
-              >
-                <div className="pot-content">
-                  <span className="pot-emoji">🍲</span>
-                  {steamParticles.map((id, index) => (
-                    <span
-                      key={id}
-                      className="steam-particle"
-                      aria-hidden="true"
-                      style={
-                        {
-                          '--steam-offset': `${index === 0 ? -14 : 14}px`,
-                          '--steam-delay': `${index * 120}ms`,
-                        } as React.CSSProperties
-                      }
-                    />
-                  ))}
-                  {completed && <span className="completion-check">✅</span>}
-                </div>
-                <span className="soup-pot-label">{completed ? 'Valmis!' : 'Aja suppi'}</span>
-              </DropZone>
-            </div>
-
-            <div className="ingredients-title">🥘 Koostisosad</div>
-            <div className="ingredients-grid">
-              {shuffled.map((ing: Ingredient) => (
-                <Draggable
-                  key={ing.id}
-                  id={ing.id}
-                  className={`ingredient-item ${isAdded(ing.id) ? 'added' : ''}`}
-                  disabled={isAdded(ing.id) || completed}
-                >
-                  <div
-                    className="ingredient-inner"
-                    onClick={() => !isAdded(ing.id) && !completed && handleDrop(ing.id)}
+            <div className="cooking-game-layout">
+              <div className="pot-side">
+                <div className="pot-side-title">🍲 Pott</div>
+                <div className="pot-area">
+                  <DropZone
+                    zoneId="pot"
+                    className={`soup-pot ${shakePot ? 'shake' : ''} ${
+                      successPulse ? 'pulse-success' : ''
+                    } ${completed ? 'completed' : ''}`}
+                    onDrop={(draggableId: string) => handleDrop(draggableId)}
                   >
-                    <span className="ingredient-emoji">{ing.emoji}</span>
-                    <span className="ingredient-name">{ing.name}</span>
-                    {isAdded(ing.id) && <span className="added-check">✓</span>}
-                  </div>
-                </Draggable>
-              ))}
+                    <div className="pot-content">
+                      <span className="pot-emoji">🍲</span>
+                      {steamParticles.map((id, index) => (
+                        <span
+                          key={id}
+                          className="steam-particle"
+                          aria-hidden="true"
+                          style={
+                            {
+                              '--steam-offset': `${index === 0 ? -14 : 14}px`,
+                              '--steam-delay': `${index * 120}ms`,
+                            } as React.CSSProperties
+                          }
+                        />
+                      ))}
+                      {completed && <span className="completion-check">✅</span>}
+                    </div>
+                    <span className="soup-pot-label">{completed ? 'Valmis!' : 'Aja suppi'}</span>
+                  </DropZone>
+                </div>
+              </div>
+
+              <div className="ingredients-side">
+                <div className="ingredients-title">🥘 Koostisosad</div>
+                <div className="ingredients-grid">
+                  {shuffled.map((ing: Ingredient) => (
+                    <Draggable
+                      key={ing.id}
+                      id={ing.id}
+                      className={`ingredient-item ${isAdded(ing.id) ? 'added' : ''}`}
+                      disabled={isAdded(ing.id) || completed}
+                    >
+                      <div
+                        className="ingredient-inner"
+                        onClick={() => !isAdded(ing.id) && !completed && handleDrop(ing.id)}
+                      >
+                        <span className="ingredient-emoji">{ing.emoji}</span>
+                        <span className="ingredient-name">{ing.name}</span>
+                        {isAdded(ing.id) && <span className="added-check">✓</span>}
+                      </div>
+                    </Draggable>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <button
-              className={`cook-btn ${collected.length >= 3 ? 'ready' : ''}`}
-              onClick={handleFinish}
-              disabled={collected.length < 3}
+              className={`cook-btn ${completed ? 'ready' : ''}`}
+              onClick={completed ? onComplete : undefined}
+              disabled={!completed}
             >
               {collected.length >= 3
-                ? '🎉 Supp on valmis! Naudi!'
-                : `🔥 Lisa koostisosad (${collected.length}/3)`}
+                ? '♨️ Keeda ning toimeta muude tegevustega! ♨️'
+                : `Lisa koostisosad (${collected.length}/3)`}
             </button>
           </div>
 
-          <div className="dialogue-box">
-            <div className="dialogue-avatar">{dialogue.avatar}</div>
-            <div className="dialogue-content">
-              <div className="dialogue-speaker">{dialogue.speaker}</div>
-              <div className="dialogue-text">"{dialogue.text}"</div>
-            </div>
-          </div>
+          <DialogueBox
+            dialogueId={dialogueId}
+            onComplete={() => {
+              if (completed) {
+                onComplete();
+                setTimeout(() => onClose(), 350);
+              } else {
+                setDialogueId(null);
+              }
+            }}
+          />
         </div>
       </div>
     </div>
