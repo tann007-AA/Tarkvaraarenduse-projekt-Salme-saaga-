@@ -37,7 +37,7 @@ interface HouseSceneProps {
 }
 
 export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
-  const [playerPos, setPlayerPos] = useState({ x: 48.5, y: 43 });
+  const [playerPos, setPlayerPos] = useState({ x: 48.5, y: 80 });
   const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(null);
   const [direction, setDirection] = useState<Direction>('front');
   const [frameIndex, setFrameIndex] = useState(0);
@@ -47,6 +47,7 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
   const [hasTriggeredInteraction, setHasTriggeredInteraction] = useState(false);
   const [hasFinishedHouseGames, setHasFinishedHouseGames] = useState(false);
   const [hasTriggeredExit, setHasTriggeredExit] = useState(false);
+  const hasLeftDoorAreaRef = useRef(false);
 
   const animationFrameRef = useRef<number | null>(null);
   const lastFrameChangeRef = useRef(0);
@@ -164,6 +165,8 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
   }, [isCookingOpen, isLonghouseOpen]);
 
   const handleHouseClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isCookingOpen || isLonghouseOpen) return;
+
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = ((e.clientX - rect.left) / rect.width) * 100;
     const clickY = ((e.clientY - rect.top) / rect.height) * 100;
@@ -183,9 +186,20 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
   };
 
   useEffect(() => {
+    if (isCookingOpen || isLonghouseOpen) {
+      setTargetPos(null);
+    }
+  }, [isCookingOpen, isLonghouseOpen]);
+
+  useEffect(() => {
     const gameLoop = (timestamp: number) => {
       const delta = lastTimeRef.current ? timestamp - lastTimeRef.current : 16;
       lastTimeRef.current = timestamp;
+
+      if (isCookingOpen || isLonghouseOpen) {
+        animationFrameRef.current = requestAnimationFrame(gameLoop);
+        return;
+      }
 
       const keyboardMoving =
         keysRef.current.up ||
@@ -213,14 +227,22 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
             setHasTriggeredInteraction(false);
           }
 
+          if (
+            !hasLeftDoorAreaRef.current &&
+            !isInsideZone(pos.x, pos.y, exitZone)
+          ) {
+            hasLeftDoorAreaRef.current = true;
+          }
+
           const isTouchingExit =
+            hasLeftDoorAreaRef.current &&
             !isCookingOpen &&
             !isLonghouseOpen &&
             isInsideZone(pos.x, pos.y, exitZone);
 
           if (isTouchingExit && !hasTriggeredExit) {
             setHasTriggeredExit(true);
-            onExitHouse();
+            queueMicrotask(onExitHouse);
           }
 
           if (!isInsideZone(pos.x, pos.y, exitZone) && hasTriggeredExit) {

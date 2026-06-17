@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import './level.css';
 
+import { HouseScene } from './housescene';
+
 import SwedenMap from './character/Sweden.svg';
 import GotlandMap from './character/Gotland.svg';
 import SaaremaaMap from './character/Saaremaa.svg';
@@ -39,7 +41,7 @@ type Marker = {
 };
 
 const HOUSE_POSITIONS: Record<StoryIsland, { left: string; top: string } | null> = {
-  rootsi: { left: '16%', top: '12%' },
+  rootsi: { left: '22.2%', top: '25%' },
   gotland: null,
   saaremaa: null,
 };
@@ -191,6 +193,14 @@ export function StoryIsland({
   const clickTargetRef = useRef<{ x: number; y: number } | null>(null);
   const clickMovingRef = useRef(false);
 
+  const hasEnteredHouseRef = useRef(false);
+  const [isHouseOpen, setIsHouseOpen] = useState(false);
+  const isHouseOpenRef = useRef(false);
+
+  useEffect(() => {
+    isHouseOpenRef.current = isHouseOpen;
+  }, [isHouseOpen]);
+
   const island = storyIslandData[currentIsland];
 
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(0);
@@ -235,6 +245,8 @@ export function StoryIsland({
     clickMovingRef.current = false;
     keysRef.current = { up: false, down: false, left: false, right: false };
 
+    hasEnteredHouseRef.current = false;
+
     if (characterRef.current) {
       characterRef.current.style.left = `${xRef.current}%`;
       characterRef.current.style.top = `${yRef.current}%`;
@@ -263,6 +275,8 @@ export function StoryIsland({
 
 
   const handleMapClick = (event: MouseEvent<HTMLDivElement>) => {
+    if (isHouseOpen) return;
+
     const map = mapRef.current;
     if (!map) return;
 
@@ -310,6 +324,11 @@ export function StoryIsland({
     const gameLoop = (timestamp: number) => {
       const delta = lastTimeRef.current ? timestamp - lastTimeRef.current : 16;
       lastTimeRef.current = timestamp;
+
+      if (isHouseOpenRef.current) {
+        animationFrameRef.current = requestAnimationFrame(gameLoop);
+        return;
+      }
 
       let nextX = xRef.current;
       let nextY = yRef.current;
@@ -385,6 +404,29 @@ export function StoryIsland({
 
 
       renderCharacter();
+
+      const housePos = HOUSE_POSITIONS[currentIsland];
+
+      if (housePos) {
+        const hx = parseFloat(housePos.left);
+        const hy = parseFloat(housePos.top);
+
+        const dx = xRef.current - hx;
+        const dy = yRef.current - hy;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Enter trigger once when crossing into the radius
+        if (distance < 8 && !hasEnteredHouseRef.current) {
+          hasEnteredHouseRef.current = true;
+          setIsHouseOpen(true);
+        }
+
+        // Reset trigger after walking away
+        if (distance >= 8) {
+          hasEnteredHouseRef.current = false;
+        }
+      }
+
       animationFrameRef.current = requestAnimationFrame(gameLoop);
     };
 
@@ -412,6 +454,8 @@ export function StoryIsland({
       onCompleteIsland?.(island.nextIsland);
     }
   };
+
+  const housePos = HOUSE_POSITIONS[currentIsland];
 
   return (
     <React.Fragment>
@@ -550,11 +594,20 @@ export function StoryIsland({
                   />
                 </button>
               ))}
+
             </motion.div>
           </AnimatePresence>
         </div>
       </main>
 
+      {isHouseOpen && (
+        <div className="fixed inset-0 z-50">
+          <HouseScene
+            onBackToMenu={() => setIsHouseOpen(false)}
+            onExitHouse={() => setIsHouseOpen(false)}
+          />
+        </div>
+      )}
     </React.Fragment>
   );
 }

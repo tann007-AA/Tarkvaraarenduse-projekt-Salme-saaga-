@@ -99,6 +99,9 @@ export function Island({
   const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!svgRef.current) return;
 
+    // Don't move while a modal/dialogue/quiz is open
+    if (showTutorial || showConfirmModal || showArtifactConfirmModal) return;
+
     // Arvutame kliki koordinaadid võrreldes SVG mängualaga
     const rect = svgRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;

@@ -117,6 +117,8 @@ export function LonghouseHotspots({
   const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
+  const [phase, setPhase] = useState<'intro' | 'choice' | 'hotspots' | 'quiz'>('intro');
+  const [choiceResult, setChoiceResult] = useState<'respect' | 'arrogant' | null>(null);
 
   const activeHotspot = LONGHOUSE_HOTSPOTS.find(
     (hotspot) => hotspot.id === activeHotspotId
@@ -146,6 +148,11 @@ export function LonghouseHotspots({
     setVisitedHotspots((current) =>
       current.includes(hotspot.id) ? current : [...current, hotspot.id]
     );
+  };
+
+  const handleChoice = (choiceId: string) => {
+    setChoiceResult(choiceId as 'respect' | 'arrogant');
+    setTimeout(() => setPhase('hotspots'), 2500);
   };
 
   const handleFinish = () => {
@@ -180,6 +187,11 @@ export function LonghouseHotspots({
   };
 
   const handleActionButton = () => {
+    if (phase === 'intro') {
+      setPhase('choice');
+      return;
+    }
+
     if (phase === 'hotspots') {
       handleFinish();
       return;
@@ -200,7 +212,13 @@ export function LonghouseHotspots({
 
   return (
     <div className="cooking-overlay">
-      <div className="cooking-backdrop" onClick={onClose} />
+      <div
+        className="cooking-backdrop"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+      />
 
       <div className="leather-panel">
         <button className="close-btn" onClick={onClose}>
@@ -397,20 +415,28 @@ export function LonghouseHotspots({
                 }`}
               onClick={handleActionButton}
               disabled={
-                phase === 'hotspots'
-                  ? !allHotspotsVisited
-                  : selectedAnswer === undefined
+                phase === 'intro' || phase === 'choice'
+                  ? false
+                  : phase === 'hotspots'
+                    ? !allHotspotsVisited
+                    : selectedAnswer === undefined
               }
             >
-              {phase === 'hotspots'
-                ? allHotspotsVisited
-                  ? '🧠 Alusta Sigridi kontrolltesti'
-                  : `🗝️ Uuri veel (${visitedHotspots.length}/${LONGHOUSE_HOTSPOTS.length})`
-                : quizComplete
-                  ? '🎒 Võta Kodumulla paun kaasa'
-                  : questionIndex === LONGHOUSE_QUESTIONS.length - 1
-                    ? 'Lõpeta'
-                    : 'Järgmine küsimus'}
+              {phase === 'intro'
+                ? 'Kuula Sigridit'
+                : phase === 'choice'
+                  ? choiceResult === null
+                    ? 'Vali vastus'
+                    : 'Jätka'
+                  : phase === 'hotspots'
+                    ? allHotspotsVisited
+                      ? '🧠 Alusta Sigridi kontrolltesti'
+                      : `🗝️ Uuri veel (${visitedHotspots.length}/${LONGHOUSE_HOTSPOTS.length})`
+                    : quizComplete
+                      ? '🎒 Võta Kodumulla paun kaasa'
+                      : questionIndex === LONGHOUSE_QUESTIONS.length - 1
+                        ? 'Lõpeta'
+                        : 'Järgmine küsimus'}
             </button>
           </div>
 

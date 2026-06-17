@@ -197,7 +197,13 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
 
   return (
     <div className="cooking-overlay">
-      <div className="cooking-backdrop" onClick={onClose} />
+      <div
+        className="cooking-backdrop"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+      />
 
       <div className="leather-panel">
         <button className="close-btn" onClick={onClose}>
