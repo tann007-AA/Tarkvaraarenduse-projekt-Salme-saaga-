@@ -4,17 +4,11 @@ import { MainMenuScreen } from './components/MainMenuScreen';
 import { SettingsModal } from './components/SettingsModal';
 import { StartScreen } from './components/StartScreen';
 import { TutorialModal } from './components/TutorialModal';
-import { Island } from './components/Island';
-import { QuizScreen } from './components/QuizScreen';
-import { RetryModal } from './components/RetryModal';
-import { EndScreen } from './components/EndScreen';
 import { SailingTransition } from './components/SailingTransition';
-import { ProgressBar } from './components/ProgressBar';
 import { Toaster, toast } from 'sonner';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { Settings, ShoppingBag } from 'lucide-react';
-import { ShopModal } from './components/ShopModal';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 import { StoryLevel } from './components/story/StoryIsland';
 import { HouseScene } from './components/story/housescene';
@@ -33,10 +27,6 @@ export interface Artifact {
   description: string;
 }
 
-
-
-
-
 type GameState = 'intro' | 'menu' | 'island-select' | 'quiz' | 'sailing' | 'retry' | 'end' | 'mode-select' | 'story-mode' | 'hnefatafl-local';
 
 
@@ -45,19 +35,6 @@ function GameContent() {
   const [gameState, setGameState] = useState<GameState>('menu');
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [currentIslandIndex, setCurrentIslandIndex] = useState(0);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number | null>(null);
-  const [userAnswers, setUserAnswers] = useState<{ [key: number]: number }>({});
-  const [completedIslands, setCompletedIslands] = useState<number[]>([]);
-  const [failedAttempts, setFailedAttempts] = useState(0);
-  const [hasShip, setHasShip] = useState(false);
-  const [wrongQuestions, setWrongQuestions] = useState<number[]>([]);
-  const [retryAnswers, setRetryAnswers] = useState<{ [key: number]: number }>({});
-  const [inventory, setInventory] = useState<ArtifactType[]>([]);
-  const [collectedArtifacts, setCollectedArtifacts] = useState<number[]>([]);
-  const [currentScore, setCurrentScore] = useState<number | undefined>(undefined);
-  const [hasSeenTutorial, setHasSeenTutorial] = useState(false);
-  const [savedPlayerPosition, setSavedPlayerPosition] = useState<{ x: number; y: number } | null>(null);
   const [points, setPoints] = useState(0);
 
 
@@ -65,98 +42,19 @@ function GameContent() {
   const [currentStoryIsland, setCurrentStoryIsland] = useState<StoryIsland>('rootsi');
   const [showHouseScene, setShowHouseScene] = useState(true);
 
-
-
-
-  const handleArtifactCollect = (artifactIdx: number, artifactType: ArtifactType) => {
-    if (!collectedArtifacts.includes(artifactIdx)) {
-      setCollectedArtifacts([...collectedArtifacts, artifactIdx]);
-      setInventory([...inventory, artifactType]);
-      toast.success('Artifact found! Added to inventory 🎁', { duration: 2000 });
-    }
-  };
-
-
-  const handleUseArtifact = (artifactType: ArtifactType) => {
-    const index = inventory.indexOf(artifactType);
-    if (index > -1) {
-      const newInventory = [...inventory];
-      newInventory.splice(index, 1);
-      setInventory(newInventory);
-    }
-  };
-
-
-  const handleQuestionTrigger = (questionIdx: number, playerPos: { x: number; y: number }) => {
-    if (userAnswers[questionIdx] === undefined) {
-      setSavedPlayerPosition(playerPos);
-      setCurrentQuestionIndex(questionIdx);
-      setGameState('quiz');
-    }
-  };
-
-
-
-  const handleRetryAnswer = (questionIndex: number, answerIndex: number) => {
-    setRetryAnswers({ ...retryAnswers, [questionIndex]: answerIndex });
-  };
-
-
-
-
-  const handleSailingComplete = () => {
-    setCurrentIslandIndex(currentIslandIndex + 1);
-    setCurrentQuestionIndex(null);
-    setUserAnswers({});
-    setCurrentScore(undefined);
-    setSavedPlayerPosition(null);
-    setGameState('island-select');
-  };
-
   const handleGuideClick = () => {
     setShowGuideModal(true);
   };
-
 
   const handleSettingsClick = () => {
     setShowSettingsModal(true);
   };
 
-  const handleStartGame = () => {
-    setSavedPlayerPosition(null);
-    setGameState('island-select');
-  };
-
-
-  const handleTutorialComplete = () => {
-    setHasSeenTutorial(true);
-  };
-
-
-
-
 
   const handleReturnToMenu = () => {
     setGameState('menu');
-    setCurrentIslandIndex(0);
-    setCurrentQuestionIndex(null);
-    setUserAnswers({});
-    setCompletedIslands([]);
-    setFailedAttempts(0);
-    setHasShip(false);
-    setWrongQuestions([]);
-    setRetryAnswers({});
-    setInventory([]);
-    setCollectedArtifacts([]);
-    setHasSeenTutorial(false);
-    setSavedPlayerPosition(null);
     setCurrentStoryIsland('rootsi');
     setShowHouseScene(true);
-  };
-
-
-  const handleRestart = () => {
-    handleReturnToMenu();
   };
 
 
@@ -232,15 +130,6 @@ function GameContent() {
         />
       )}
 
-
-
-
-      {/* Story Intro Screen */}
-      {gameState === 'intro' && (
-        <StartScreen onStart={handleStartGame} />
-      )}
-
-
       {/* In-game Settings and Shop Buttons */}
       {(gameState === 'island-select' || gameState === 'quiz') && (
         <div className="fixed top-4 right-4 z-40 flex gap-2">
@@ -263,11 +152,6 @@ function GameContent() {
         </div>
       )}
 
-
-
-      {gameState === 'sailing' && (
-        <SailingTransition onComplete={handleSailingComplete} />
-      )}
 
     </div>
   );

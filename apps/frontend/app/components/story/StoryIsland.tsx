@@ -24,9 +24,6 @@ import Right01 from './character/Right_01.png';
 import Right02 from './character/Right_02.png';
 import Right03 from './character/Right_03.png';
 
-import { CookingGame } from './cooking/CookingGame';
-import { LonghouseHotspots } from './cooking/LonghouseHotspots';
-
 type Direction = 'front' | 'back' | 'left' | 'right';
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
 
@@ -197,11 +194,6 @@ export function StoryIsland({
 
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(0);
   const [checkpointCount, setCheckpointCount] = useState(0);
-  const [isCookingOpen, setIsCookingOpen] = useState(false);
-  const [cookingCompleted, setCookingCompleted] = useState(false);
-  const [showHousePrompt, setShowHousePrompt] = useState(false);
-  const [isLonghouseOpen, setIsLonghouseOpen] = useState(false);
-  const [longhouseCompleted, setLonghouseCompleted] = useState(false);
 
   const xRef = useRef(island.startX);
   const yRef = useRef(island.startY);
@@ -240,11 +232,6 @@ export function StoryIsland({
     lastFrameChangeRef.current = 0;
     clickTargetRef.current = null;
     clickMovingRef.current = false;
-    setIsCookingOpen(false);
-    setCookingCompleted(false);
-    setShowHousePrompt(false);
-    setLonghouseCompleted(false);
-    setIsLonghouseOpen(false);
     keysRef.current = { up: false, down: false, left: false, right: false };
 
     if (characterRef.current) {
@@ -273,46 +260,6 @@ export function StoryIsland({
     character.src = sprites[currentDirectionRef.current][currentFrameRef.current];
   };
 
-  const handleHouseClick = (e: MouseEvent<HTMLElement>) => {
-    e.stopPropagation();
-
-    const house = HOUSE_POSITIONS[currentIsland];
-    if (!house) return;
-
-    const houseX = parseFloat(house.left);
-    const houseY = parseFloat(house.top);
-    const distToHouse = Math.sqrt(
-      Math.pow(xRef.current - houseX, 2) +
-      Math.pow(yRef.current - houseY, 2)
-    );
-
-    if (distToHouse >= 8) {
-      clickTargetRef.current = { x: houseX, y: houseY };
-      clickMovingRef.current = true;
-      return;
-    }
-
-    if (!cookingCompleted) {
-      setIsCookingOpen(true);
-      return;
-    }
-
-    if (!longhouseCompleted) {
-      setIsLonghouseOpen(true);
-    }
-  };
-
-  const handleCookingComplete = () => {
-    setCookingCompleted(true);
-    setIsCookingOpen(false);
-    setCheckpointCount((prev) => prev + 1);
-  };
-
-  const handleLonghouseComplete = () => {
-    setLonghouseCompleted(true);
-    setIsLonghouseOpen(false);
-    setCheckpointCount((prev) => prev + 1);
-  };
 
   const handleMapClick = (event: MouseEvent<HTMLDivElement>) => {
     const map = mapRef.current;
@@ -435,23 +382,6 @@ export function StoryIsland({
         currentFrameRef.current = 0;
       }
 
-      const house = HOUSE_POSITIONS[currentIsland];
-      if (house) {
-        const houseX = parseFloat(house.left);
-        const houseY = parseFloat(house.top);
-        const distToHouse = Math.sqrt(
-          Math.pow(xRef.current - houseX, 2) +
-          Math.pow(yRef.current - houseY, 2)
-        );
-
-        if (distToHouse < 8 && !longhouseCompleted) {
-          setShowHousePrompt(true);
-        } else {
-          setShowHousePrompt(false);
-        }
-      } else {
-        setShowHousePrompt(false);
-      }
 
       renderCharacter();
       animationFrameRef.current = requestAnimationFrame(gameLoop);
@@ -468,7 +398,7 @@ export function StoryIsland({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [sprites, currentIsland, island, cookingCompleted, longhouseCompleted]);
+  }, [sprites, currentIsland, island]);
 
   const handleMarkerClick = (index: number) => {
     if (index !== currentMarkerIndex) return;
@@ -597,37 +527,6 @@ export function StoryIsland({
                 className="character"
               />
 
-              {HOUSE_POSITIONS[currentIsland] && (
-                <div
-                  className={`house-marker ${showHousePrompt ? 'nearby' : ''} ${longhouseCompleted ? 'completed' : ''}`}
-                  style={{ left: HOUSE_POSITIONS[currentIsland]!.left, top: HOUSE_POSITIONS[currentIsland]!.top }}
-                  onClick={handleHouseClick}
-                  title={
-                    !cookingCompleted
-                      ? 'Klõpsa, et süüa teha'
-                      : longhouseCompleted
-                        ? 'Pikkmaja on juba uuritud'
-                        : 'Klõpsa, et pikkmaja uurida'
-                  }
-                >
-                  <span className="house-emoji">🏘️</span>
-                  {!longhouseCompleted && (
-                    <span className="house-indicator">
-                      {showHousePrompt ? '👆' : cookingCompleted ? '🗝️' : '🍲'}
-                    </span>
-                  )}
-                  {longhouseCompleted && <span className="house-indicator">✅</span>}
-
-                  {showHousePrompt && !longhouseCompleted && (
-                    <div className="house-prompt">
-                      {!cookingCompleted ? '🍲 Aja suppi!' : '🗝️ Pikkmaja'}
-                      <br />
-                      <small>{!cookingCompleted ? 'Klõpsa majale' : 'Klõpsa uurimiseks'}</small>
-                    </div>
-                  )}
-                </div>
-              )}
-
               {island.markers.map((marker, index) => (
                 <button
                   key={index}
@@ -651,17 +550,6 @@ export function StoryIsland({
         </div>
       </main>
 
-      <CookingGame
-        isOpen={isCookingOpen}
-        onClose={() => setIsCookingOpen(false)}
-        onComplete={handleCookingComplete}
-      />
-
-      <LonghouseHotspots
-        isOpen={isLonghouseOpen}
-        onClose={() => setIsLonghouseOpen(false)}
-        onComplete={handleLonghouseComplete}
-      />
     </React.Fragment>
   );
 }

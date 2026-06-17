@@ -20,6 +20,7 @@ import Right02 from './character/Right_02.png';
 import Right03 from './character/Right_03.png';
 
 import { CookingGame } from '../story/cooking/CookingGame';
+import { LonghouseHotspots } from '../story/cooking/LonghouseHotspots';
 
 type Direction = 'front' | 'back' | 'left' | 'right';
 
@@ -36,11 +37,16 @@ interface HouseSceneProps {
 }
 
 export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
-  const [playerPos, setPlayerPos] = useState({ x: 50, y: 78 });
+  const [playerPos, setPlayerPos] = useState({ x: 48.5, y: 43 });
   const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(null);
   const [direction, setDirection] = useState<Direction>('front');
   const [frameIndex, setFrameIndex] = useState(0);
+
   const [isCookingOpen, setIsCookingOpen] = useState(false);
+  const [isLonghouseOpen, setIsLonghouseOpen] = useState(false);
+  const [hasTriggeredInteraction, setHasTriggeredInteraction] = useState(false);
+  const [hasFinishedHouseGames, setHasFinishedHouseGames] = useState(false);
+  const [hasTriggeredExit, setHasTriggeredExit] = useState(false);
 
   const animationFrameRef = useRef<number | null>(null);
   const lastFrameChangeRef = useRef(0);
@@ -75,11 +81,28 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
     { minX: 59, maxX: 69, minY: 19, maxY: 24 },
   ];
 
-  const potZone: Zone = {
-    minX: 18,
-    maxX: 27,
-    minY: 18,
-    maxY: 30,
+  const questionMarkPosition = {
+    x: 23,
+    y: 25,
+  };
+
+  const questionMarkZone: Zone = {
+    minX: questionMarkPosition.x - 3,
+    maxX: questionMarkPosition.x + 3,
+    minY: questionMarkPosition.y - 4,
+    maxY: questionMarkPosition.y + 4,
+  };
+
+  const exitPosition = {
+    x: 48.5,
+    y: 81,
+  };
+
+  const exitZone: Zone = {
+    minX: exitPosition.x - 5,
+    maxX: exitPosition.x + 5,
+    minY: exitPosition.y - 4,
+    maxY: exitPosition.y + 4,
   };
 
   const isInsideZone = (x: number, y: number, zone: Zone) => {
@@ -90,31 +113,6 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
     const inWalkableZone = houseWalkableZones.some((zone) => isInsideZone(x, y, zone));
     const inBlockedZone = blockedZones.some((zone) => isInsideZone(x, y, zone));
     return inWalkableZone && !inBlockedZone;
-  };
-
-  const isNearPot = isInsideZone(playerPos.x, playerPos.y, potZone);
-
-  const handleHouseClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('.house-exit-btn')) return;
-    if (target.closest('.cook-interact-btn')) return;
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = ((e.clientX - rect.left) / rect.width) * 100;
-    const clickY = ((e.clientY - rect.top) / rect.height) * 100;
-
-    if (!isHousePositionAllowed(clickX, clickY)) return;
-
-    const dx = clickX - playerPos.x;
-    const dy = clickY - playerPos.y;
-
-    if (Math.abs(dx) > Math.abs(dy)) {
-      setDirection(dx > 0 ? 'right' : 'left');
-    } else {
-      setDirection(dy > 0 ? 'front' : 'back');
-    }
-
-    setTargetPos({ x: clickX, y: clickY });
   };
 
   useEffect(() => {
@@ -137,11 +135,13 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
         keysRef.current.right = true;
         event.preventDefault();
       }
-      if (key === 'e' && isNearPot && !isCookingOpen) {
-        setIsCookingOpen(true);
-      }
-      if (key === 'escape' && isCookingOpen) {
-        setIsCookingOpen(false);
+
+      if (key === 'escape') {
+        if (isLonghouseOpen) {
+          setIsLonghouseOpen(false);
+        } else if (isCookingOpen) {
+          setIsCookingOpen(false);
+        }
       }
     };
 
@@ -161,7 +161,26 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isNearPot, isCookingOpen]);
+  }, [isCookingOpen, isLonghouseOpen]);
+
+  const handleHouseClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = ((e.clientX - rect.left) / rect.width) * 100;
+    const clickY = ((e.clientY - rect.top) / rect.height) * 100;
+
+    if (!isHousePositionAllowed(clickX, clickY)) return;
+
+    const dx = clickX - playerPos.x;
+    const dy = clickY - playerPos.y;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      setDirection(dx > 0 ? 'right' : 'left');
+    } else {
+      setDirection(dy > 0 ? 'front' : 'back');
+    }
+
+    setTargetPos({ x: clickX, y: clickY });
+  };
 
   useEffect(() => {
     const gameLoop = (timestamp: number) => {
@@ -177,6 +196,37 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
       setPlayerPos((prev) => {
         let updatedPos = prev;
         let moved = false;
+
+        const runZoneChecks = (pos: { x: number; y: number }) => {
+          const isTouchingQuestionMark =
+            !hasFinishedHouseGames &&
+            !isCookingOpen &&
+            !isLonghouseOpen &&
+            isInsideZone(pos.x, pos.y, questionMarkZone);
+
+          if (isTouchingQuestionMark && !hasTriggeredInteraction) {
+            setHasTriggeredInteraction(true);
+            setIsCookingOpen(true);
+          }
+
+          if (!isInsideZone(pos.x, pos.y, questionMarkZone) && hasTriggeredInteraction) {
+            setHasTriggeredInteraction(false);
+          }
+
+          const isTouchingExit =
+            !isCookingOpen &&
+            !isLonghouseOpen &&
+            isInsideZone(pos.x, pos.y, exitZone);
+
+          if (isTouchingExit && !hasTriggeredExit) {
+            setHasTriggeredExit(true);
+            onExitHouse();
+          }
+
+          if (!isInsideZone(pos.x, pos.y, exitZone) && hasTriggeredExit) {
+            setHasTriggeredExit(false);
+          }
+        };
 
         if (keyboardMoving) {
           if (targetPos) setTargetPos(null);
@@ -213,6 +263,8 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
             updatedPos = { ...updatedPos, y: nextY };
           }
 
+          runZoneChecks(updatedPos);
+
           if (moved) {
             if (timestamp - lastFrameChangeRef.current > frameDuration) {
               setFrameIndex((current) => (current + 1) % 3);
@@ -233,6 +285,7 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
           if (distance < 0.45) {
             setFrameIndex(0);
             setTargetPos(null);
+            runZoneChecks(targetPos);
             return targetPos;
           }
 
@@ -258,6 +311,8 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
             nextPos = { ...nextPos, y: proposedY };
           }
 
+          runZoneChecks(nextPos);
+
           if (timestamp - lastFrameChangeRef.current > frameDuration) {
             setFrameIndex((current) => (current + 1) % 3);
             lastFrameChangeRef.current = timestamp;
@@ -266,6 +321,7 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
           return nextPos;
         }
 
+        runZoneChecks(updatedPos);
         setFrameIndex(0);
         return updatedPos;
       });
@@ -280,7 +336,15 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [targetPos]);
+  }, [
+    targetPos,
+    hasFinishedHouseGames,
+    isCookingOpen,
+    isLonghouseOpen,
+    hasTriggeredInteraction,
+    hasTriggeredExit,
+    onExitHouse,
+  ]);
 
   return (
     <main className="house-scene-screen">
@@ -312,25 +376,30 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
               }}
             />
 
-            <button
-              type="button"
-              className="house-exit-btn"
-              onClick={onExitHouse}
-            >
-              Lahku majast
-            </button>
-
-            {isNearPot && !isCookingOpen && (
-              <button
-                type="button"
-                className="cook-interact-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsCookingOpen(true);
+            {hasFinishedHouseGames && (
+              <div
+                className="house-exit-btn"
+                style={{
+                  left: `${exitPosition.x}%`,
+                  top: `${exitPosition.y}%`,
                 }}
+                aria-hidden="true"
               >
-                Vajuta E või klõpsa, et süüa teha
-              </button>
+                EXIT
+              </div>
+            )}
+
+            {!hasFinishedHouseGames && !isCookingOpen && !isLonghouseOpen && (
+              <div
+                className="question-mark-trigger"
+                style={{
+                  left: `${questionMarkPosition.x}%`,
+                  top: `${questionMarkPosition.y}%`,
+                }}
+                aria-hidden="true"
+              >
+                ?
+              </div>
             )}
 
             <CookingGame
@@ -338,34 +407,20 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
               onClose={() => setIsCookingOpen(false)}
               onComplete={() => {
                 setIsCookingOpen(false);
+                setTimeout(() => {
+                  setIsLonghouseOpen(true);
+                }, 250);
               }}
             />
 
-            {houseWalkableZones.map((zone, index) => (
-              <div
-                key={`walkable-${index}`}
-                className="debug-zone"
-                style={{
-                  left: `${zone.minX}%`,
-                  top: `${zone.minY}%`,
-                  width: `${zone.maxX - zone.minX}%`,
-                  height: `${zone.maxY - zone.minY}%`,
-                }}
-              />
-            ))}
-
-            {blockedZones.map((zone, index) => (
-              <div
-                key={`blocked-${index}`}
-                className="debug-zone blocked-zone"
-                style={{
-                  left: `${zone.minX}%`,
-                  top: `${zone.minY}%`,
-                  width: `${zone.maxX - zone.minX}%`,
-                  height: `${zone.maxY - zone.minY}%`,
-                }}
-              />
-            ))}
+            <LonghouseHotspots
+              isOpen={isLonghouseOpen}
+              onClose={() => setIsLonghouseOpen(false)}
+              onComplete={() => {
+                setIsLonghouseOpen(false);
+                setHasFinishedHouseGames(true);
+              }}
+            />
           </div>
         </div>
       </section>

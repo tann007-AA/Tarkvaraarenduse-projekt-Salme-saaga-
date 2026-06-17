@@ -772,22 +772,54 @@ body {
 
 .house-exit-btn {
   position: absolute;
-  left: 48.5%;
-  bottom: 18%;
-  transform: translateX(-50%);
-  z-index: 30;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 
-  border: none;
-  border-radius: 6px;
-  padding: 5px 5px;
-  background: #000000;
-  color: white;
-  font-size: 0.5rem;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+  width: 60px;
+  height: 30px;
+  padding: 12px 20px;
+
+  background-color: #8b5e3c;
+  color: #ffffff;
+
+  border: 2px solid #3e2414;
+  border-radius: 12px;
+
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .house-exit-btn:hover {
   background: #c89438;
+}
+
+.question-mark-trigger {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 24px;
+  animation: questionFloat 1.8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes questionFloat {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-8px);
+  }
 }

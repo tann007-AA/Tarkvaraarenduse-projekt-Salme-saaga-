@@ -106,17 +106,25 @@ const LONGHOUSE_QUESTIONS: LonghouseQuestion[] = [
   },
 ];
 
-export function LonghouseHotspots({ isOpen, onClose, onComplete }: LonghouseHotspotsProps) {
+export function LonghouseHotspots({
+  isOpen,
+  onClose,
+  onComplete,
+}: LonghouseHotspotsProps) {
   const [visitedHotspots, setVisitedHotspots] = useState<string[]>([]);
   const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
   const [phase, setPhase] = useState<'hotspots' | 'quiz'>('hotspots');
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
-  const activeHotspot = LONGHOUSE_HOTSPOTS.find((hotspot) => hotspot.id === activeHotspotId);
+
+  const activeHotspot = LONGHOUSE_HOTSPOTS.find(
+    (hotspot) => hotspot.id === activeHotspotId
+  );
   const allHotspotsVisited = visitedHotspots.length >= LONGHOUSE_HOTSPOTS.length;
   const currentQuestion = LONGHOUSE_QUESTIONS[questionIndex];
   const selectedAnswer = currentQuestion ? selectedAnswers[currentQuestion.id] : undefined;
-  const quizComplete = Object.keys(selectedAnswers).length >= LONGHOUSE_QUESTIONS.length;
+  const quizComplete =
+    Object.keys(selectedAnswers).length >= LONGHOUSE_QUESTIONS.length;
   const correctCount = LONGHOUSE_QUESTIONS.filter(
     (question) => selectedAnswers[question.id] === question.correctIndex
   ).length;
@@ -147,6 +155,7 @@ export function LonghouseHotspots({ isOpen, onClose, onComplete }: LonghouseHots
     }
 
     if (!quizComplete) return;
+
     onComplete();
     setTimeout(() => onClose(), 350);
   };
@@ -168,6 +177,23 @@ export function LonghouseHotspots({ isOpen, onClose, onComplete }: LonghouseHots
     }
   };
 
+  const handleActionButton = () => {
+    if (phase === 'hotspots') {
+      handleFinish();
+      return;
+    }
+
+    if (selectedAnswer === undefined) return;
+
+    const isLastQuestion = questionIndex === LONGHOUSE_QUESTIONS.length - 1;
+
+    if (isLastQuestion) {
+      handleFinish();
+    } else {
+      handleNextQuestion();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -175,7 +201,9 @@ export function LonghouseHotspots({ isOpen, onClose, onComplete }: LonghouseHots
       <div className="cooking-backdrop" onClick={onClose} />
 
       <div className="leather-panel">
-        <button className="close-btn" onClick={onClose}>×</button>
+        <button className="close-btn" onClick={onClose}>
+          ×
+        </button>
 
         <div className="panel-content">
           <div className="panel-title">🗝️ Pikkmaja</div>
@@ -192,7 +220,8 @@ export function LonghouseHotspots({ isOpen, onClose, onComplete }: LonghouseHots
             {phase === 'hotspots' ? (
               <>
                 <div className="recipe-info">
-                  <strong>Sigridi õpetus.</strong> Klõpsa pikkmaja esemetel ja kuula, mida need viikingielu kohta räägivad.
+                  <strong>Sigridi õpetus.</strong> Klõpsa pikkmaja esemetel ja kuula,
+                  mida need viikingielu kohta räägivad.
                 </div>
 
                 <div className="hotspot-progress">
@@ -253,7 +282,10 @@ export function LonghouseHotspots({ isOpen, onClose, onComplete }: LonghouseHots
                   ) : (
                     <>
                       <div className="hotspot-fact-title">Vali ese</div>
-                      <p>Sigrid selgitab iga pikkmaja eseme tähendust ja miks kodu tarkus retke õnnestumiseks vajalik on.</p>
+                      <p>
+                        Sigrid selgitab iga pikkmaja eseme tähendust ja miks kodu tarkus
+                        retke õnnestumiseks vajalik on.
+                      </p>
                     </>
                   )}
                 </div>
@@ -278,7 +310,9 @@ export function LonghouseHotspots({ isOpen, onClose, onComplete }: LonghouseHots
                           <button
                             key={answer}
                             type="button"
-                            className={`quiz-answer ${isSelected ? 'selected' : ''} ${showResult && isCorrect ? 'correct' : ''} ${showResult && isSelected && !isCorrect ? 'wrong' : ''}`}
+                            className={`quiz-answer ${isSelected ? 'selected' : ''} ${
+                              showResult && isCorrect ? 'correct' : ''
+                            } ${showResult && isSelected && !isCorrect ? 'wrong' : ''}`}
                             onClick={() => handleQuizAnswer(index)}
                             disabled={showResult}
                           >
@@ -292,9 +326,17 @@ export function LonghouseHotspots({ isOpen, onClose, onComplete }: LonghouseHots
                     </div>
 
                     {selectedAnswer !== undefined && (
-                      <div className={`quiz-feedback ${selectedAnswer === currentQuestion.correctIndex ? 'correct' : 'wrong'}`}>
+                      <div
+                        className={`quiz-feedback ${
+                          selectedAnswer === currentQuestion.correctIndex
+                            ? 'correct'
+                            : 'wrong'
+                        }`}
+                      >
                         <strong>
-                          {selectedAnswer === currentQuestion.correctIndex ? 'Õige!' : 'Vale.'}
+                          {selectedAnswer === currentQuestion.correctIndex
+                            ? 'Õige!'
+                            : 'Vale.'}
                         </strong>{' '}
                         {currentQuestion.explanation}
                       </div>
@@ -311,17 +353,25 @@ export function LonghouseHotspots({ isOpen, onClose, onComplete }: LonghouseHots
             )}
 
             <button
-              className={`cook-btn ${(phase === 'hotspots' && allHotspotsVisited) || quizComplete ? 'ready' : ''}`}
-              onClick={phase === 'quiz' && selectedAnswer !== undefined && !quizComplete ? handleNextQuestion : handleFinish}
+              className={`cook-btn ${
+                (phase === 'hotspots' && allHotspotsVisited) || quizComplete ? 'ready' : ''
+              }`}
+              onClick={handleActionButton}
               disabled={
                 phase === 'hotspots'
                   ? !allHotspotsVisited
-                  : selectedAnswer === undefined || (!quizComplete && questionIndex >= LONGHOUSE_QUESTIONS.length - 1)
+                  : selectedAnswer === undefined
               }
             >
               {phase === 'hotspots'
-                ? allHotspotsVisited ? '🧠 Alusta Sigridi kontrolltesti' : `🗝️ Uuri veel (${visitedHotspots.length}/${LONGHOUSE_HOTSPOTS.length})`
-                : quizComplete ? '🎒 Võta Kodumulla paun kaasa' : 'Järgmine küsimus'}
+                ? allHotspotsVisited
+                  ? '🧠 Alusta Sigridi kontrolltesti'
+                  : `🗝️ Uuri veel (${visitedHotspots.length}/${LONGHOUSE_HOTSPOTS.length})`
+                : quizComplete
+                  ? '🎒 Võta Kodumulla paun kaasa'
+                  : questionIndex === LONGHOUSE_QUESTIONS.length - 1
+                    ? 'Lõpeta'
+                    : 'Järgmine küsimus'}
             </button>
           </div>
 
@@ -330,13 +380,16 @@ export function LonghouseHotspots({ isOpen, onClose, onComplete }: LonghouseHots
             <div className="dialogue-content">
               <div className="dialogue-speaker">{activeHotspot?.speaker ?? 'Sigrid'}</div>
               <div className="dialogue-text">
-                "{phase === 'quiz'
+                "
+                {phase === 'quiz'
                   ? selectedAnswer === undefined
                     ? 'Vaatame, kas sa kuulasid või ainult noogutasid.'
                     : selectedAnswer === currentQuestion?.correctIndex
                       ? 'Nii on. Pikkmajas jääb ellu see, kes märkab.'
                       : 'Mõtle veel, Björn. Tööriist räägib, kui sa teda kuulad.'
-                  : activeHotspot?.text ?? 'Nüüd vaata ringi, Björn. Pikkmaja õpetab rohkem kui mõõk, kui sa oskad märgata.'}"
+                  : activeHotspot?.text ??
+                    'Nüüd vaata ringi, Björn. Pikkmaja õpetab rohkem kui mõõk, kui sa oskad märgata.'}
+                "
               </div>
             </div>
           </div>
