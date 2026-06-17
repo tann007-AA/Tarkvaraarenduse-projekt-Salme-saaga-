@@ -2,8 +2,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { eq, or, and } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { DbService } from '../../db/db.service';
-import { gameSessions, moves, lobbies, type GameSession, type Move, type NewMove } from '../../db/schema';
+import { DbService } from '../db/db.service';
+import { gameSessions, moves, lobbies, type GameSession, type Move, type NewMove } from '../db/schema';
 import { HnefataflEngine } from '../hnefatafl/hnefatafl.engine';
 
 export interface MoveRequest {
@@ -383,7 +383,31 @@ export class GameService {
       }
     }
 
-    // Check if king was captured
+    // Check if king is surrounded orthogonally by 4 attackers.
+    // This prevents the king from being declared captured with only 3 attackers around it.
+    for (let r = 0; r < 11; r++) {
+      for (let c = 0; c < 11; c++) {
+        if (board[r][c] !== 'K') continue;
+
+        const neighbors = [
+          [r - 1, c],
+          [r + 1, c],
+          [r, c - 1],
+          [r, c + 1],
+        ];
+
+        const isFullySurrounded = neighbors.every(([nr, nc]) => {
+          if (nr < 0 || nr >= 11 || nc < 0 || nc >= 11) return false;
+          return board[nr][nc] === 'A';
+        });
+
+        if (isFullySurrounded) {
+          return { winnerSide: 'attacker', reason: 'king_captured' };
+        }
+      }
+    }
+
+    // Check if king was captured by removal from the board.
     let kingFound = false;
     for (let r = 0; r < 11; r++) {
       for (let c = 0; c < 11; c++) {
