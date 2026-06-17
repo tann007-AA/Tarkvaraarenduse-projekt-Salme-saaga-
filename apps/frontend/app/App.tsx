@@ -8,7 +8,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Settings } from 'lucide-react';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 import { StoryLevel } from './components/story/StoryIsland';
-import { HouseScene } from './components/story/housescene';
 import { BoardGameScreen } from './components/board-game/BoardGameScreen';
 import { HouseScene } from './components/story/HouseScene';
 import { BeachScene } from './components/story/beach/BeachScene';
