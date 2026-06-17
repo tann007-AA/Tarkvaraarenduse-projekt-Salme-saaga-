@@ -12,6 +12,7 @@ import { Settings, ShoppingBag } from 'lucide-react';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 import { StoryLevel } from './components/story/StoryIsland';
 import { HouseScene } from './components/story/housescene';
+import { BoardGameScreen } from './components/BoardGameScreen';
 
 // Island story type
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
@@ -105,15 +106,9 @@ function GameContent() {
         ))}
 
 
-      {/* HNEFATAFL LAUAMÄNG */}
+      {/* HNEFATAFL LAUAMÄNG – SEOTUD TEIE PÄRIS KOMPONENTIDEGA */}
       {gameState === 'hnefatafl-local' && (
-        <div className="p-8 text-center bg-stone-950 min-h-screen flex flex-col justify-center items-center">
-          <h2 className="text-2xl font-serif text-[#dfc18d] mb-4">⚔️ Hnefatafl ⚔️</h2>
-          <p className="text-stone-400 mb-4">Siia tuleb kohalik kahe mängija lauamäng.</p>
-          <button onClick={() => setGameState('mode-select')} className="px-4 py-2 bg-stone-800 rounded">
-            Tagasi režiimi valikusse
-          </button>
-        </div>
+        <BoardGameScreen onBack={() => setGameState('mode-select')} />
       )}
 
       {/* Guide Modal */}
