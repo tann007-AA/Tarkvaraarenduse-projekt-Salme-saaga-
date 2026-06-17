@@ -1,3 +1,28 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+
+/* Prevent dragging sprites/images and selecting/copying text (game UX).
+   Scoped to img/svg so the game's div-based drag-and-drop still works. */
+img,
+svg {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+
+body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Keep text entry usable */
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
