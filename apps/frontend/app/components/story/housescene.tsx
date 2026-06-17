@@ -26,6 +26,8 @@ import { MythologyHotspots } from '../story/cooking/MythologyHotspots';
 import { HnefataflStory } from '../story/hnefatafl/HnefataflStory';
 import { HnefataflLoopChoice } from '../story/hnefatafl/HnefataflLoopChoice';
 import { RaidhoTransition } from '../story/transition/RaidhoTransition';
+import { DIALOGUE_TRIGGERS } from './dialogue/dialogues';
+import { DialogueBox } from './dialogue/DialogueBox';
 
 type Direction = 'front' | 'back' | 'left' | 'right';
 
@@ -40,12 +42,13 @@ interface HouseSceneProps {
   onExitHouse: () => void;
   onBackToMenu: () => void;
   onRewardCollect?: (rewardId: string) => void;
+  onDialogueStart?: (id: string) => void;
 }
 
 type HousePhase = 'etapp1' | 'etapp2' | 'hnefatafl' | 'loop' | 'raidho' | 'done';
 
-export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect }: HouseSceneProps) {
-  const [playerPos, setPlayerPos] = useState({ x: 48.5, y: 80 });
+export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialogueStart }: HouseSceneProps) {
+  const [playerPos, setPlayerPos] = useState({ x: 48.5, y: 43 });
   const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(null);
   const [direction, setDirection] = useState<Direction>('front');
   const [frameIndex, setFrameIndex] = useState(0);
@@ -61,6 +64,7 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect }: House
   const [hasFinishedHouseGames, setHasFinishedHouseGames] = useState(false);
   const [hasTriggeredExit, setHasTriggeredExit] = useState(false);
   const hasLeftDoorAreaRef = useRef(false);
+  const [activeDialogueId, setActiveDialogueId] = useState<string | null>(null);
 
   const animationFrameRef = useRef<number | null>(null);
   const lastFrameChangeRef = useRef(0);
@@ -476,9 +480,7 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect }: House
               onClose={() => setIsCookingOpen(false)}
               onComplete={() => {
                 setIsCookingOpen(false);
-                setTimeout(() => {
-                  setIsLonghouseOpen(true);
-                }, 250);
+                setActiveDialogueId(DIALOGUE_TRIGGERS.afterCooking);
               }}
             />
 
@@ -537,6 +539,19 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect }: House
                 }}
               />
             )}
+
+            <DialogueBox
+              dialogueId={activeDialogueId}
+              onComplete={() => {
+                setActiveDialogueId(null);
+                setTimeout(() => {
+                  setIsLonghouseOpen(true);
+                }, 250);
+              }}
+              onChoice={(label, nextId) => {
+                console.log(`Mängija valis: "${label}" → ${nextId}`);
+              }}
+            />
           </div>
         </div>
       </section>
