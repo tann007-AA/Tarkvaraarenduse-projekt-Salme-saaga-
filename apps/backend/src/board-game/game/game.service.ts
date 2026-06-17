@@ -320,52 +320,67 @@ export class GameService {
   }
 
   private checkCaptures(board: string[][], row: number, col: number): string[] {
-    const captures: string[] = [];
-    const piece = board[row][col];
+  const captures: string[] = [];
+  const piece = board[row][col]; // Nupp, millega just käidi
+  const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]]; // Üles, alla, vasakule, paremale
 
-    // Check all 4 directions for captures
-    const directions = [
-      [-1, 0], // up
-      [1, 0], // down
-      [0, -1], // left
-      [0, 1], // right
-    ];
+  const isCorner = (r: number, c: number) => (r === 0 && c === 0) || (r === 0 && c === 10) || (r === 10 && c === 0) || (r === 10 && c === 10);
+  const isThrone = (r: number, c: number) => r === 5 && c === 5;
 
-    for (const [dr, dc] of directions) {
-      const targetRow = row + dr;
-      const targetCol = col + dc;
-      const oppositeRow = row + dr * 2;
-      const oppositeCol = col + dc * 2;
+  for (const [dr, dc] of directions) {
+    const targetRow = row + dr;
+    const targetCol = col + dc;
+    const oppositeRow = row + dr * 2;
+    const oppositeCol = col + dc * 2;
 
-      // Check bounds
-      if (
-        targetRow < 0 ||
-        targetRow >= 11 ||
-        targetCol < 0 ||
-        targetCol >= 11 ||
-        oppositeRow < 0 ||
-        oppositeRow >= 11 ||
-        oppositeCol < 0 ||
-        oppositeCol >= 11
-      )
-        continue;
+    // Kui sihtmärk läheb laualt välja, liigume edasi
+    if (targetRow < 0 || targetRow >= 11 || targetCol < 0 || targetCol >= 11) continue;
 
-      const target = board[targetRow][targetCol];
-      const opposite = board[oppositeRow][oppositeCol];
+    const target = board[targetRow][targetCol];
+    
+    // Kui vahetus naabruses pole vastase nuppu, siis pole midagi võtta
+    if (target === '.' || target === piece) continue; 
+    if (piece === 'D' && target === 'K') continue; // Kaitsja ei saa oma kuningat võtta
+    if (piece === 'K' && target === 'D') continue; // Kuningas ei saa oma kaitsjat võtta
 
-      // Capture logic: sandwich enemy between two friendly pieces
-      // Attacker ('A') captures Defender/King, Defender ('D'/'K') captures Attacker
-      if (piece === 'A' && (target === 'D' || target === 'K') && opposite === 'A') {
-        captures.push(`${targetRow},${targetCol}`);
-        board[targetRow][targetCol] = '.'; // Remove captured piece
-      } else if ((piece === 'D' || piece === 'K') && target === 'A' && (opposite === 'D' || opposite === 'K')) {
-        captures.push(`${targetRow},${targetCol}`);
-        board[targetRow][targetCol] = '.'; // Remove captured piece
+    // Kontrollime, mis on "võileiva" teisel poolel (opposite)
+    let isOppositeFriendly = false;
+
+    if (oppositeRow >= 0 && oppositeRow < 11 && oppositeCol >= 0 && oppositeCol < 11) {
+      const oppositePiece = board[oppositeRow][oppositeCol];
+      
+      // Vaenulik struktuur (nurgad, või TÜHI troon)
+      const isHostileStructure = isCorner(oppositeRow, oppositeCol) || (isThrone(oppositeRow, oppositeCol) && oppositePiece === '.');
+
+      if (piece === 'A') {
+        // Ründaja ('A') vajab teisele poole teist ründajat või vaenulikku struktuuri
+        isOppositeFriendly = oppositePiece === 'A' || isHostileStructure;
+      } else if (piece === 'D' || piece === 'K') {
+        // Kaitsja või Kuningas vajab teisele poole kas kaitsjat ('D'), kuningat ('K') või struktuuri.
+        // PARANDUS: See kontrollib nüüd õigesti kuningat, isegi kui ta asub troonil!
+        isOppositeFriendly = oppositePiece === 'D' || oppositePiece === 'K' || isHostileStructure;
       }
     }
 
-    return captures;
+    // Laua serv loeb ründajale alati vaenuliku struktuurina (kui surutakse nupp vastu serva)
+    const isOppositeEdgeHostile = piece === 'A' && (oppositeRow < 0 || oppositeRow >= 11 || oppositeCol < 0 || oppositeCol >= 11);
+
+    // KUNINGA ERITINGIMUS (Kui ründajad püüavad kuningat võtta)
+    if (target === 'K') {
+      // Kui kuningas on troonil, siis kahe nupuga püüdmise loogika siit üleüldse ei käivitu
+      // (Troonil oleva kuninga surma kontrollib eraldi checkGameOver funktsioon, mis nõuab 4 nuppu)
+      if (isThrone(targetRow, targetCol)) continue;
+    }
+
+    // Kui tingimused on täidetud, võetakse nupp laualt ära
+    if (isOppositeFriendly || isOppositeEdgeHostile) {
+      captures.push(`${targetRow},${targetCol}`);
+      board[targetRow][targetCol] = '.';
+    }
   }
+
+  return captures;
+}
 
   private checkGameOver(board: string[][]): { winnerSide: 'attacker' | 'defender'; reason: GameResult['reason'] } | null {
     // Check if king escaped (reached a corner)
@@ -383,7 +398,31 @@ export class GameService {
       }
     }
 
-    // Check if king was captured
+    // Check if king is surrounded orthogonally by 4 attackers.
+    // This prevents the king from being declared captured with only 3 attackers around it.
+    for (let r = 0; r < 11; r++) {
+      for (let c = 0; c < 11; c++) {
+        if (board[r][c] !== 'K') continue;
+
+        const neighbors = [
+          [r - 1, c],
+          [r + 1, c],
+          [r, c - 1],
+          [r, c + 1],
+        ];
+
+        const isFullySurrounded = neighbors.every(([nr, nc]) => {
+          if (nr < 0 || nr >= 11 || nc < 0 || nc >= 11) return false;
+          return board[nr][nc] === 'A';
+        });
+
+        if (isFullySurrounded) {
+          return { winnerSide: 'attacker', reason: 'king_captured' };
+        }
+      }
+    }
+
+    // Check if king was captured by removal from the board.
     let kingFound = false;
     for (let r = 0; r < 11; r++) {
       for (let c = 0; c < 11; c++) {

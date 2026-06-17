@@ -20,9 +20,11 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
   const [gameState, setGameState] = useState<BoardGameState>('menu');
   const [selectedPiece, setSelectedPiece] = useState<[number, number] | null>(null);
   const [aiSide, setAiSide] = useState<PieceType>(PieceType.None);
+  const [playerSide, setPlayerSide] = useState<PieceType | null>(null);
   const [aiDifficulty, setAiDifficulty] = useState<number>(3);
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [lastMove, setLastMove] = useState<{ from: [number, number]; to: [number, number] } | null>(null);
 
   // Multiplayer state
   const [isMultiplayer, setIsMultiplayer] = useState(false);
@@ -44,7 +46,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
     setGameState('side-select');
   }, []);
 
-  const makeAIMoveRef = useRef<() => Promise<void>>();
+  const makeAIMoveRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
     if (isMultiplayer) return;
@@ -53,7 +55,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
     if (engine.gameOver || isAiThinking) return;
     if (engine.currentPlayer !== aiSide) return;
 
-    const timer = setTimeout(() => makeAIMoveRef.current?.(), 600);
+    const timer = setTimeout(() => makeAIMoveRef.current?.(), 1200);
     return () => clearTimeout(timer);
   }, [gameState, isMultiplayer, aiSide, engine.currentPlayer, engine.gameOver, isAiThinking]);
 
@@ -65,6 +67,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
       const move = await computeBestMove(engine.grid, aiSide, aiDifficulty, engine.getLegalMoves);
       if (move) {
         engine.makeMove(move.from[0], move.from[1], move.to[0], move.to[1]);
+        setLastMove({ from: [move.from[0], move.from[1]], to: [move.to[0], move.to[1]] });
       }
     } catch (e) {
       console.error('AI move failed:', e);
@@ -74,6 +77,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
   }, [engine, aiDifficulty, aiSide, isAiThinking, computeBestMove]);
 
   const handleSideSelect = useCallback((side: PieceType) => {
+    setPlayerSide(side);
     setAiSide(side === PieceType.Attacker ? PieceType.Defender : PieceType.Attacker);
     setGameState('playing');
     engine.reset();
@@ -107,6 +111,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
           setSelectedPiece(null);
         } else {
           engine.makeMove(fx, fy, x, y);
+          setLastMove({ from: [fx, fy], to: [x, y] });
           setSelectedPiece(null);
         }
       } else {
@@ -123,6 +128,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
     setIsMultiplayer(true);
     setCurrentSessionId(session.sessionId);
     setPlayerRole(session.role);
+    setPlayerSide(session.role === 'attacker' ? PieceType.Attacker : PieceType.Defender);
     setAiSide(PieceType.None);
     setGameState('playing');
     updateGameStateFromSession(session);
@@ -138,6 +144,32 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
     } else if (event === 'game:move_made') {
       if (data.boardState) {
         const mappedGrid = mapBackendBoard(data.boardState);
+        
+        // AUTOMAATNE LIIKUMISE TUVASTUS MULTIPLAYERIS:
+        // Võrdleme vana lauda uue lauaga, et leida kust-kuhu nupp liikus,
+        // et sinu kirjutatud Canvas animatsioon käivituks ka vastase käigul!
+        let from: [number, number] | null = null;
+        let to: [number, number] | null = null;
+        const size = 11;
+
+        for (let x = 0; x < size; x++) {
+          for (let y = 0; y < size; y++) {
+            const oldPiece = engine.grid[x][y];
+            const newPiece = mappedGrid[x][y];
+            
+            if (oldPiece !== PieceType.None && newPiece === PieceType.None) {
+              from = [x, y]; // Ruut jäi tühjaks -> siit alustati
+            } else if (oldPiece === PieceType.None && newPiece !== PieceType.None) {
+              to = [x, y]; // Tühja ruudu peale tekkis nupp -> siia maanduti
+            }
+          }
+        }
+
+        // Kui tuvastasime liikumise, salvestame selle animatsiooni jaoks
+        if (from && to) {
+          setLastMove({ from, to });
+        }
+
         engine.setGrid(mappedGrid);
         if (data.currentTurn) {
           engine.setCurrentPlayer(data.currentTurn === 'attacker' ? PieceType.Attacker : PieceType.Defender);
@@ -215,15 +247,26 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
   const handleReset = useCallback(() => {
     engine.reset();
     setSelectedPiece(null);
+    setLastMove(null);
     setIsAiThinking(false);
     setStatusMessage(null);
     setGameState('menu');
     setIsMultiplayer(false);
     setPlayerRole(null);
+    setPlayerSide(null);
     setCurrentSessionId(null);
     multiplayerService.disconnectGame();
     multiplayerService.disconnectLobby();
   }, [engine, multiplayerService]);
+
+  const handlePlayAgain = useCallback(() => {
+    engine.reset();
+    setSelectedPiece(null);
+    setLastMove(null);
+    setIsAiThinking(false);
+    setStatusMessage(null);
+    setGameState('playing');
+  }, [engine]);
 
   const winnerMessages = t.boardGame.game.winner;
   const translatedWinner = engine.winner
@@ -236,6 +279,15 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
   const roleLabel = playerRole === 'attacker'
     ? t.boardGame.game.attackers
     : t.boardGame.game.defenders;
+
+  const isPlayerWinner =
+    engine.gameOver &&
+    ((playerSide === PieceType.Attacker &&
+      (engine.winner === 'attackersWinCaptured' || engine.winner === 'attackersWinSurrounded')) ||
+      (playerSide === PieceType.Defender && engine.winner === 'defendersWinEscaped') ||
+      (playerRole === 'attacker' &&
+        (engine.winner === 'attackersWinCaptured' || engine.winner === 'attackersWinSurrounded')) ||
+      (playerRole === 'defender' && engine.winner === 'defendersWinEscaped'));
 
   let turnStatus: string | null = null;
   if (isMultiplayer && playerRole) {
@@ -263,6 +315,11 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
       </span>
     </>
   );
+
+  const resultTitle = isPlayerWinner ? 'Võit!' : 'Kaotus';
+  const resultSubtitle = isPlayerWinner
+    ? 'Tubli mäng! Sa saavutasid võidu.'
+    : 'Mäng on läbi. Proovi järgmisel korral paremini.';
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden p-4">
@@ -343,18 +400,48 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
             </span>
           </div>
 
-          <Board
-            grid={engine.grid}
-            selectedPiece={selectedPiece}
-            onCellClick={handleCellClick}
-            gameOver={engine.gameOver}
-            winner={translatedWinner}
-            statusMessage={statusMessage}
-          />
+          <div className="relative">
+            <Board
+              grid={engine.grid}
+              selectedPiece={selectedPiece}
+              lastMove={lastMove}
+              onCellClick={handleCellClick}
+              gameOver={engine.gameOver}
+              winner={translatedWinner}
+              statusMessage={statusMessage}
+            />
 
-          <button onClick={handleReset} className={backButtonClass}>
-            {buttonContent(t.boardGame.game.mainMenu)}
-          </button>
+            {engine.gameOver && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute inset-0 z-20 flex items-center justify-center bg-[#0d1a2f]/80 backdrop-blur-sm"
+              >
+                <motion.div
+                  initial={{ y: 20, scale: 0.95 }}
+                  animate={{ y: 0, scale: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className="w-[min(90vw,420px)] rounded-2xl border border-white/10 bg-[#f7eed7] p-6 text-center shadow-2xl"
+                >
+                  <div className="mb-3 text-4xl">{isPlayerWinner ? '🏆' : '⚔️'}</div>
+                  <h2 className="text-3xl font-bold text-[#1f2a44]" style={{ fontFamily: 'var(--font-display)' }}>
+                    {resultTitle}
+                  </h2>
+                  <p className="mt-2 text-sm text-[#4b5563]">{resultSubtitle}</p>
+                  <p className="mt-3 text-base font-semibold text-[#1f2a44]">{translatedWinner}</p>
+
+                  <div className="mt-5 flex flex-col gap-3">
+                    <button onClick={handlePlayAgain} className={primaryButtonClass}>
+                      {buttonContent('Mängi uuesti')}
+                    </button>
+                    <button onClick={handleReset} className={backButtonClass}>
+                      {buttonContent(t.boardGame.game.mainMenu)}
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </div>
         </motion.div>
       )}
     </div>
