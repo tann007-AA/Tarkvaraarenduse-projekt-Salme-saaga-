@@ -63,9 +63,9 @@ export function MainMenuScreen({ onPlay, onGuide, onSettings }: MainMenuScreenPr
       <div className="relative z-10 w-full max-w-2xl mx-auto px-4 md:px-8 text-center">
         {/* Logo/Title */}
         <motion.div
-          initial={{ scale: 0.8, opacity: 0, y: -50 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
           className="mb-16"
         >
           <h1
@@ -87,11 +87,12 @@ export function MainMenuScreen({ onPlay, onGuide, onSettings }: MainMenuScreenPr
         <div className="space-y-4 max-w-md mx-auto">
           {/* Play Button */}
           <motion.button
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08, duration: 0.3, ease: 'easeOut' }}
+            whileHover={{ scale: 1.04 }}
             onClick={onPlay}
-            className="group relative w-full px-8 py-5 bg-gradient-to-b from-[#d4a574] to-[#b8860b] rounded-xl border-4 border-[#8b6f47] shadow-2xl hover:shadow-[#d4a574]/50 hover:scale-105 transition-all duration-300"
+            className="group relative w-full px-8 py-5 bg-gradient-to-b from-[#d4a574] to-[#b8860b] rounded-xl border-4 border-[#8b6f47] shadow-2xl hover:shadow-[#d4a574]/50 transition-[box-shadow,background-color] duration-300"
           >
             <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 rounded-lg transition-all duration-300" />
             <span
@@ -147,7 +148,7 @@ export function MainMenuScreen({ onPlay, onGuide, onSettings }: MainMenuScreenPr
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
           className="mt-12"
         >
           <p className="text-white/40 text-sm">

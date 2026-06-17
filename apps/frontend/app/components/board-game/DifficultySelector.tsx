@@ -1,3 +1,4 @@
+import { motion } from 'motion/react';
 import { Difficulty } from './types';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { OceanBackground } from '../OceanBackground';
@@ -23,7 +24,12 @@ export function DifficultySelector({ onSelect, onBack }: DifficultySelectorProps
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-auto">
       <OceanBackground />
 
-      <div className={panelClass}>
+      <motion.div
+        className={panelClass}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+      >
         <h2
           className="text-white text-2xl font-bold text-center mb-1 drop-shadow-lg"
           style={{ fontFamily: 'var(--font-display)' }}
@@ -79,7 +85,7 @@ export function DifficultySelector({ onSelect, onBack }: DifficultySelectorProps
             <span className={labelClass}>{t.boardGame.difficulty.back}</span>
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

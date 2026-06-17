@@ -41,9 +41,9 @@ export function GameModeSelectScreen({ onSelectMode, onBack }: GameModeSelectScr
       <div className="relative z-10 w-full max-w-xl mx-auto px-6 text-center">
         {/* Title */}
         <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: -20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
           className="mb-12"
         >
           <h2
@@ -59,11 +59,12 @@ export function GameModeSelectScreen({ onSelectMode, onBack }: GameModeSelectScr
         <div className="space-y-4 max-w-md mx-auto">
           {/* STORY MODE / SAGA */}
           <motion.button
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05, duration: 0.3, ease: 'easeOut' }}
+            whileHover={{ scale: 1.04 }}
             onClick={() => onSelectMode('story-mode')}
-            className="group relative flex items-center gap-4 w-full p-5 bg-gradient-to-r from-[#2a5c6f] to-[#1e4d5f] hover:from-[#3d7a8f] hover:to-[#2a5c6f] border-4 border-[#1e4d5f] hover:border-[#d4a574] rounded-xl shadow-2xl transition-all duration-300 cursor-pointer text-left hover:scale-105"
+            className="group relative flex items-center gap-4 w-full p-5 bg-gradient-to-r from-[#2a5c6f] to-[#1e4d5f] hover:from-[#3d7a8f] hover:to-[#2a5c6f] border-4 border-[#1e4d5f] hover:border-[#d4a574] rounded-xl shadow-2xl transition-colors duration-300 cursor-pointer text-left"
           >
             <div className="p-3 bg-[#d4a574]/20 group-hover:bg-[#d4a574]/40 text-[#d4a574] rounded-lg transition-colors">
               <BookOpen className="w-6 h-6" />
@@ -80,11 +81,12 @@ export function GameModeSelectScreen({ onSelectMode, onBack }: GameModeSelectScr
 
           {/* HNEFATAFL */}
           <motion.button
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.3, ease: 'easeOut' }}
+            whileHover={{ scale: 1.04 }}
             onClick={() => onSelectMode('hnefatafl-local')}
-            className="group relative flex items-center gap-4 w-full p-5 bg-gradient-to-r from-[#2a5c6f] to-[#1e4d5f] hover:from-[#3d7a8f] hover:to-[#2a5c6f] border-4 border-[#1e4d5f] hover:border-[#d4a574] rounded-xl shadow-2xl transition-all duration-300 cursor-pointer text-left hover:scale-105"
+            className="group relative flex items-center gap-4 w-full p-5 bg-gradient-to-r from-[#2a5c6f] to-[#1e4d5f] hover:from-[#3d7a8f] hover:to-[#2a5c6f] border-4 border-[#1e4d5f] hover:border-[#d4a574] rounded-xl shadow-2xl transition-colors duration-300 cursor-pointer text-left"
           >
             <div className="p-3 bg-white/10 group-hover:bg-[#d4a574]/20 text-white group-hover:text-[#d4a574] rounded-lg transition-colors">
               <Users className="w-6 h-6" />
@@ -126,7 +128,7 @@ export function GameModeSelectScreen({ onSelectMode, onBack }: GameModeSelectScr
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
             onClick={onBack}
             className="flex items-center justify-center gap-2 text-white/60 hover:text-white transition-colors text-sm py-2 mx-auto cursor-pointer"
           >

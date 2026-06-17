@@ -1,3 +1,4 @@
+import { motion } from 'motion/react';
 import { PieceType } from './types';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { OceanBackground } from '../OceanBackground';
@@ -23,7 +24,12 @@ export function SideSelector({ onSelect, onBack }: SideSelectorProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <OceanBackground />
 
-      <div className={panelClass}>
+      <motion.div
+        className={panelClass}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+      >
         <h2
           className="text-white text-2xl font-bold mb-6 drop-shadow-lg"
           style={{ fontFamily: 'var(--font-display)' }}
@@ -60,7 +66,7 @@ export function SideSelector({ onSelect, onBack }: SideSelectorProps) {
             <span className={`${labelClass} text-white`}>{t.boardGame.side.back}</span>
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

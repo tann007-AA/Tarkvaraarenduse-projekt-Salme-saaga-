@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion } from 'motion/react';
 import { BoardGameMultiplayerService, type Player, type GameSession } from '../../services/boardGameMultiplayer';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { OceanBackground } from '../OceanBackground';
@@ -110,13 +111,18 @@ export function MultiplayerLobby({ onGameStarted, onBack }: MultiplayerLobbyProp
   const overlay =
     'absolute inset-0 bg-white/0 group-hover:bg-white/10 rounded-lg transition-all duration-300';
   const labelClass = 'relative text-base font-bold text-white';
+  const panelMotion = {
+    initial: { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.3, ease: 'easeOut' as const },
+  };
 
   if (showAuth) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <OceanBackground />
 
-        <div className={panelClass}>
+        <motion.div className={panelClass} {...panelMotion}>
           <h2
             className="text-white text-2xl font-bold mb-5 drop-shadow-lg"
             style={{ fontFamily: 'var(--font-display)' }}
@@ -148,7 +154,7 @@ export function MultiplayerLobby({ onGameStarted, onBack }: MultiplayerLobbyProp
             <div className={overlay} />
             <span className={labelClass}>{t.boardGame.multiplayer.back}</span>
           </button>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -158,7 +164,7 @@ export function MultiplayerLobby({ onGameStarted, onBack }: MultiplayerLobbyProp
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <OceanBackground />
 
-        <div className={panelClass}>
+        <motion.div className={panelClass} {...panelMotion}>
           <h3 className="text-white text-lg font-bold mb-3">
             {t.boardGame.multiplayer.lobbyTitle}: {lobbyCode}
           </h3>
@@ -181,7 +187,7 @@ export function MultiplayerLobby({ onGameStarted, onBack }: MultiplayerLobbyProp
             <div className={overlay} />
             <span className={labelClass}>{t.boardGame.multiplayer.cancel}</span>
           </button>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -190,7 +196,7 @@ export function MultiplayerLobby({ onGameStarted, onBack }: MultiplayerLobbyProp
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <OceanBackground />
 
-      <div className={panelClass}>
+      <motion.div className={panelClass} {...panelMotion}>
         <h2
           className="text-white text-2xl font-bold mb-5 drop-shadow-lg"
           style={{ fontFamily: 'var(--font-display)' }}
@@ -231,7 +237,7 @@ export function MultiplayerLobby({ onGameStarted, onBack }: MultiplayerLobbyProp
           <div className={overlay} />
           <span className={labelClass}>{t.boardGame.multiplayer.back}</span>
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 }

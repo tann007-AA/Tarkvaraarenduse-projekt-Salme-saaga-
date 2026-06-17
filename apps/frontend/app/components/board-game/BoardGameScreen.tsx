@@ -326,9 +326,9 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
       <OceanBackground />
 
       <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: -20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
         className="relative z-10 text-center mb-6"
       >
         <h1
@@ -347,9 +347,9 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
 
       {gameState === 'menu' && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.3, delay: 0.05, ease: 'easeOut' }}
           className="relative z-10 w-full max-w-md bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-8 text-center shadow-2xl"
         >
           <div className="space-y-4">
