@@ -158,9 +158,6 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
         </button>
 
         <div className="panel-content">
-          <div className="panel-title">🍲 Björni Paun</div>
-          <div className="panel-subtitle">Viikingi varustus</div>
-
           <div className="kitchen-section">
             <div className="kitchen-header">
               <span className="fire-icon">🔥</span>
