@@ -43,7 +43,10 @@ function GameContent() {
     const saved = loadStoryProgress();
     return saved?.currentStoryIsland ?? 'rootsi';
   });
-  const [showHouseScene, setShowHouseScene] = useState(true);
+  const [showHouseScene, setShowHouseScene] = useState(() => {
+    const saved = loadStoryProgress();
+    return saved?.housePhase !== 'done';
+  });
   const [showBeachScene, setShowBeachScene] = useState(false);
   const [completedBeachIslands, setCompletedBeachIslands] = useState<Set<StoryIsland>>(() => {
     const saved = loadStoryProgress();

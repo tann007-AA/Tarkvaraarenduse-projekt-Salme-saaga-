@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from 'motion/react';
 import './level.css';
 import { DialogueBox } from './dialogue/DialogueBox';
 import { DIALOGUE_TRIGGERS } from './dialogue/dialogues';
+import { QuestionModal, type Question } from './questions/QuestionModal';
+import { ISLAND_QUESTIONS, QUESTIONS_ENABLED } from './questions/questions';
 import { type StoryIsland } from './progress';
 
 import SwedenMap from './character/Sweden.svg';
@@ -84,14 +86,14 @@ const storyIslandData: Record<
     startX: 74,
     startY: 70,
     markers: [
-      { left: '86%', top: '14%' },
+      /* { left: '86%', top: '14%' },
       { left: '45%', top: '14%' },
       { left: '22%', top: '30%' },
       { left: '68%', top: '83%' },
       { left: '17%', top: '66%' },
       { left: '26%', top: '82%' },
       { left: '54%', top: '57%' },
-      { left: '90%', top: '40%' },
+      { left: '90%', top: '40%' }, */
     ],
     walkableZones: [
       { minX: 15, maxX: 78, minY: 27, maxY: 98 },
@@ -211,6 +213,11 @@ export function StoryIsland({
   const [checkpointCount, setCheckpointCount] = useState(0);
   const [activeDialogueId, setActiveDialogueId] = useState<string | null>(null);
   const [pendingIsland, setPendingIsland] = useState<StoryIsland | null>(null);
+  const [activeQuestion, setActiveQuestion] = useState<Question | null>(null);
+  const [isQuestionOpen, setIsQuestionOpen] = useState(false);
+  const currentMarkerIndexRef = useRef(0);
+  const markerTriggeredRef = useRef(false);
+  const checkpointCountRef = useRef(0);
 
   const xRef = useRef(island.startX);
   const yRef = useRef(island.startY);
@@ -243,6 +250,8 @@ export function StoryIsland({
     yRef.current = island.startY;
     setCurrentMarkerIndex(0);
     setCheckpointCount(0);
+    currentMarkerIndexRef.current = 0;
+    markerTriggeredRef.current = false;
     currentDirectionRef.current = 'front';
     currentFrameRef.current = 0;
     lastTimeRef.current = 0;
@@ -407,6 +416,39 @@ export function StoryIsland({
         currentFrameRef.current = 0;
       }
 
+      const activeMarker = island.markers[currentMarkerIndexRef.current];
+      if (activeMarker && !isQuestionOpen) {
+        const markerX = parseFloat(activeMarker.left);
+        const markerY = parseFloat(activeMarker.top);
+        const dist = Math.sqrt(
+          Math.pow(xRef.current - markerX, 2) +
+          Math.pow(yRef.current - markerY, 2)
+        );
+        if (dist < 5 && !markerTriggeredRef.current) {
+          markerTriggeredRef.current = true;
+          if (QUESTIONS_ENABLED[currentIsland]) {
+            const q = ISLAND_QUESTIONS[currentIsland][currentMarkerIndexRef.current];
+            if (q) {
+              setActiveQuestion(q);
+              setIsQuestionOpen(true);
+            }
+          } else {
+            const nextIndex = currentMarkerIndexRef.current + 1;
+            currentMarkerIndexRef.current = nextIndex;
+            checkpointCountRef.current = nextIndex;
+            setCurrentMarkerIndex(nextIndex);
+            setCheckpointCount(nextIndex);
+            markerTriggeredRef.current = false;
+            if (nextIndex >= island.markers.length && island.nextIsland) {
+              if (currentIsland === 'rootsi') setActiveDialogueId(DIALOGUE_TRIGGERS.ormarArrival);
+              setPendingIsland(island.nextIsland);
+            }
+          }
+        } else if (dist >= 5) {
+          markerTriggeredRef.current = false;
+        }
+      }
+
 
       renderCharacter();
 
@@ -419,8 +461,13 @@ export function StoryIsland({
       const beachCompleted = completedBeachIslands.has(currentIsland);
 
       if (shipDistance < 10 && !hasTriggeredShipRef.current && !beachCompleted) {
-        hasTriggeredShipRef.current = true;
-        onGoToBeach?.();
+        const markersRequired = island.markers.length;
+        const allMarkersComplete = checkpointCountRef.current >= markersRequired;
+
+        if (markersRequired === 0 || allMarkersComplete) {
+          hasTriggeredShipRef.current = true;
+          onGoToBeach?.();
+        }
       }
 
       if (shipDistance >= 10 || beachCompleted) {
@@ -446,20 +493,21 @@ export function StoryIsland({
   const handleMarkerClick = (index: number) => {
     if (index !== currentMarkerIndex) return;
 
-    const nextIndex = index + 1;
-    setCurrentMarkerIndex(nextIndex);
-    setCheckpointCount(nextIndex);
-
-    if (nextIndex >= island.markers.length && island.nextIsland) {
-      const nextIsland = island.nextIsland; // salvesta muutujasse
-      if (currentIsland === 'rootsi') {
-        setActiveDialogueId(DIALOGUE_TRIGGERS.ormarArrival);
-      } else if (currentIsland === 'gotland') {
-        setActiveDialogueId(DIALOGUE_TRIGGERS.openSea);
-      } else if (currentIsland === 'saaremaa') {
-        setActiveDialogueId(DIALOGUE_TRIGGERS.nightWatch);
+    if (QUESTIONS_ENABLED[currentIsland]) {
+      const q = ISLAND_QUESTIONS[currentIsland][index];
+      if (q) {
+        setActiveQuestion(q);
+        setIsQuestionOpen(true);
       }
-      setPendingIsland(nextIsland);
+    } else {
+      const nextIndex = index + 1;
+      setCurrentMarkerIndex(nextIndex);
+      setCheckpointCount(nextIndex);
+      if (nextIndex >= island.markers.length && island.nextIsland) {
+        const nextIsland = island.nextIsland;
+        if (currentIsland === 'rootsi') setActiveDialogueId(DIALOGUE_TRIGGERS.ormarArrival);
+        setPendingIsland(nextIsland);
+      }
     }
   };
 
@@ -479,9 +527,11 @@ export function StoryIsland({
           <aside className="level-info-card">
             <h1>{island.title}</h1>
             <p className="level-topic">Viking Journeys</p>
-            <p className="level-progress">
-              {checkpointCount} / {island.markers.length} Checkpoints
-            </p>
+            {island.markers.length > 0 && (
+              <p className="level-progress">
+                {checkpointCount} / {island.markers.length} Checkpoints
+              </p>
+            )}
           </aside>
 
           <section className="top-progress" aria-labelledby="islandProgressTitle">
@@ -612,7 +662,10 @@ export function StoryIsland({
                   onClick={(e) => {
                     if (activeDialogueId) return;
                     e.stopPropagation();
-                    handleMarkerClick(index);
+                    if (index !== currentMarkerIndex) return;
+                    const m = island.markers[index];
+                    clickTargetRef.current = { x: parseFloat(m.left), y: parseFloat(m.top) };
+                    clickMovingRef.current = true;
                   }}
                 >
                   <img
@@ -626,6 +679,31 @@ export function StoryIsland({
             </motion.div>
           </AnimatePresence>
         </div>
+
+        <QuestionModal
+          isOpen={isQuestionOpen}
+          question={activeQuestion}
+          onCorrect={() => {
+            setIsQuestionOpen(false);
+            setActiveQuestion(null);
+            const nextIndex = currentMarkerIndex + 1;
+            currentMarkerIndexRef.current = nextIndex;
+            checkpointCountRef.current = nextIndex;
+            markerTriggeredRef.current = false;
+            setCurrentMarkerIndex(nextIndex);
+            setCheckpointCount(nextIndex);
+            if (nextIndex >= island.markers.length && island.nextIsland) {
+              const nextIsland = island.nextIsland;
+              if (currentIsland === 'gotland') setActiveDialogueId(DIALOGUE_TRIGGERS.openSea);
+              else if (currentIsland === 'saaremaa') setActiveDialogueId(DIALOGUE_TRIGGERS.nightWatch);
+              setPendingIsland(nextIsland);
+            }
+          }}
+          onClose={() => {
+            setIsQuestionOpen(false);
+            setActiveQuestion(null);
+          }}
+        />
 
         <DialogueBox
           dialogueId={activeDialogueId}
