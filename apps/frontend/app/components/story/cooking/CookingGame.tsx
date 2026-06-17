@@ -165,10 +165,10 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
             </div>
 
             <div className="recipe-info">
-              <strong>Valmista retkele süüa!</strong> Lisa potti <strong>3 õiget</strong> koostisosa.
+              <strong>Valmista retkele süüa!</strong> Pane potti <strong>3 õiget</strong> koostisosa.
               <br />
               <span className="hint-text">
-                💡 Vihje: Lohista koostisosad potti või klõpsa neile
+                Lohista koostisosad potti või klõpsa neile
               </span>
             </div>
 
@@ -208,7 +208,7 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
                   ))}
                   {completed && <span className="completion-check">✅</span>}
                 </div>
-                <span className="soup-pot-label">{completed ? 'Valmis!' : 'Aja suppi'}</span>
+                <span className="soup-pot-label">{completed ? 'Valmis!' : ''}</span>
               </DropZone>
             </div>
 
@@ -239,8 +239,8 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
               disabled={collected.length < 3}
             >
               {collected.length >= 3
-                ? '🎉 Supp on valmis! Naudi!'
-                : `🔥 Lisa koostisosad (${collected.length}/3)`}
+                ? '♨️ Keeda ning toimeta muude tegevustega! ♨️'
+                : `Lisa koostisosad (${collected.length}/3)`}
             </button>
           </div>
 
