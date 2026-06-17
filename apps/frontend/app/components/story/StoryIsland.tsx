@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Home } from 'lucide-react';
 import './level.css';
+import { DialogueBox } from './dialogue/DialogueBox';
+import { DIALOGUE_TRIGGERS } from './dialogue/dialogues';
 
 import SwedenMap from './character/Sweden.svg';
 import GotlandMap from './character/Gotland.svg';
@@ -194,6 +196,8 @@ export function StoryIsland({
 
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(0);
   const [checkpointCount, setCheckpointCount] = useState(0);
+  const [activeDialogueId, setActiveDialogueId] = useState<string | null>(null);
+  const [pendingIsland, setPendingIsland] = useState<StoryIsland | null>(null);
 
   const xRef = useRef(island.startX);
   const yRef = useRef(island.startY);
@@ -408,7 +412,15 @@ export function StoryIsland({
     setCheckpointCount(nextIndex);
 
     if (nextIndex >= island.markers.length && island.nextIsland) {
-      onCompleteIsland?.(island.nextIsland);
+      const nextIsland = island.nextIsland; // salvesta muutujasse
+      if (currentIsland === 'rootsi') {
+        setActiveDialogueId(DIALOGUE_TRIGGERS.ormarArrival);
+      } else if (currentIsland === 'gotland') {
+        setActiveDialogueId(DIALOGUE_TRIGGERS.openSea);
+      } else if (currentIsland === 'saaremaa') {
+        setActiveDialogueId(DIALOGUE_TRIGGERS.nightWatch);
+      }
+      setPendingIsland(nextIsland);
     }
   };
 
@@ -548,6 +560,17 @@ export function StoryIsland({
             </motion.div>
           </AnimatePresence>
         </div>
+
+        <DialogueBox
+          dialogueId={activeDialogueId}
+          onComplete={() => {
+            setActiveDialogueId(null);
+            if (pendingIsland) {
+              onCompleteIsland?.(pendingIsland);
+              setPendingIsland(null);
+            }
+          }}
+        />
       </main>
 
     </React.Fragment>

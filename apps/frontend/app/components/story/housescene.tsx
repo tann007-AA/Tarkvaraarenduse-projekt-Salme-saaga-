@@ -21,6 +21,8 @@ import Right03 from './character/Right_03.png';
 
 import { CookingGame } from '../story/cooking/CookingGame';
 import { LonghouseHotspots } from '../story/cooking/LonghouseHotspots';
+import { DIALOGUE_TRIGGERS } from './dialogue/dialogues';
+import { DialogueBox } from './dialogue/DialogueBox';
 
 type Direction = 'front' | 'back' | 'left' | 'right';
 
@@ -34,6 +36,7 @@ type Zone = {
 interface HouseSceneProps {
   onExitHouse: () => void;
   onBackToMenu: () => void;
+  onDialogueStart?: (id: string) => void;
 }
 
 export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
@@ -47,6 +50,7 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
   const [hasTriggeredInteraction, setHasTriggeredInteraction] = useState(false);
   const [hasFinishedHouseGames, setHasFinishedHouseGames] = useState(false);
   const [hasTriggeredExit, setHasTriggeredExit] = useState(false);
+  const [activeDialogueId, setActiveDialogueId] = useState<string | null>(null);
 
   const animationFrameRef = useRef<number | null>(null);
   const lastFrameChangeRef = useRef(0);
@@ -407,9 +411,7 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
               onClose={() => setIsCookingOpen(false)}
               onComplete={() => {
                 setIsCookingOpen(false);
-                setTimeout(() => {
-                  setIsLonghouseOpen(true);
-                }, 250);
+                setActiveDialogueId(DIALOGUE_TRIGGERS.afterCooking);
               }}
             />
 
@@ -419,8 +421,23 @@ export function HouseScene({ onExitHouse, onBackToMenu }: HouseSceneProps) {
               onComplete={() => {
                 setIsLonghouseOpen(false);
                 setHasFinishedHouseGames(true);
+
               }}
             />
+
+            <DialogueBox
+              dialogueId={activeDialogueId}
+              onComplete={() => {
+                setActiveDialogueId(null);
+                setTimeout(() => {
+                  setIsLonghouseOpen(true);
+                }, 250);
+              }}
+              onChoice={(label, nextId) => {
+                console.log(`Mängija valis: "${label}" → ${nextId}`);
+              }}
+            />
+
           </div>
         </div>
       </section>
