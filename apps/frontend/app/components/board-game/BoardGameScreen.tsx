@@ -23,6 +23,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
   const [aiDifficulty, setAiDifficulty] = useState<number>(3);
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [lastMove, setLastMove] = useState<{ from: [number, number]; to: [number, number] } | null>(null);
 
   // Multiplayer state
   const [isMultiplayer, setIsMultiplayer] = useState(false);
@@ -53,7 +54,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
     if (engine.gameOver || isAiThinking) return;
     if (engine.currentPlayer !== aiSide) return;
 
-    const timer = setTimeout(() => makeAIMoveRef.current?.(), 600);
+    const timer = setTimeout(() => makeAIMoveRef.current?.(), 1200);
     return () => clearTimeout(timer);
   }, [gameState, isMultiplayer, aiSide, engine.currentPlayer, engine.gameOver, isAiThinking]);
 
@@ -65,6 +66,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
       const move = await computeBestMove(engine.grid, aiSide, aiDifficulty, engine.getLegalMoves);
       if (move) {
         engine.makeMove(move.from[0], move.from[1], move.to[0], move.to[1]);
+        setLastMove({ from: [move.from[0], move.from[1]], to: [move.to[0], move.to[1]] });
       }
     } catch (e) {
       console.error('AI move failed:', e);
@@ -107,6 +109,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
           setSelectedPiece(null);
         } else {
           engine.makeMove(fx, fy, x, y);
+          setLastMove({ from: [fx, fy], to: [x, y] });
           setSelectedPiece(null);
         }
       } else {
@@ -138,6 +141,32 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
     } else if (event === 'game:move_made') {
       if (data.boardState) {
         const mappedGrid = mapBackendBoard(data.boardState);
+        
+        // AUTOMAATNE LIIKUMISE TUVASTUS MULTIPLAYERIS:
+        // Võrdleme vana lauda uue lauaga, et leida kust-kuhu nupp liikus,
+        // et sinu kirjutatud Canvas animatsioon käivituks ka vastase käigul!
+        let from: [number, number] | null = null;
+        let to: [number, number] | null = null;
+        const size = 11;
+
+        for (let x = 0; x < size; x++) {
+          for (let y = 0; y < size; y++) {
+            const oldPiece = engine.grid[x][y];
+            const newPiece = mappedGrid[x][y];
+            
+            if (oldPiece !== PieceType.None && newPiece === PieceType.None) {
+              from = [x, y]; // Ruut jäi tühjaks -> siit alustati
+            } else if (oldPiece === PieceType.None && newPiece !== PieceType.None) {
+              to = [x, y]; // Tühja ruudu peale tekkis nupp -> siia maanduti
+            }
+          }
+        }
+
+        // Kui tuvastasime liikumise, salvestame selle animatsiooni jaoks
+        if (from && to) {
+          setLastMove({ from, to });
+        }
+
         engine.setGrid(mappedGrid);
         if (data.currentTurn) {
           engine.setCurrentPlayer(data.currentTurn === 'attacker' ? PieceType.Attacker : PieceType.Defender);
@@ -215,6 +244,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
   const handleReset = useCallback(() => {
     engine.reset();
     setSelectedPiece(null);
+    setLastMove(null);
     setIsAiThinking(false);
     setStatusMessage(null);
     setGameState('menu');
@@ -346,6 +376,7 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
           <Board
             grid={engine.grid}
             selectedPiece={selectedPiece}
+            lastMove={lastMove}
             onCellClick={handleCellClick}
             gameOver={engine.gameOver}
             winner={translatedWinner}

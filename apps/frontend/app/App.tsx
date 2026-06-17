@@ -12,7 +12,7 @@ import { Settings, ShoppingBag } from 'lucide-react';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 import { StoryLevel } from './components/story/StoryIsland';
 import { HouseScene } from './components/story/housescene';
-import { BoardGameScreen } from './components/BoardGameScreen';
+import { BoardGameScreen } from './components/board-game/BoardGameScreen';
 
 // Island story type
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
