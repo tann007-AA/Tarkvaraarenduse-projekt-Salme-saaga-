@@ -74,6 +74,11 @@ const storyIslandData: Record<
     startX: number;
     startY: number;
     walkableZones: Zone[];
+    /* Fixed design-size of the scaled stage (px). The whole stage scales
+       uniformly to fit; all %-coords stay valid because they are relative
+       to this constant box. Match the map's current rendered size. */
+    designW: number;
+    designH: number;
   }
 > = {
   rootsi: {
@@ -83,6 +88,8 @@ const storyIslandData: Record<
     mapClassName: 'rootsi',
     mapWrapClassName: 'map-wrap-rootsi scene-map',
     nextIsland: 'gotland',
+    designW: 1000,
+    designH: 550,
     startX: 74,
     startY: 70,
     markers: [
@@ -110,6 +117,8 @@ const storyIslandData: Record<
     mapClassName: 'gotland',
     mapWrapClassName: 'map-wrap-gotland scene-map',
     nextIsland: 'saaremaa',
+    designW: 520,
+    designH: 650,
     startX: 54,
     startY: 50,
     markers: [
@@ -140,6 +149,8 @@ const storyIslandData: Record<
     mapAlt: 'Saaremaa saar',
     mapClassName: 'saaremaa',
     mapWrapClassName: 'map-wrap-gotland scene-map',
+    designW: 1000,
+    designH: 571,
     startX: 54,
     startY: 50,
     markers: [
@@ -192,6 +203,7 @@ export function StoryIsland({
   onStoryRewardCollect,
 }: StoryIslandProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const characterRef = useRef<HTMLImageElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const lastTimeRef = useRef(0);
@@ -209,6 +221,7 @@ export function StoryIsland({
 
   const island = storyIslandData[currentIsland];
 
+  const [mapScale, setMapScale] = useState(1);
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(0);
   const [checkpointCount, setCheckpointCount] = useState(0);
   const [activeDialogueId, setActiveDialogueId] = useState<string | null>(null);
@@ -218,6 +231,25 @@ export function StoryIsland({
   const currentMarkerIndexRef = useRef(0);
   const markerTriggeredRef = useRef(false);
   const checkpointCountRef = useRef(0);
+
+  /* Scale the map stage uniformly to fit its container (letterbox), leaving
+     all internal sizes/offsets untouched so %-coords stay aligned. Measure
+     the stage's natural box via offsetWidth/Height (transform-independent). */
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const update = () => {
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      if (!cw || !ch) return;
+      const s = Math.min(cw / island.designW, ch / island.designH);
+      setMapScale(s > 0 ? s : 1);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [island.designW, island.designH]);
 
   const xRef = useRef(island.startX);
   const yRef = useRef(island.startY);
@@ -619,17 +651,27 @@ export function StoryIsland({
           ← Tagasi
         </button>
 
-        <div className="map-container">
+        <div className="map-container" ref={containerRef}>
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIsland}
-              ref={mapRef}
-              className={island.mapWrapClassName}
-              onClick={handleMapClick}
+              className="map-fade"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, ease: 'easeInOut' }}
+            >
+            <div
+              ref={mapRef}
+              className={island.mapWrapClassName}
+              onClick={handleMapClick}
+              style={{
+                width: `${island.designW}px`,
+                height: `${island.designH}px`,
+                flex: 'none',
+                transform: `scale(${mapScale})`,
+                transformOrigin: 'center center',
+              }}
             >
               <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
 
@@ -695,6 +737,7 @@ export function StoryIsland({
                 </button>
               ))}
 
+            </div>
             </motion.div>
           </AnimatePresence>
         </div>

@@ -131,10 +131,12 @@ body {
 .level-screen {
     position: relative;
     z-index: 1;
-    min-height: 100vh;
-    padding: 20px 32px 110px;
+    height: 100vh;
+    height: 100dvh;
+    padding: 20px 32px 90px;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .level-header {
@@ -171,7 +173,17 @@ body {
     min-height: 0;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Fade wrapper fills the container; the inner stage is scaled to fit. */
+.map-fade {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .level-info-card h1 {
@@ -297,7 +309,7 @@ body {
 
 @media (max-width: 820px) {
     .level-screen {
-        padding: 16px 16px 110px;
+        padding: 16px 16px 80px;
     }
 
     .level-header {
@@ -340,20 +352,92 @@ body {
     }
 }
 
+/* D: compact header on small screens so the map gets the space */
+@media (max-width: 640px) {
+    .level-header {
+        gap: 0.6rem;
+        margin-bottom: 8px;
+    }
+
+    .level-info-card {
+        padding: 10px 16px;
+    }
+
+    .level-info-card h1 {
+        font-size: 1.5rem;
+        margin: 0;
+    }
+
+    .level-topic {
+        display: none;
+    }
+
+    .level-progress {
+        font-size: 1rem;
+    }
+
+    .island-progress {
+        gap: 10px;
+    }
+}
+
 @media (max-width: 520px) {
     .step-icon {
-        width: 62px;
-        height: 62px;
-        font-size: 1.2rem;
+        width: 46px;
+        height: 46px;
+        font-size: 1rem;
+        border-width: 2px;
     }
 
     .step-label {
-        font-size: 0.88rem;
+        font-size: 0.78rem;
+        padding: 4px 9px;
+        margin-top: 5px;
     }
 
     .back-btn {
         left: 16px;
         bottom: 16px;
+    }
+}
+
+/* D: short viewports (landscape phones, short windows) — shrink the header
+   vertically so the map keeps usable height instead of clipping. */
+@media (max-height: 600px) {
+    .level-screen {
+        padding-top: 12px;
+        padding-bottom: 64px;
+    }
+
+    .level-header {
+        margin-bottom: 6px;
+    }
+
+    .level-info-card {
+        padding: 8px 14px;
+    }
+
+    .level-info-card h1 {
+        font-size: 1.3rem;
+        margin: 0;
+    }
+
+    .level-topic,
+    .level-progress {
+        display: none;
+    }
+
+    .step-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 0.85rem;
+        border-width: 2px;
+    }
+
+    .step-label {
+        font-size: 0.7rem;
+        padding: 3px 7px;
+        margin-top: 4px;
     }
 }
 
@@ -442,34 +526,24 @@ body {
 .saaremaa {
     display: block;
     width: 100%;
-    max-width: 1000px;
-    height: auto;
-    margin: 40px auto 0;
+    height: 100%;
     transform: translateX(40px);
     filter:
         drop-shadow(0 0 20px rgba(40, 90, 60, 0.25)) drop-shadow(0 8px 30px rgba(20, 40, 60, 0.25)) saturate(0.9) brightness(0.98) contrast(1.03);
 }
 
-.map-wrap-rootsi {
-    position: relative;
-    width: fit-content;
-    margin: 20px auto 0;
-    transform: translateX(30px);
-}
-
+/* Map stage (mapRef) is uniformly scaled via inline transform only;
+   the internals below keep their original sizes/offsets so every
+   %-coord (markers, walkable zones, character, ship) stays aligned. */
+.map-wrap-rootsi,
 .map-wrap-gotland {
     position: relative;
-    width: fit-content;
-    margin: 30px auto 0;
-    transform: translateX(-50px) translateY(-60px);
 }
 
 .gotland {
     display: block;
     width: 100%;
-    max-width: 1000px;
-    height: 650px;
-    margin: 0 auto;
+    height: 100%;
     filter:
         drop-shadow(0 0 20px rgba(40, 90, 60, 0.25)) drop-shadow(0 8px 30px rgba(20, 40, 60, 0.25)) saturate(0.9) brightness(0.98) contrast(1.03);
 }
@@ -477,8 +551,7 @@ body {
 .rootsi {
     display: block;
     width: 100%;
-    max-width: 1000px;
-    height: 550px;
+    height: 100%;
     transform: translateX(80px);
     filter:
         drop-shadow(0 0 20px rgba(40, 90, 60, 0.25)) drop-shadow(0 8px 30px rgba(20, 40, 60, 0.25)) saturate(0.9) brightness(0.98) contrast(1.03);
