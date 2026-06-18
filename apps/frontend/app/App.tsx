@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { MainMenuScreen } from './components/MainMenuScreen';
 import { SettingsModal } from './components/SettingsModal';
@@ -94,6 +94,12 @@ function GameContent() {
     setShowSettingsModal(false);
   };
 
+  const onGoToBeach = useCallback(() => {
+    if (!completedBeachIslands.has(currentStoryIsland)) {
+      setShowBeachScene(true);
+    }
+  }, [completedBeachIslands, currentStoryIsland]);
+
 
   return (
     <div className="size-full min-h-screen overflow-auto">
@@ -162,11 +168,7 @@ function GameContent() {
                 setCurrentStoryIsland(island);
                 saveIslandProgress(island, completedBeachIslands);
               }}
-              onGoToBeach={() => {
-                if (!completedBeachIslands.has(currentStoryIsland)) {
-                  setShowBeachScene(true);
-                }
-              }}
+              onGoToBeach={onGoToBeach}
               isPaused={showBeachScene}
               storyRewards={storyRewards}
               onStoryRewardCollect={handleStoryRewardCollect}
@@ -180,7 +182,15 @@ function GameContent() {
                     setShowBeachScene(false);
                     setCompletedBeachIslands((prev) => {
                       const next = new Set(prev).add(currentStoryIsland);
-                      saveIslandProgress(currentStoryIsland, next);
+                      
+                      // Auto-advance from Rootsi to Gotland after beach
+                      if (currentStoryIsland === 'rootsi') {
+                        setCurrentStoryIsland('gotland');
+                        saveIslandProgress('gotland', next);
+                      } else {
+                        saveIslandProgress(currentStoryIsland, next);
+                      }
+                      
                       return next;
                     });
                   }}

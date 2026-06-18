@@ -493,7 +493,8 @@ export function StoryIsland({
 
       const beachCompleted = completedBeachIslands.has(currentIsland);
 
-      if (shipDistance < 10 && !hasTriggeredShipRef.current && !beachCompleted) {
+      // Only trigger beach scene on Sweden (rootsi) island where the ship is visually present
+      if (currentIsland === 'rootsi' && shipDistance < 10 && !hasTriggeredShipRef.current && !beachCompleted) {
         const markersRequired = island.markers.length;
         const allMarkersComplete = checkpointCountRef.current >= markersRequired;
 
