@@ -1,649 +1,683 @@
 .beach-scene-screen {
-  min-height: 100vh;
-  height: 100vh;
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0;
-  background: #0f1720;
-  overflow: hidden;
+    min-height: 100vh;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    background: #0f1720;
+    overflow: hidden;
 }
 
 .beach-scene-only {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  cursor: pointer;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    cursor: pointer;
 }
 
 /* Background layers */
 .beach-sky {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 30% 20%, rgba(255, 200, 120, 0.35), transparent 45%),
-    radial-gradient(ellipse at 70% 10%, rgba(255, 160, 90, 0.2), transparent 35%),
-    linear-gradient(to bottom, #3a4a6a 0%, #6a7a9a 25%, #a8b8c8 55%, #c8d0d0 100%);
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 30% 20%, rgba(255, 200, 120, 0.35), transparent 45%),
+        radial-gradient(ellipse at 70% 10%, rgba(255, 160, 90, 0.2), transparent 35%),
+        linear-gradient(to bottom, #3a4a6a 0%, #6a7a9a 25%, #a8b8c8 55%, #c8d0d0 100%);
 }
 
 .beach-sea {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 38%;
-  bottom: 28%;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.06) 0px,
-      rgba(255, 255, 255, 0.06) 60px,
-      transparent 60px,
-      transparent 120px
-    ),
-    linear-gradient(to bottom, #3d6a8a 0%, #2a5070 50%, #1f4060 100%);
-  animation: seaShimmer 4s ease-in-out infinite alternate;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 38%;
+    bottom: 28%;
+    background:
+        repeating-linear-gradient(90deg,
+            rgba(255, 255, 255, 0.06) 0px,
+            rgba(255, 255, 255, 0.06) 60px,
+            transparent 60px,
+            transparent 120px),
+        linear-gradient(to bottom, #3d6a8a 0%, #2a5070 50%, #1f4060 100%);
+    animation: seaShimmer 4s ease-in-out infinite alternate;
 }
 
 @keyframes seaShimmer {
-  from { opacity: 0.9; }
-  to { opacity: 1; }
+    from {
+        opacity: 0.9;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .beach-sand {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 32%;
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(220, 200, 160, 0.4), transparent 60%),
-    linear-gradient(to bottom, #d4c49a 0%, #c4b488 40%, #b0a070 100%);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 32%;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(220, 200, 160, 0.4), transparent 60%),
+        linear-gradient(to bottom, #d4c49a 0%, #c4b488 40%, #b0a070 100%);
 }
 
 .beach-dunes {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 55%;
-  height: 20%;
-  background:
-    radial-gradient(ellipse at 20% 100%, #a89060 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, #a08050 0%, transparent 55%);
-  opacity: 0.85;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 55%;
+    height: 20%;
+    background:
+        radial-gradient(ellipse at 20% 100%, #a89060 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, #a08050 0%, transparent 55%);
+    opacity: 0.85;
 }
 
 /* Ship placeholder */
 .beach-ship {
-  position: absolute;
-  left: 50%;
-  top: 52%;
-  width: min(70vw, 500px);
-  height: min(24vh, 180px);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 5;
+    position: absolute;
+    left: 50%;
+    top: 52%;
+    width: min(70vw, 500px);
+    height: min(24vh, 180px);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 5;
 }
 
 .ship-hull {
-  position: absolute;
-  left: 5%;
-  right: 5%;
-  bottom: 0;
-  height: 55%;
-  background:
-    linear-gradient(to bottom, #5a4030 0%, #3a2518 60%, #2a1810 100%);
-  border-radius: 0 0 50% 50% / 0 0 100% 100%;
-  box-shadow:
-    inset 0 8px 20px rgba(0, 0, 0, 0.4),
-    0 10px 30px rgba(0, 0, 0, 0.35);
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    bottom: 0;
+    height: 55%;
+    background:
+        linear-gradient(to bottom, #5a4030 0%, #3a2518 60%, #2a1810 100%);
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    box-shadow:
+        inset 0 8px 20px rgba(0, 0, 0, 0.4),
+        0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .ship-hull::before {
-  content: "";
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  top: 10%;
-  height: 6px;
-  background: repeating-linear-gradient(
-    90deg,
-    #8b6914 0 8px,
-    #4a3a22 8px 16px
-  );
-  border-radius: 3px;
+    content: "";
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    top: 10%;
+    height: 6px;
+    background: repeating-linear-gradient(90deg,
+            #8b6914 0 8px,
+            #4a3a22 8px 16px);
+    border-radius: 3px;
 }
 
 .ship-mast {
-  position: absolute;
-  left: 50%;
-  bottom: 25%;
-  width: 8px;
-  height: 75%;
-  background: linear-gradient(to right, #4a3020, #6a4a30, #4a3020);
-  transform: translateX(-50%);
-  border-radius: 4px;
+    position: absolute;
+    left: 50%;
+    bottom: 25%;
+    width: 8px;
+    height: 75%;
+    background: linear-gradient(to right, #4a3020, #6a4a30, #4a3020);
+    transform: translateX(-50%);
+    border-radius: 4px;
 }
 
 .ship-sail {
-  position: absolute;
-  left: 52%;
-  bottom: 35%;
-  width: 28%;
-  height: 55%;
-  background:
-    radial-gradient(ellipse at 30% 30%, rgba(244, 239, 230, 0.9), rgba(200, 180, 150, 0.85)),
-    linear-gradient(135deg, #f4efe6 0%, #d8c8a8 100%);
-  clip-path: polygon(0 0, 100% 20%, 100% 100%, 0 80%);
-  box-shadow: inset -5px 0 15px rgba(0, 0, 0, 0.15);
+    position: absolute;
+    left: 52%;
+    bottom: 35%;
+    width: 28%;
+    height: 55%;
+    background:
+        radial-gradient(ellipse at 30% 30%, rgba(244, 239, 230, 0.9), rgba(200, 180, 150, 0.85)),
+        linear-gradient(135deg, #f4efe6 0%, #d8c8a8 100%);
+    clip-path: polygon(0 0, 100% 20%, 100% 100%, 0 80%);
+    box-shadow: inset -5px 0 15px rgba(0, 0, 0, 0.15);
 }
 
 .ship-shields {
-  position: absolute;
-  left: 10%;
-  right: 10%;
-  bottom: 35%;
-  display: flex;
-  justify-content: space-around;
-  font-size: 1.4rem;
-  opacity: 0.9;
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: 35%;
+    display: flex;
+    justify-content: space-around;
+    font-size: 1.4rem;
+    opacity: 0.9;
 }
 
 /* Player sprite */
 .beach-player-sprite {
-  position: absolute;
-  width: 32px;
-  height: auto;
-  transform: translate(-50%, -50%);
-  z-index: 10;
-  image-rendering: pixelated;
-  pointer-events: none;
+    position: absolute;
+    width: 32px;
+    height: auto;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    image-rendering: pixelated;
+    pointer-events: none;
 }
 
 /* Hotspots layer */
 .beach-hotspots-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
 }
 
-.beach-hotspots-layer > * {
-  pointer-events: auto;
+.beach-hotspots-layer>* {
+    pointer-events: auto;
 }
 
 .beach-hotspots-progress {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  padding: 0.4rem 0.75rem;
-  background: rgba(10, 6, 3, 0.75);
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  border-radius: 999px;
-  color: #fbbf24;
-  font-size: 0.75rem;
-  font-weight: bold;
-  letter-spacing: 1px;
-  z-index: 30;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    padding: 0.4rem 0.75rem;
+    background: rgba(10, 6, 3, 0.75);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    border-radius: 999px;
+    color: #fbbf24;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    z-index: 30;
 }
 
 .ship-hotspot {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem;
-  background: rgba(20, 12, 6, 0.82);
-  border: 2px solid rgba(232, 213, 181, 0.7);
-  border-radius: 12px;
-  color: #f4efe6;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  transition: all 0.2s ease;
-  min-width: 64px;
-  z-index: 20;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    background: rgba(20, 12, 6, 0.82);
+    border: 2px solid rgba(232, 213, 181, 0.7);
+    border-radius: 12px;
+    color: #f4efe6;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s ease;
+    min-width: 64px;
+    z-index: 20;
 }
 
 .ship-hotspot:hover,
 .ship-hotspot.active {
-  background: rgba(60, 40, 20, 0.9);
-  border-color: #fbbf24;
-  transform: translate(-50%, -50%) scale(1.08);
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.45), 0 6px 16px rgba(0, 0, 0, 0.4);
+    background: rgba(60, 40, 20, 0.9);
+    border-color: #fbbf24;
+    transform: translate(-50%, -50%) scale(1.08);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.45), 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .ship-hotspot.visited {
-  border-color: #2E8B2E;
+    border-color: #2E8B2E;
 }
 
 .ship-hotspot-icon {
-  font-size: 1.5rem;
-  line-height: 1;
+    font-size: 1.5rem;
+    line-height: 1;
 }
 
 .ship-hotspot-label {
-  font-size: 0.6rem;
-  font-weight: bold;
-  text-align: center;
-  max-width: 70px;
-  line-height: 1.1;
+    font-size: 0.6rem;
+    font-weight: bold;
+    text-align: center;
+    max-width: 70px;
+    line-height: 1.1;
 }
 
 .beach-dialogue-wrap {
-  position: absolute;
-  left: 50%;
-  bottom: 100px;
-  width: min(90%, 520px);
-  transform: translateX(-50%);
-  z-index: 25;
+    position: absolute;
+    left: 50%;
+    bottom: 100px;
+    width: min(90%, 520px);
+    transform: translateX(-50%);
+    z-index: 25;
 }
 
 .beach-fact {
-  color: #c8b89a;
-  font-size: 0.92em;
+    color: #c8b89a;
+    font-size: 0.92em;
 }
 
 .beach-phase-btn {
-  position: absolute;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
-  padding: 0.9rem 1.5rem;
-  background: linear-gradient(to bottom, #d4a574, #b8860b);
-  border: 3px solid #f4ede1;
-  border-radius: 12px;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  transition: all 0.2s ease;
-  z-index: 30;
-  animation: pulseReady 2s infinite;
+    position: absolute;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    padding: 0.9rem 1.5rem;
+    background: linear-gradient(to bottom, #d4a574, #b8860b);
+    border: 3px solid #f4ede1;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    transition: all 0.2s ease;
+    z-index: 30;
+    animation: pulseReady 2s infinite;
 }
 
 .beach-phase-btn:hover {
-  filter: brightness(1.15);
-  transform: translateX(-50%) translateY(-2px);
+    filter: brightness(1.15);
+    transform: translateX(-50%) translateY(-2px);
 }
 
 @keyframes pulseReady {
-  0%, 100% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
-  50% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.7); }
+
+    0%,
+    100% {
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 25px rgba(251, 191, 36, 0.7);
+    }
 }
 
 /* Supply overlay */
 .supply-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.4s ease;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.4s ease;
 }
 
 .supply-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(8, 12, 18, 0.88);
-  backdrop-filter: blur(4px);
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 12, 18, 0.88);
+    backdrop-filter: blur(4px);
 }
 
 .supply-panel {
-  position: relative;
-  width: 92%;
-  max-width: 560px;
-  max-height: 92vh;
-  background: linear-gradient(135deg, #3d2817 0%, #2a1b0f 50%, #1a1008 100%);
-  border: 4px solid #5D4037;
-  border-radius: 12px;
-  box-shadow:
-    0 0 0 2px #2a1b0f,
-    0 0 0 4px #5D4037,
-    0 10px 40px rgba(0, 0, 0, 0.8);
-  overflow-y: auto;
-  color: #e8d5b5;
-  animation: slideUp 0.4s ease;
+    position: relative;
+    width: 92%;
+    max-width: 560px;
+    max-height: 92vh;
+    background: linear-gradient(135deg, #3d2817 0%, #2a1b0f 50%, #1a1008 100%);
+    border: 4px solid #5D4037;
+    border-radius: 12px;
+    box-shadow:
+        0 0 0 2px #2a1b0f,
+        0 0 0 4px #5D4037,
+        0 10px 40px rgba(0, 0, 0, 0.8);
+    overflow-y: auto;
+    color: #e8d5b5;
+    animation: slideUp 0.4s ease;
 }
 
 .supply-section {
-  background: rgba(20, 12, 6, 0.6);
-  border: 2px solid #5D4037;
-  border-radius: 10px;
-  padding: 1rem;
-  margin-bottom: 1rem;
+    background: rgba(20, 12, 6, 0.6);
+    border: 2px solid #5D4037;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
 }
 
 .supply-zones-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .supply-zones-middle {
-  display: grid;
-  grid-template-columns: 1fr 1.4fr 1fr;
-  gap: 0.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: 0.5rem;
 }
 
 .supply-zone {
-  min-height: 72px;
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  background: rgba(10, 6, 3, 0.7);
-  border: 2px dashed rgba(168, 144, 112, 0.55);
-  border-radius: 10px;
-  color: #a89070;
-  transition: all 0.2s ease;
+    min-height: 72px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    background: rgba(10, 6, 3, 0.7);
+    border: 2px dashed rgba(168, 144, 112, 0.55);
+    border-radius: 10px;
+    color: #a89070;
+    transition: all 0.2s ease;
 }
 
 .supply-zone.drop-active {
-  background: rgba(60, 40, 20, 0.85);
-  border-color: #fbbf24;
-  border-style: solid;
-  box-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+    background: rgba(60, 40, 20, 0.85);
+    border-color: #fbbf24;
+    border-style: solid;
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
 }
 
 .supply-zone-name {
-  font-size: 0.7rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .supply-zone-weight {
-  font-size: 0.85rem;
-  color: #fbbf24;
-  font-weight: bold;
+    font-size: 0.85rem;
+    color: #fbbf24;
+    font-weight: bold;
 }
 
 .bow-zone,
 .stern-zone {
-  margin: 0 auto;
-  width: 50%;
+    margin: 0 auto;
+    width: 50%;
 }
 
 .center-zone {
-  background: rgba(251, 191, 36, 0.12);
-  border-color: rgba(251, 191, 36, 0.45);
+    background: rgba(251, 191, 36, 0.12);
+    border-color: rgba(251, 191, 36, 0.45);
 }
 
 .supply-crates {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.6rem;
-  margin-bottom: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+    margin-bottom: 1rem;
 }
 
 .supply-crate {
-  padding: 0.7rem 0.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-  background: linear-gradient(135deg, #2a1b0f, #1a1008);
-  border: 2px solid #5D4037;
-  border-radius: 10px;
-  color: #e8d5b5;
-  cursor: grab;
-  transition: all 0.2s ease;
-  touch-action: none;
-  user-select: none;
+    padding: 0.7rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    background: linear-gradient(135deg, #2a1b0f, #1a1008);
+    border: 2px solid #5D4037;
+    border-radius: 10px;
+    color: #e8d5b5;
+    cursor: grab;
+    transition: all 0.2s ease;
+    touch-action: none;
+    user-select: none;
 }
 
 .supply-crate:hover {
-  border-color: #fbbf24;
-  transform: translateY(-2px);
+    border-color: #fbbf24;
+    transform: translateY(-2px);
 }
 
 .supply-crate.placed {
-  opacity: 0.5;
-  cursor: default;
-  border-color: #2E8B2E;
+    opacity: 0.5;
+    cursor: default;
+    border-color: #2E8B2E;
 }
 
 .supply-crate-icon {
-  font-size: 2rem;
-  line-height: 1;
+    font-size: 2rem;
+    line-height: 1;
 }
 
 .supply-crate-title {
-  font-size: 0.68rem;
-  font-weight: bold;
-  text-align: center;
-  line-height: 1.15;
+    font-size: 0.68rem;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.15;
 }
 
 .supply-crate-zone {
-  font-size: 0.6rem;
-  color: #7dd36f;
+    font-size: 0.6rem;
+    color: #7dd36f;
 }
 
 .supply-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1rem;
 }
 
 .supply-reset-btn {
-  background: linear-gradient(to bottom, #6b7280, #4b5563) !important;
-  border-color: #374151 !important;
-  animation: none !important;
+    background: linear-gradient(to bottom, #6b7280, #4b5563) !important;
+    border-color: #374151 !important;
+    animation: none !important;
 }
 
 .supply-reset-btn:hover:not(:disabled) {
-  filter: brightness(1.15) !important;
+    filter: brightness(1.15) !important;
 }
 
 .supply-warning {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background: rgba(125, 37, 28, 0.5);
-  border: 1px solid rgba(184, 74, 62, 0.7);
-  border-radius: 8px;
-  color: #f4efe6;
-  font-size: 0.8rem;
-  line-height: 1.45;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(125, 37, 28, 0.5);
+    border: 1px solid rgba(184, 74, 62, 0.7);
+    border-radius: 8px;
+    color: #f4efe6;
+    font-size: 0.8rem;
+    line-height: 1.45;
 }
 
 /* Ormar encounter */
 .ormar-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(8, 12, 18, 0.85);
-  animation: fadeIn 0.5s ease;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8, 12, 18, 0.85);
+    animation: fadeIn 0.5s ease;
 }
 
 .ormar-scene {
-  position: relative;
-  width: min(92%, 520px);
-  text-align: center;
+    position: relative;
+    width: min(92%, 520px);
+    text-align: center;
 }
 
 .ormar-figures {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .ormar-character,
 .garm-character {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .ormar-emoji {
-  font-size: 5rem;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    font-size: 5rem;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
 }
 
 .garm-emoji {
-  font-size: 4rem;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    font-size: 4rem;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
 }
 
 .ormar-name,
 .garm-name {
-  padding: 0.35rem 0.75rem;
-  background: rgba(10, 6, 3, 0.8);
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  border-radius: 999px;
-  color: #fbbf24;
-  font-size: 0.75rem;
-  font-weight: bold;
+    padding: 0.35rem 0.75rem;
+    background: rgba(10, 6, 3, 0.8);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    border-radius: 999px;
+    color: #fbbf24;
+    font-size: 0.75rem;
+    font-weight: bold;
 }
 
 .ormar-dialogue-panel {
-  background: linear-gradient(135deg, #3d2817 0%, #2a1b0f 50%, #1a1008 100%);
-  border: 4px solid #5D4037;
-  border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    background: linear-gradient(135deg, #3d2817 0%, #2a1b0f 50%, #1a1008 100%);
+    border: 4px solid #5D4037;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
 }
 
 /* Push off dialogue */
 .pushoff-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(8, 16, 28, 0.9);
-  animation: fadeIn 0.6s ease;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8, 16, 28, 0.9);
+    animation: fadeIn 0.6s ease;
 }
 
 .pushoff-scene {
-  text-align: center;
-  width: min(92%, 480px);
+    text-align: center;
+    width: min(92%, 480px);
 }
 
 .pushoff-visual {
-  font-size: 5rem;
-  margin-bottom: 1rem;
-  position: relative;
-  height: 100px;
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    position: relative;
+    height: 100px;
 }
 
 .pushoff-ship {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  animation: shipBob 1.5s ease-in-out infinite;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    animation: shipBob 1.5s ease-in-out infinite;
 }
 
 .pushoff-splash {
-  position: absolute;
-  left: 60%;
-  top: 60%;
-  font-size: 3rem;
-  opacity: 0.8;
-  animation: splash 1s ease-in-out infinite alternate;
+    position: absolute;
+    left: 60%;
+    top: 60%;
+    font-size: 3rem;
+    opacity: 0.8;
+    animation: splash 1s ease-in-out infinite alternate;
 }
 
 @keyframes shipBob {
-  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-  50% { transform: translate(-50%, -50%) translateY(-8px); }
+
+    0%,
+    100% {
+        transform: translate(-50%, -50%) translateY(0);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) translateY(-8px);
+    }
 }
 
 @keyframes splash {
-  from { transform: scale(1); opacity: 0.6; }
-  to { transform: scale(1.2); opacity: 1; }
+    from {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+
+    to {
+        transform: scale(1.2);
+        opacity: 1;
+    }
 }
 
 .pushoff-dialogue-panel {
-  background: linear-gradient(135deg, #3d2817 0%, #2a1b0f 50%, #1a1008 100%);
-  border: 4px solid #5D4037;
-  border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    background: linear-gradient(135deg, #3d2817 0%, #2a1b0f 50%, #1a1008 100%);
+    border: 4px solid #5D4037;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
 }
 
 .pushoff-sfx {
-  color: #a89070;
-  font-style: italic;
-  margin: 0.75rem 0;
+    color: #a89070;
+    font-style: italic;
+    margin: 0.75rem 0;
 }
 
 .pushoff-btn {
-  position: relative;
-  left: auto;
-  bottom: auto;
-  transform: none;
-  margin-top: 1rem;
-  animation: none;
+    position: relative;
+    left: auto;
+    bottom: auto;
+    transform: none;
+    margin-top: 1rem;
+    animation: none;
 }
 
 .pushoff-btn:hover {
-  transform: translateY(-2px);
+    transform: translateY(-2px);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Responsive */
 @media (max-width: 480px) {
-  .ship-hotspot {
-    min-width: 52px;
-    padding: 0.35rem;
-  }
+    .ship-hotspot {
+        min-width: 52px;
+        padding: 0.35rem;
+    }
 
-  .ship-hotspot-icon {
-    font-size: 1.2rem;
-  }
+    .ship-hotspot-icon {
+        font-size: 1.2rem;
+    }
 
-  .ship-hotspot-label {
-    font-size: 0.55rem;
-    max-width: 60px;
-  }
+    .ship-hotspot-label {
+        font-size: 0.55rem;
+        max-width: 60px;
+    }
 
-  .beach-dialogue-wrap {
-    bottom: 80px;
-  }
+    .beach-dialogue-wrap {
+        bottom: 80px;
+    }
 
-  .supply-zones-middle {
-    grid-template-columns: 1fr;
-  }
+    .supply-zones-middle {
+        grid-template-columns: 1fr;
+    }
 
-  .bow-zone,
-  .stern-zone {
-    width: 70%;
-  }
+    .bow-zone,
+    .stern-zone {
+        width: 70%;
+    }
 
-  .supply-crates {
-    grid-template-columns: 1fr;
-  }
+    .supply-crates {
+        grid-template-columns: 1fr;
+    }
 
-  .ormar-emoji {
-    font-size: 4rem;
-  }
+    .ormar-emoji {
+        font-size: 4rem;
+    }
 
-  .garm-emoji {
-    font-size: 3rem;
-  }
+    .garm-emoji {
+        font-size: 3rem;
+    }
 }

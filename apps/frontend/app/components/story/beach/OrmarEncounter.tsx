@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { DialogueBox } from '../dialogue/DialogueBox';
 import { DIALOGUE_TRIGGERS } from '../dialogue/dialogues';
 
+import ORMAR_IMAGE from '../character/Ormar.png';
+import GARM_IMAGE from '../character/Garm.png';
+
 interface OrmarEncounterProps {
   onComplete: () => void;
   onRewardCollect?: (rewardId: string) => void;
@@ -17,18 +20,20 @@ export function OrmarEncounter({ onComplete, onRewardCollect }: OrmarEncounterPr
         <div className="ormar-figures" aria-hidden="true">
           <div className="ormar-character">
             <img
-                className="ormar"
-                src="../character/Ormar.png"
-                alt="Bearded man"
-                />
+              className="ormar"
+              src={ORMAR_IMAGE}
+              alt="Bearded man"
+              style={{ width: 150, height: 150, objectFit: 'contain' }}
+            />
             <span className="ormar-name">Ormar Raudhabe</span>
           </div>
           <div className="garm-character">
             <img
-                className="garm"
-                src="../character/Garm.png"
-                alt="Dog"
-                />
+              className="garm"
+              src={GARM_IMAGE}
+              alt="Dog"
+              style={{ width: 150, height: 150, objectFit: 'contain' }}
+            />
             <span className="garm-name">Garm</span>
           </div>
         </div>

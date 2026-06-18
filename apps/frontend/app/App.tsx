@@ -145,6 +145,8 @@ function GameContent() {
               saveIslandProgress(currentStoryIsland, completedBeachIslands);
             }}
             onRewardCollect={handleStoryRewardCollect}
+            onOpenSettings={() => setShowSettingsModal(true)}
+            storyRewards={storyRewards}
           />
         ) : (
           <>

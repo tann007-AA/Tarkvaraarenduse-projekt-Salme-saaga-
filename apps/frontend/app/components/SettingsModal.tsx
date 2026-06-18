@@ -98,7 +98,7 @@ export function SettingsModal({
         <div style={{ marginBottom: "25px", display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {onReturnToMenu && (
             <button
-              onClick={onReturnToMenu}
+              onClick={() => { onReturnToMenu(); onClose(); }}
               className="flex items-center justify-center gap-3 w-full p-3 bg-[#3a2a1a] border-2 border-[#9a793c] text-[#e2d4bc] hover:bg-[#4a3a2a] hover:text-[#dfb15b] transition-all rounded font-bold uppercase tracking-wider text-sm shadow-lg"
             >
               <Home className="w-5 h-5" />
@@ -166,7 +166,7 @@ export function SettingsModal({
 
           <button
             onClick={() => {
-              toast.success("Settings applied!");
+              toast.success("Sätted rakendatud!");
               onClose();
             }}
             className="flex-1 bg-gradient-to-b from-[#9a793c] to-[#6a5437] text-white py-3 font-bold uppercase tracking-widest hover:brightness-110 transition-all text-sm rounded shadow-lg"

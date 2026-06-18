@@ -780,9 +780,10 @@ body {
     height: 100vh;
     position: relative;
     display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 0;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 20px 32px;
     background: radial-gradient(circle at center, #3a1708 0%, #241008 55%, #170904 100%);
     overflow: hidden;
 }
@@ -790,10 +791,11 @@ body {
 
 .house-scene-only {
     width: 100%;
-    height: 100%;
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: flex-end;
+    min-height: 0;
 }
 
 

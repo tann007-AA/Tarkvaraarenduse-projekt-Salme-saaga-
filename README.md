@@ -1,6 +1,12 @@
 # Salme saaga
 
-## Ekraanipilt (s00n)
+## Kuvatõmmised
+
+![Avamenüü](images/mainmenu-screen.webp)
+
+![Storymode](images/story-sweden-screen.webp)
+
+![Hnefatafl](images/hnefatafl-screen.webp)
 
 ## Eesmärk ja lühikirjeldus
 

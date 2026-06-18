@@ -14,6 +14,10 @@ import Right01 from '../character/Right_01.png';
 import Right02 from '../character/Right_02.png';
 import Right03 from '../character/Right_03.png';
 
+import VikingShip from '../character/VikingShip.png';
+
+const VikingShipPos = { left: '45.5%', top: '29%' };
+
 import { ShipHotspots } from './ShipHotspots';
 import { SupplyDragDrop } from './SupplyDragDrop';
 import { OrmarEncounter } from './OrmarEncounter';
@@ -209,13 +213,37 @@ export function BeachScene({ onExitBeach, onBackToMenu, onRewardCollect }: Beach
         <div className="beach-sand" aria-hidden="true" />
         <div className="beach-dunes" aria-hidden="true" />
 
-        <div className="beach-ship" aria-hidden="true">
+        <div
+          className="ship-wrapper"
+          style={{
+            position: 'absolute',
+            left: VikingShipPos.left,
+            top: VikingShipPos.top,
+            width: '150px',
+            transform: 'scale(5)',
+            transformOrigin: 'center center',
+          }}
+        >
+          <div className="ship-splash" aria-hidden="true">
+            <span className="splash-pixel p1" />
+            <span className="splash-pixel p2" />
+            <span className="splash-pixel p3" />
+            <span className="splash-pixel p4" />
+            <span className="splash-pixel p5" />
+            <span className="splash-pixel p6" />
+            <span className="splash-pixel p7" />
+            <span className="splash-pixel p8" />
+            <span className="wave-ring r1" />
+            <span className="wave-ring r2" />
+          </div>
           <img
-            className="beach-ship"
-            src="../character/VikingShip.png"
-            alt="Vikingship"
+            src={VikingShip}
+            alt="Viking Ship"
+            className="character ship-bob"
+            style={{ width: '150px', height: 'auto', position: 'relative', zIndex: 2 }}
           />
         </div>
+
         <img
           src={sprites[direction][frameIndex]}
           alt="Björn"
