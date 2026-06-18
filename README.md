@@ -1,4 +1,4 @@
-# Salme saaga
+# Salme Saaga: Viimane rannaretk
 
 ## Kuvatõmmised
 
@@ -10,11 +10,11 @@
 
 ## Eesmärk ja lühikirjeldus
 
-Salme saaga on viikingiteemaline õpimäng, mille eesmärk on arendada huvi ja teadmisi Eestis olnud viikingite ning nende ajaloo vastu. Mäng on mõeldud muuseumite ja koolide õppetöö muutmiseks interaktiivsemaks ja kaasahaaravamaks. Projekt lahendab probleemi, kus traditsiooniline ajalooõpe mäluasutustes ja koolides jääb õpilastele kaugeks ja vähe köitvaks, pakkudes selle asemel mängulist ja visuaalset viisi ajalooga tutvumiseks.
+Salme Saaga on viikingiteemaline õpimäng, mille eesmärk on arendada huvi ja teadmisi Eestis olnud viikingite ning nende ajaloo vastu. Mäng on mõeldud muuseumide ja koolide õppetöö muutmiseks interaktiivsemaks ja kaasahaaravamaks. Projekt lahendab probleemi, kus traditsiooniline ajalooõpe mäluasutustes ja koolides jääb õpilastele kaugeks ja vähe köitvaks, pakkudes selle asemel mängulist ja visuaalset viisi ajalooga tutvumiseks.
 
 ## Instituut ja projekti raamistik
 
-Projekt on valminud Tallinna Ülikooli Digitehnoloogia Instituudi (DTI) ja ELU projekti raames, pealkirjaga "Tulevikuõpe ja loovtehnoloogiad: millist lugu jutustavad mäluasutused?".
+Projekt on valminud Tallinna Ülikooli Digitehnoloogiate Instituudi (DTI) ja ELU-projekti raames, pealkirjaga „Tulevikuõpe ja loovtehnoloogiad: millist lugu jutustavad mäluasutused?“.
 
 ## Kasutatud tehnoloogiad
 
@@ -28,7 +28,7 @@ Projekt on valminud Tallinna Ülikooli Digitehnoloogia Instituudi (DTI) ja ELU p
 - Socket.IO Client 4.8.3
 
 **Backend**
-- Node.js (soovitatud LTS versioon, nt 20.x)
+- Node.js (soovitatud LTS-versioon, nt 20.x)
 - NestJS 11.x (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/websockets` jt)
 - TypeScript 5.7.3
 - Drizzle ORM 0.45.2 (koos `drizzle-kit` 0.31.10)
@@ -161,4 +161,4 @@ npm run preview
 
 ## Litsents
 
-Projekt on litsenseeritud MIT litsentsi alusel. Vt täpsemalt failist [LICENSE](LICENSE).
+Projekt on litsentseeritud MIT-litsentsi alusel. Vt täpsemalt failist [LICENSE](LICENSE).
