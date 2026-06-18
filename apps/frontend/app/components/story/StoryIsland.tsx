@@ -1,5 +1,5 @@
 import React from 'react';
-import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Lock } from 'lucide-react';
 import './level.css';
@@ -227,6 +227,9 @@ export function StoryIsland({
   const island = storyIslandData[currentIsland];
 
   const [mapScale, setMapScale] = useState(1);
+  /* While a scene/island swap is fading, pause character rendering so DOM
+     writes don't yank the still-visible (exiting) sprite to the new start. */
+  const isTransitioningRef = useRef(false);
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(initialCheckpointCount);
   const [checkpointCount, setCheckpointCount] = useState(initialCheckpointCount);
   const [activeDialogueId, setActiveDialogueId] = useState<string | null>(null);
@@ -299,11 +302,10 @@ export function StoryIsland({
 
     hasTriggeredShipRef.current = false;
 
-    if (characterRef.current) {
-      characterRef.current.style.left = `${xRef.current}%`;
-      characterRef.current.style.top = `${yRef.current}%`;
-      characterRef.current.src = sprites.front[0];
-    }
+    /* New island fades in via AnimatePresence — block character DOM writes
+       until that fade-in completes (cleared in the map-fade onAnimationComplete).
+       The sprite mounts at startX/startY declaratively, so no teleport. */
+    isTransitioningRef.current = true;
   }, [currentIsland, island.startX, island.startY, sprites, initialCheckpointCount]);
 
   const isWalkable = (testX: number, testY: number) => {
@@ -319,11 +321,27 @@ export function StoryIsland({
 
   const renderCharacter = () => {
     const character = characterRef.current;
-    if (!character) return;
+    if (!character || isTransitioningRef.current) return;
     character.style.left = `${xRef.current}%`;
     character.style.top = `${yRef.current}%`;
     character.src = sprites[currentDirectionRef.current][currentFrameRef.current];
   };
+
+  /* Callback ref: position the sprite at startX/startY the instant the new
+     island's <img> mounts (during the fade-in), before first paint. Stable
+     identity (deps: sprites) so normal re-renders don't re-run it and fight
+     the game loop's imperative left/top writes. */
+  const setCharacterRef = useCallback(
+    (node: HTMLImageElement | null) => {
+      characterRef.current = node;
+      if (node) {
+        node.style.left = `${xRef.current}%`;
+        node.style.top = `${yRef.current}%`;
+        node.src = sprites.front[0];
+      }
+    },
+    [sprites]
+  );
 
 
   const handleMapClick = (event: MouseEvent<HTMLDivElement>) => {
@@ -376,7 +394,7 @@ export function StoryIsland({
       const delta = lastTimeRef.current ? timestamp - lastTimeRef.current : 16;
       lastTimeRef.current = timestamp;
 
-      if (isPausedRef.current) {
+      if (isPausedRef.current || isTransitioningRef.current) {
         animationFrameRef.current = requestAnimationFrame(gameLoop);
         return;
       }
@@ -753,6 +771,13 @@ export function StoryIsland({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, ease: 'easeInOut' }}
+              onAnimationComplete={(def) => {
+                /* Resume character rendering only after the new island has
+                   faded fully in (opacity 1), not on the old one's fade-out. */
+                if (def && (def as { opacity?: number }).opacity === 1) {
+                  isTransitioningRef.current = false;
+                }
+              }}
             >
               <div
                 ref={mapRef}
@@ -769,7 +794,7 @@ export function StoryIsland({
                 <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
 
                 <img
-                  ref={characterRef}
+                  ref={setCharacterRef}
                   id="character"
                   src={Front01}
                   alt="Character"
