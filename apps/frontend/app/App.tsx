@@ -169,6 +169,7 @@ function GameContent() {
                   setShowEndCredits(true);
                 } else {
                   setCurrentStoryIsland(island);
+
                   setCompletedBeachIslands((prev) => {
                     const next = new Set(prev).add(currentStoryIsland);
                     saveIslandProgress(island, next);
@@ -211,7 +212,7 @@ function GameContent() {
             {showEndCredits && (
               <EndCredits onComplete={() => {
                 setShowEndCredits(false);
-                setGameState('menu');
+                handleResetProgress();
               }} />
             )}
           </>
