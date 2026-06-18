@@ -44,10 +44,12 @@ interface HouseSceneProps {
   onBackToMenu: () => void;
   onRewardCollect?: (rewardId: string) => void;
   onDialogueStart?: (id: string) => void;
+  onOpenSettings?: () => void;
+  storyRewards?: string[];
 }
 
 
-export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialogueStart }: HouseSceneProps) {
+export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialogueStart, onOpenSettings, storyRewards = [] }: HouseSceneProps) {
   const [playerPos, setPlayerPos] = useState({ x: 48.5, y: 43 });
   const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(null);
   const [direction, setDirection] = useState<Direction>('front');
@@ -435,13 +437,55 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
 
   return (
     <main className="house-scene-screen">
+      <header className="level-header">
+        <div /> {/* Placeholder for left grid cell */}
+        <div /> {/* Placeholder for center grid cell */}
+        <div className="level-header-actions">
+          {storyRewards.includes('kodumulla-paun') && (
+            <div
+              className="flex items-center justify-center bg-gradient-to-r from-[#2d6a4f] to-[#40916c] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl"
+              title="Kodumulla paun"
+            >
+              <span className="text-lg md:text-xl">🪙</span>
+            </div>
+          )}
+
+          {storyRewards.includes('whalebone-dice') && (
+            <div
+              className="flex items-center justify-center bg-gradient-to-r from-[#5c4a6b] to-[#7a5f8d] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl"
+              title="Vaalaluust täringud"
+            >
+              <span className="text-lg md:text-xl">🎲</span>
+            </div>
+          )}
+
+          <button
+            onClick={onOpenSettings}
+            className="flex items-center justify-center bg-gradient-to-r from-[#d4a574] to-[#b8860b] w-10 h-10 md:w-12 md:h-12 rounded-full border-3 border-[#f4ede1] shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden p-2.5"
+            aria-label="Seaded"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={3}
+              stroke="currentColor"
+              className="w-full h-full text-white"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.77a1.119 1.119 0 0 0-.362.853v.052c0 .31.13.602.362.853l1.003.77a1.125 1.125 0 0 1 .26 1.43l-1.296 2.247a1.125 1.125 0 0 1-1.37.49l-1.216-.456a1.125 1.125 0 0 0-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281a1.125 1.125 0 0 0-.645-.87a6.528 6.528 0 0 1-.22-.127a1.125 1.125 0 0 0-1.075-.124l-1.217.456a1.125 1.125 0 0 1-1.37-.49l-1.296-2.247a1.125 1.125 0 0 1 .26-1.43l1.003-.77a1.119 1.119 0 0 0 .362-.852v-.052c0-.31-.13-.602-.362-.853l-1.003-.77a1.125 1.125 0 0 1-.26-1.43l1.296-2.247a1.125 1.125 0 0 1 1.37-.49l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128c.332-.183.582-.495.644-.869l.214-1.28Z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
       <button
         id="backBtn"
         className="back-btn"
         type="button"
         onClick={onBackToMenu}
       >
-        ← Back
+        ← Tagasi
       </button>
 
       <section className="house-scene-only">

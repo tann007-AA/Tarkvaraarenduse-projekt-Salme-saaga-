@@ -157,9 +157,8 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
                 <div className="pot-area">
                   <DropZone
                     zoneId="pot"
-                    className={`soup-pot ${shakePot ? 'shake' : ''} ${
-                      successPulse ? 'pulse-success' : ''
-                    } ${completed ? 'completed' : ''}`}
+                    className={`soup-pot ${shakePot ? 'shake' : ''} ${successPulse ? 'pulse-success' : ''
+                      } ${completed ? 'completed' : ''}`}
                     onDrop={(draggableId: string) => handleDrop(draggableId)}
                   >
                     <div className="pot-content">
@@ -214,7 +213,7 @@ export function CookingGame({ isOpen, onClose, onComplete }: CookingGameProps) {
               disabled={!completed}
             >
               {collected.length >= 3
-                ? '♨️ Keeda ning toimeta muude tegevustega! ♨️'
+                ? '♨️ Keeda!'
                 : `Lisa koostisosad (${collected.length}/3)`}
             </button>
           </div>
