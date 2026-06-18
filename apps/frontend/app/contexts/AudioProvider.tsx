@@ -16,6 +16,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const audio = audioRef.current;
     audio.volume = volume;
+    // Mobile browsers (esp. iOS Safari) ignore programmatic `volume` changes,
+    // but they DO honour `muted`. Toggle it so volume 0 mutes on phones too.
+    audio.muted = volume === 0;
     audio.loop = true;
   }, [volume]);
 
