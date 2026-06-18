@@ -280,11 +280,9 @@ function GameContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AudioProvider>
       <LanguageProvider>
         <GameContent />
       </LanguageProvider>
-      </AudioProvider> 
     </AuthProvider>
   );
 }
