@@ -592,7 +592,7 @@ export function StoryIsland({
         <header className="level-header">
           <aside className="level-info-card">
             <h1>{island.title}</h1>
-            <p className="level-topic">Viking Journeys</p>
+            {/* <p className="level-topic">Viikingi seiklus</p> */}
 
             {island.markers.length > 0 && (
               <div className="level-progress">

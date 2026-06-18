@@ -177,7 +177,12 @@ function GameContent() {
                   setShowEndCredits(true);
                 } else {
                   setCurrentStoryIsland(island);
-                  saveIslandProgress(island, completedBeachIslands);
+                  
+                  setCompletedBeachIslands((prev) => {
+                    const next = new Set(prev).add(currentStoryIsland);
+                    saveIslandProgress(island, next);
+                    return next;
+                  });
                 }
               }}
               onGoToBeach={onGoToBeach}
@@ -196,7 +201,7 @@ function GameContent() {
                     setShowBeachScene(false);
                     setCompletedBeachIslands((prev) => {
                       const next = new Set(prev).add(currentStoryIsland);
-                      
+
                       // Auto-advance from Rootsi to Gotland after beach
                       if (currentStoryIsland === 'rootsi') {
                         setCurrentStoryIsland('gotland');
@@ -204,7 +209,7 @@ function GameContent() {
                       } else {
                         saveIslandProgress(currentStoryIsland, next);
                       }
-                      
+
                       return next;
                     });
                   }}

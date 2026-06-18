@@ -45,7 +45,7 @@ export function EndCredits({ onComplete }: EndCreditsProps) {
           </div>
 
           <div className="credit-block">
-            <h2>Kasutatud Materialid</h2>
+            <h2>Kasutatud Materjalid</h2>
             <p>Clockwork Raven Studios</p>
             <p>S Frisk</p>
             <p>Aivopiru</p>
@@ -54,6 +54,7 @@ export function EndCredits({ onComplete }: EndCreditsProps) {
             <p>Carbonova</p>
             <p>PIXEL_1992</p>
             <p>Alkakrab</p>
+            <p>Flaticon - Freepik</p>
           </div>
 
           <div className="credit-block" style={{ marginTop: '100px' }}>
