@@ -213,35 +213,45 @@ export function BeachScene({ onExitBeach, onBackToMenu, onRewardCollect }: Beach
         <div className="beach-sand" aria-hidden="true" />
         <div className="beach-dunes" aria-hidden="true" />
 
-        <div
-          className="ship-wrapper"
-          style={{
-            position: 'absolute',
-            left: VikingShipPos.left,
-            top: VikingShipPos.top,
-            width: '150px',
-            transform: 'scale(5)',
-            transformOrigin: 'center center',
-          }}
-        >
-          <div className="ship-splash" aria-hidden="true">
-            <span className="splash-pixel p1" />
-            <span className="splash-pixel p2" />
-            <span className="splash-pixel p3" />
-            <span className="splash-pixel p4" />
-            <span className="splash-pixel p5" />
-            <span className="splash-pixel p6" />
-            <span className="splash-pixel p7" />
-            <span className="splash-pixel p8" />
-            <span className="wave-ring r1" />
-            <span className="wave-ring r2" />
+        {/* Fixed-width, full-height stage keeps the ship and its hotspots in a
+            shared coordinate space so hotspots never overlap at narrow widths.
+            The ship stays full size; on narrow screens the stage crops at the
+            edges (centered) instead of shrinking. */}
+        <div className="ship-stage">
+          <div
+            className="ship-wrapper"
+            style={{
+              position: 'absolute',
+              left: VikingShipPos.left,
+              top: VikingShipPos.top,
+              width: '150px',
+              transform: 'scale(5)',
+              transformOrigin: 'center center',
+            }}
+          >
+            <div className="ship-splash" aria-hidden="true">
+              <span className="splash-pixel p1" />
+              <span className="splash-pixel p2" />
+              <span className="splash-pixel p3" />
+              <span className="splash-pixel p4" />
+              <span className="splash-pixel p5" />
+              <span className="splash-pixel p6" />
+              <span className="splash-pixel p7" />
+              <span className="splash-pixel p8" />
+              <span className="wave-ring r1" />
+              <span className="wave-ring r2" />
+            </div>
+            <img
+              src={VikingShip}
+              alt="Viking Ship"
+              className="character ship-bob"
+              style={{ width: '150px', height: 'auto', position: 'relative', zIndex: 2 }}
+            />
           </div>
-          <img
-            src={VikingShip}
-            alt="Viking Ship"
-            className="character ship-bob"
-            style={{ width: '150px', height: 'auto', position: 'relative', zIndex: 2 }}
-          />
+
+          {phase === 'hotspots' && (
+            <ShipHotspots onComplete={() => setPhase('supplies')} />
+          )}
         </div>
 
         <img
@@ -250,10 +260,6 @@ export function BeachScene({ onExitBeach, onBackToMenu, onRewardCollect }: Beach
           className="beach-player-sprite"
           style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%` }}
         />
-
-        {phase === 'hotspots' && (
-          <ShipHotspots onComplete={() => setPhase('supplies')} />
-        )}
 
         {phase === 'supplies' && (
           <SupplyDragDrop onComplete={() => setPhase('ormar')} />

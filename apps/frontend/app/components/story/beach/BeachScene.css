@@ -1,6 +1,8 @@
 .beach-scene-screen {
     min-height: 100vh;
+    min-height: 100dvh;
     height: 100vh;
+    height: 100dvh;
     position: relative;
     display: flex;
     align-items: flex-end;
@@ -15,6 +17,7 @@
     height: 100%;
     position: relative;
     cursor: pointer;
+    touch-action: manipulation;
 }
 
 /* Background layers */
@@ -162,6 +165,24 @@
 }
 
 /* Hotspots layer */
+/* Fixed-width, full-height stage shared by the ship + its hotspots.
+   Horizontal positions stop depending on viewport width, so hotspots keep
+   their spacing (no overlap). Ship keeps full size; narrow screens crop the
+   stage edges (centered) rather than shrinking it. */
+.ship-stage {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    width: 1100px;
+    height: 100%;
+    pointer-events: none;
+}
+
+.ship-stage>* {
+    pointer-events: auto;
+}
+
 .beach-hotspots-layer {
     position: absolute;
     inset: 0;
@@ -174,7 +195,7 @@
 }
 
 .beach-hotspots-progress {
-    position: absolute;
+    position: fixed;
     top: 16px;
     right: 16px;
     padding: 0.4rem 0.75rem;

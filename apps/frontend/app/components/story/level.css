@@ -337,8 +337,8 @@ body {
 
 .back-btn {
     position: fixed;
-    left: 24px;
-    bottom: 24px;
+    left: calc(24px + env(safe-area-inset-left));
+    bottom: calc(24px + env(safe-area-inset-bottom));
     z-index: 20;
     border: none;
     border-radius: 14px;
@@ -396,8 +396,8 @@ body {
 
     .level-header-actions {
         position: absolute;
-        top: 16px;
-        right: 16px;
+        top: calc(16px + env(safe-area-inset-top));
+        right: calc(16px + env(safe-area-inset-right));
         z-index: 50;
     }
 
@@ -460,8 +460,8 @@ body {
     }
 
     .back-btn {
-        left: 16px;
-        bottom: 16px;
+        left: calc(16px + env(safe-area-inset-left));
+        bottom: calc(16px + env(safe-area-inset-bottom));
     }
 }
 
@@ -777,7 +777,9 @@ body {
 
 .house-scene-screen {
     min-height: 100vh;
+    min-height: 100dvh;
     height: 100vh;
+    height: 100dvh;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -1101,5 +1103,27 @@ body {
 
     50% {
         transform: translate(-50%, -50%) translateY(-8px);
+    }
+}
+
+/* ── Mobile / touch ──────────────────────────────────────────
+   Kill the 300ms tap delay + double-tap-zoom on move/interaction
+   surfaces, and keep tap targets >=44px on touch devices.
+   (Portrait camera-follow is handled separately.) */
+.map-container,
+.map-fade,
+.house-scene-stage {
+    touch-action: manipulation;
+}
+
+@media (pointer: coarse) {
+    .question-marker {
+        width: 48px;
+        height: 56px;
+    }
+
+    .step-icon {
+        min-width: 44px;
+        min-height: 44px;
     }
 }
