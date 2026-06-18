@@ -10,6 +10,7 @@ import { MultiplayerLobby } from './MultiplayerLobby';
 import { BoardGameMultiplayerService, type GameSession } from '../../services/boardGameMultiplayer';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { OceanBackground } from '../OceanBackground';
+//import stormBg from './assets/norse-storm-battle-wallpaper.jpg';
 
 type BoardGameState = 'menu' | 'difficulty' | 'side-select' | 'playing' | 'multiplayer';
 
@@ -145,9 +146,6 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
       if (data.boardState) {
         const mappedGrid = mapBackendBoard(data.boardState);
         
-        // AUTOMAATNE LIIKUMISE TUVASTUS MULTIPLAYERIS:
-        // Võrdleme vana lauda uue lauaga, et leida kust-kuhu nupp liikus,
-        // et sinu kirjutatud Canvas animatsioon käivituks ka vastase käigul!
         let from: [number, number] | null = null;
         let to: [number, number] | null = null;
         const size = 11;
@@ -158,14 +156,13 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
             const newPiece = mappedGrid[x][y];
             
             if (oldPiece !== PieceType.None && newPiece === PieceType.None) {
-              from = [x, y]; // Ruut jäi tühjaks -> siit alustati
+              from = [x, y];
             } else if (oldPiece === PieceType.None && newPiece !== PieceType.None) {
-              to = [x, y]; // Tühja ruudu peale tekkis nupp -> siia maanduti
+              to = [x, y];
             }
           }
         }
 
-        // Kui tuvastasime liikumise, salvestame selle animatsiooni jaoks
         if (from && to) {
           setLastMove({ from, to });
         }
@@ -442,6 +439,16 @@ export function BoardGameScreen({ onBack }: { onBack: () => void }) {
               </motion.div>
             )}
           </div>
+
+          
+          {!engine.gameOver && (
+            <div className="w-full max-w-xs mt-2">
+              <button onClick={handleReset} className={backButtonClass}>
+                {buttonContent(t.boardGame.menu.backToMainMenu || 'Tagasi menüüsse')}
+              </button>
+            </div>
+          )}
+
         </motion.div>
       )}
     </div>
