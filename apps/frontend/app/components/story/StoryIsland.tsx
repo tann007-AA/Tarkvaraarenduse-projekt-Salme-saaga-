@@ -99,8 +99,8 @@ const storyIslandData: Record<
     nextIsland: 'gotland',
     designW: 1000,
     designH: 550,
-    startX: 74,
-    startY: 70,
+    startX: 23,
+    startY: 28,
     markers: [
       /* { left: '86%', top: '14%' },
       { left: '45%', top: '14%' },
