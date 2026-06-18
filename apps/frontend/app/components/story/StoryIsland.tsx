@@ -1,6 +1,7 @@
 import React from 'react';
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { Lock } from 'lucide-react';
 import './level.css';
 import { DialogueBox } from './dialogue/DialogueBox';
 import { DIALOGUE_TRIGGERS } from './dialogue/dialogues';
@@ -543,6 +544,17 @@ export function StoryIsland({
     }
   };
 
+  const isIslandUnlocked = (id: StoryIsland) => {
+    if (id === 'rootsi') return true;
+    if (id === 'gotland') return completedBeachIslands.has('rootsi');
+    if (id === 'saaremaa') return completedBeachIslands.has('gotland');
+    return false;
+  };
+
+  const canNavigateTo = (id: StoryIsland) => {
+    return id === currentIsland || isIslandUnlocked(id);
+  };
+
   return (
     <React.Fragment>
       <div className="water-bg" aria-hidden="true">
@@ -572,39 +584,90 @@ export function StoryIsland({
             </h2>
 
             <div className="island-progress">
-              <button
+              <motion.button
+                whileHover={canNavigateTo('rootsi') ? { scale: 1.05, y: -2 } : {}}
+                whileTap={canNavigateTo('rootsi') ? { scale: 0.95 } : {}}
                 type="button"
-                className={`progress-step ${currentIsland === 'rootsi' ? 'active' : ''}`}
+                className={`progress-step ${currentIsland === 'rootsi' ? 'active' : ''} ${!canNavigateTo('rootsi') ? 'locked' : ''}`}
                 aria-current={currentIsland === 'rootsi' ? 'step' : undefined}
-                onClick={() => onGoToIsland?.('rootsi')}
+                onClick={() => canNavigateTo('rootsi') && onGoToIsland?.('rootsi')}
               >
-                <span className="step-icon">1</span>
+                <div className="step-icon-wrapper">
+                  <span className="step-icon">
+                    {!canNavigateTo('rootsi') ? <Lock className="w-5 h-5" /> : '1'}
+                  </span>
+                  {currentIsland === 'rootsi' && (
+                    <motion.div
+                      layoutId="active-glow"
+                      className="active-glow"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </div>
                 <span className="step-label">Rootsi</span>
-              </button>
+              </motion.button>
 
-              <div className="progress-line" aria-hidden="true"></div>
+              <div className="progress-line" aria-hidden="true">
+                <motion.div
+                  className="progress-line-fill"
+                  initial={{ width: 0 }}
+                  animate={{ width: completedBeachIslands.has('rootsi') ? '100%' : '0%' }}
+                />
+              </div>
 
-              <button
+              <motion.button
+                whileHover={canNavigateTo('gotland') ? { scale: 1.05, y: -2 } : {}}
+                whileTap={canNavigateTo('gotland') ? { scale: 0.95 } : {}}
                 type="button"
-                className={`progress-step ${currentIsland === 'gotland' ? 'active' : ''}`}
+                className={`progress-step ${currentIsland === 'gotland' ? 'active' : ''} ${!canNavigateTo('gotland') ? 'locked' : ''}`}
                 aria-current={currentIsland === 'gotland' ? 'step' : undefined}
-                onClick={() => onGoToIsland?.('gotland')}
+                onClick={() => canNavigateTo('gotland') && onGoToIsland?.('gotland')}
               >
-                <span className="step-icon">2</span>
+                <div className="step-icon-wrapper">
+                  <span className="step-icon">
+                    {!canNavigateTo('gotland') ? <Lock className="w-5 h-5" /> : '2'}
+                  </span>
+                  {currentIsland === 'gotland' && (
+                    <motion.div
+                      layoutId="active-glow"
+                      className="active-glow"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </div>
                 <span className="step-label">Gotland</span>
-              </button>
+              </motion.button>
 
-              <div className="progress-line" aria-hidden="true"></div>
+              <div className="progress-line" aria-hidden="true">
+                <motion.div
+                  className="progress-line-fill"
+                  initial={{ width: 0 }}
+                  animate={{ width: completedBeachIslands.has('gotland') ? '100%' : '0%' }}
+                />
+              </div>
 
-              <button
+              <motion.button
+                whileHover={canNavigateTo('saaremaa') ? { scale: 1.05, y: -2 } : {}}
+                whileTap={canNavigateTo('saaremaa') ? { scale: 0.95 } : {}}
                 type="button"
-                className={`progress-step ${currentIsland === 'saaremaa' ? 'active' : ''}`}
+                className={`progress-step ${currentIsland === 'saaremaa' ? 'active' : ''} ${!canNavigateTo('saaremaa') ? 'locked' : ''}`}
                 aria-current={currentIsland === 'saaremaa' ? 'step' : undefined}
-                onClick={() => onGoToIsland?.('saaremaa')}
+                onClick={() => canNavigateTo('saaremaa') && onGoToIsland?.('saaremaa')}
               >
-                <span className="step-icon">3</span>
+                <div className="step-icon-wrapper">
+                  <span className="step-icon">
+                    {!canNavigateTo('saaremaa') ? <Lock className="w-5 h-5" /> : '3'}
+                  </span>
+                  {currentIsland === 'saaremaa' && (
+                    <motion.div
+                      layoutId="active-glow"
+                      className="active-glow"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </div>
                 <span className="step-label">Saaremaa</span>
-              </button>
+              </motion.button>
             </div>
           </section>
 
@@ -647,9 +710,11 @@ export function StoryIsland({
           </div>
         </header>
 
+        {/*
         <button id="backBtn" className="back-btn" type="button" onClick={onBackToMenu}>
           ← Tagasi
         </button>
+        */}
 
         <div className="map-container" ref={containerRef}>
           <AnimatePresence mode="wait">

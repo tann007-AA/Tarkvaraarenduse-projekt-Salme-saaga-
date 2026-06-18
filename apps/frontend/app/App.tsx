@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AnimatePresence } from 'motion/react';
 import { MainMenuScreen } from './components/MainMenuScreen';
 import { SettingsModal } from './components/SettingsModal';
 import { TutorialModal } from './components/TutorialModal';
@@ -78,11 +79,19 @@ function GameContent() {
 
   const handleReturnToMenu = () => {
     setGameState('menu');
+    setShowBeachScene(false);
+  };
+
+  const handleResetProgress = () => {
+    resetStoryProgress();
     setCurrentStoryIsland('rootsi');
     setShowHouseScene(true);
     setShowBeachScene(false);
     setCompletedBeachIslands(new Set());
-    resetStoryProgress();
+    setStoryRewards([]);
+    setPoints(0);
+    setGameState('menu');
+    setShowSettingsModal(false);
   };
 
 
@@ -193,12 +202,15 @@ function GameContent() {
 
 
       {/* Settings Modal */}
-      {showSettingsModal && (
-        <SettingsModal
-          onClose={() => setShowSettingsModal(false)}
-          onReturnToMenu={gameState !== 'menu' ? handleReturnToMenu : undefined}
-        />
-      )}
+      <AnimatePresence>
+        {showSettingsModal && (
+          <SettingsModal
+            onClose={() => setShowSettingsModal(false)}
+            onReturnToMenu={gameState !== 'menu' ? handleReturnToMenu : undefined}
+            onResetProgress={handleResetProgress}
+          />
+        )}
+      </AnimatePresence>
 
       {/* In-game Settings and Shop Buttons */}
       {(gameState === 'island-select' || gameState === 'quiz') && (
