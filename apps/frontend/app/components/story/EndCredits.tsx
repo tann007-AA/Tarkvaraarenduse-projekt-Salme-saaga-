@@ -44,6 +44,18 @@ export function EndCredits({ onComplete }: EndCreditsProps) {
             <p>"Tulevikuõpe ja loovtehnoloogiad: millist lugu jutustavad mäluasutused?"</p>
           </div>
 
+          <div className="credit-block">
+            <h2>Kasutatud Materialid</h2>
+            <p>Clockwork Raven Studios</p>
+            <p>S Frisk</p>
+            <p>Aivopiru</p>
+            <p>Kenmi</p>
+            <p>Free Game Assets (GUI, Sprite, Tilesets)</p>
+            <p>Carbonova</p>
+            <p>PIXEL_1992</p>
+            <p>Alkakrab</p>
+          </div>
+
           <div className="credit-block" style={{ marginTop: '100px' }}>
             <p>Täname mängimast!</p>
           </div>
