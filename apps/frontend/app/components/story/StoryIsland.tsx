@@ -44,7 +44,7 @@ type Marker = {
   top: string;
 };
 
-const VikingShipPos = { left: '95%', top: '35%' };
+const VikingShipPos = { left: '87%', top: '18%' };
 
 interface StoryIslandProps {
   currentIsland: StoryIsland;
@@ -641,17 +641,36 @@ export function StoryIsland({
                 className="character"
               />
 
-              <img
-                src={VikingShip}
-                alt="Viking Ship"
-                className="character"
-                style={{
-                  left: VikingShipPos.left,
-                  top: VikingShipPos.top,
-                  width: "150px",
-                  height: "auto",
-                }}
-              />
+              {currentIsland === 'rootsi' && (
+                <div
+                  className="ship-wrapper"
+                  style={{
+                    position: 'absolute',
+                    left: VikingShipPos.left,
+                    top: VikingShipPos.top,
+                    width: '150px',
+                  }}
+                >
+                  <div className="ship-splash" aria-hidden="true">
+                    <span className="splash-pixel p1" />
+                    <span className="splash-pixel p2" />
+                    <span className="splash-pixel p3" />
+                    <span className="splash-pixel p4" />
+                    <span className="splash-pixel p5" />
+                    <span className="splash-pixel p6" />
+                    <span className="splash-pixel p7" />
+                    <span className="splash-pixel p8" />
+                    <span className="wave-ring r1" />
+                    <span className="wave-ring r2" />
+                  </div>
+                  <img
+                    src={VikingShip}
+                    alt="Viking Ship"
+                    className="character ship-bob"
+                    style={{ width: '150px', height: 'auto', position: 'relative', zIndex: 2 }}
+                  />
+                </div>
+              )}
 
               {island.markers.map((marker, index) => (
                 <button

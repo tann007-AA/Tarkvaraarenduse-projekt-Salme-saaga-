@@ -689,6 +689,160 @@ body {
     object-position: center center;
 }
 
+.ship-splash {
+    position: absolute;
+    left: -15px;
+    /* tune to your ship position */
+    top: 70px;
+    width: 180px;
+    height: 60px;
+    z-index: 1;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+.ship-bob {
+    animation: ship-float 3.2s ease-in-out infinite;
+    transform-origin: center center;
+}
+
+@keyframes ship-float {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    25% {
+        transform: translateY(-4px) rotate(0.8deg);
+    }
+
+    50% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    75% {
+        transform: translateY(4px) rotate(-0.8deg);
+    }
+
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+}
+
+/* bigger, chunkier splash blocks, spread wider */
+.splash-pixel {
+    position: absolute;
+    bottom: 0;
+    width: 10px;
+    height: 10px;
+    background: #eaf6ff;
+    box-shadow: 0 0 0 3px #cdeeff inset;
+    image-rendering: pixelated;
+    opacity: 0;
+    animation: splash-pop 1.6s infinite ease-out;
+}
+
+.p1 {
+    left: 5%;
+    animation-delay: 0s;
+}
+
+.p2 {
+    left: 20%;
+    animation-delay: 0.25s;
+}
+
+.p3 {
+    left: 35%;
+    animation-delay: 0.5s;
+}
+
+.p4 {
+    left: 50%;
+    animation-delay: 0.1s;
+}
+
+.p5 {
+    left: 65%;
+    animation-delay: 0.4s;
+}
+
+.p6 {
+    left: 80%;
+    animation-delay: 0.2s;
+}
+
+.p7 {
+    left: 92%;
+    animation-delay: 0.55s;
+}
+
+.p8 {
+    left: 12%;
+    animation-delay: 0.7s;
+}
+
+@keyframes splash-pop {
+    0% {
+        opacity: 0;
+        transform: translateY(0) scale(0.5);
+    }
+
+    20% {
+        opacity: 1;
+        transform: translateY(-6px) scale(1.2);
+    }
+
+    60% {
+        opacity: 0.6;
+        transform: translateY(-16px) scale(1.8);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-22px) scale(2.4);
+    }
+}
+
+/* expanding rings to sell the "wake" feeling, growing outward from the hull */
+.wave-ring {
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 30px;
+    height: 14px;
+    border: 3px solid #cdeeff;
+    border-radius: 50%;
+    transform: translateX(-50%) scale(0.4);
+    opacity: 0;
+    image-rendering: pixelated;
+    animation: ring-expand 2s infinite ease-out;
+}
+
+.r1 {
+    animation-delay: 0s;
+}
+
+.r2 {
+    animation-delay: 1s;
+}
+
+@keyframes ring-expand {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.3);
+    }
+
+    20% {
+        opacity: 0.8;
+        transform: translateX(-50%) scale(0.8);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) scale(2.2);
+    }
+}
+
 .house-scene-image.dark-house {
     filter: brightness(0.55) contrast(1.1) saturate(0.85);
 }
