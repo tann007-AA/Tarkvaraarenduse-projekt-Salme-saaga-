@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DialogueBox } from '../dialogue/DialogueBox';
 import { DIALOGUE_TRIGGERS } from '../dialogue/dialogues';
 import './HnefataflStory.css';
+
+const LOOP_DIALOGUE_ID = DIALOGUE_TRIGGERS.hnefataflLoop ?? 'e2_hnefatafl_mangimise_ajal';
 
 interface HnefataflLoopChoiceProps {
   isOpen: boolean;
@@ -11,7 +13,14 @@ interface HnefataflLoopChoiceProps {
 }
 
 export function HnefataflLoopChoice({ isOpen, onRetry, onEnough }: HnefataflLoopChoiceProps) {
-  const [dialogueId, setDialogueId] = useState<string | null>(DIALOGUE_TRIGGERS.hnefataflLoop ?? 'e2_hnefatafl_mangimise_ajal');
+  const [dialogueId, setDialogueId] = useState<string | null>(LOOP_DIALOGUE_ID);
+
+  // Component stays mounted across rematches; reset the dialogue each time it
+  // reopens so the choice buttons reappear (otherwise dialogueId stays null
+  // after the first retry and DialogueBox renders nothing).
+  useEffect(() => {
+    if (isOpen) setDialogueId(LOOP_DIALOGUE_ID);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
