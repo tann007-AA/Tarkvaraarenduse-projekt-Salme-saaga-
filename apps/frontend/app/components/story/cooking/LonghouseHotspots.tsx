@@ -95,7 +95,7 @@ const LONGHOUSE_QUESTIONS: LonghouseQuestion[] = [
   },
   {
     id: '1-17-3',
-    question: 'Mis lükkab laeva edasi, kui tuult ei ole?',
+    question: 'Mida valmistasid naised, milleta laev merele ei saaks?',
     answers: ['Lohepea vööris', 'Villased purjed ja rõivad', 'Kirstud laeva põhjas'],
     correctIndex: 1,
     explanation: 'Ilma naiste käte ja kedveta poleks laeval purjesid ega kuubesid, mis merel eluks vajalikud.',
