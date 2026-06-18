@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Accessibility, Home, Volume2, X } from 'lucide-react';
 import { toast } from "sonner"
+import { useAudio } from '../contexts/AudioProvider'; // ← ADD THIS
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -14,8 +15,16 @@ export function SettingsModal({
   onReturnToMenu,
   onResetProgress,
 }: SettingsModalProps) {
-  const [volume, setVolume] = useState(80);
+  const { volume, setVolume } = useAudio(); // ← USE GLOBAL AUDIO STATE
   const [showConfirmReset, setShowConfirmReset] = useState(false);
+
+  // Convert 0-1 to 0-100 for display
+  const displayVolume = Math.round(volume * 100);
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = Number(e.target.value) / 100; // Convert 0-100 to 0-1
+    setVolume(newVolume);
+  };
 
   return (
     <motion.div
@@ -79,7 +88,7 @@ export function SettingsModal({
               <span>Muusika helitugevus</span>
             </div>
             <span style={{ color: "#dfb15b" }}>
-              {volume}%
+              {displayVolume}% {/* ← USE CONVERTED VALUE */}
             </span>
           </div>
 
@@ -87,10 +96,8 @@ export function SettingsModal({
             type="range"
             min={0}
             max={100}
-            value={volume}
-            onChange={(e) =>
-              setVolume(Number(e.target.value))
-            }
+            value={displayVolume}
+            onChange={handleVolumeChange}
             className="w-full h-2 bg-[#3a2a1a] rounded-lg appearance-none cursor-pointer accent-[#dfb15b]"
           />
         </div>

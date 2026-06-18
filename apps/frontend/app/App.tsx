@@ -6,6 +6,7 @@ import { TutorialModal } from './components/TutorialModal';
 import { Toaster } from 'sonner';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { AudioProvider } from './contexts/AudioProvider'; // ← ADD THIS IMPORT
 import { Settings } from 'lucide-react';
 import { GameModeSelectScreen } from './components/story/GameModeSelectScreen';
 import { StoryLevel } from './components/story/StoryIsland';
@@ -18,10 +19,8 @@ import { loadStoryProgress, saveStoryProgress, resetStoryProgress, patchStoryPro
 // Island story type
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
 
-
 // Artifact types for lifelines
 export type ArtifactType = 'sword' | 'shield' | 'knife' | 'dice' | 'gaming-piece';
-
 
 export interface Artifact {
   type: ArtifactType;
@@ -31,14 +30,12 @@ export interface Artifact {
 
 type GameState = 'intro' | 'menu' | 'island-select' | 'quiz' | 'sailing' | 'retry' | 'end' | 'mode-select' | 'story-mode' | 'hnefatafl-local';
 
-
 function GameContent() {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState<GameState>('menu');
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [points, setPoints] = useState(0);
-
 
   // Story mode state
   const [currentStoryIsland, setCurrentStoryIsland] = useState<StoryIsland>(() => {
@@ -82,7 +79,6 @@ function GameContent() {
     setShowSettingsModal(true);
   };
 
-
   const handleReturnToMenu = () => {
     setGameState('menu');
     setShowBeachScene(false);
@@ -108,11 +104,9 @@ function GameContent() {
     }
   }, [completedBeachIslands, currentStoryIsland]);
 
-
   return (
     <div className="size-full min-h-screen overflow-auto">
       <Toaster position="bottom-center" richColors />
-
 
       {/* Main Menu */}
       {gameState === 'menu' && (
@@ -122,7 +116,6 @@ function GameContent() {
           onSettings={handleSettingsClick}
         />
       )}
-
 
       {/* REŽIIMI VALIK */}
       {gameState === 'mode-select' && (
@@ -147,7 +140,6 @@ function GameContent() {
           onBack={() => setGameState('menu')}
         />
       )}
-
 
       {/* STORY MODE – maja → saar, laadimismäng käivitub viikingilaeva juures */}
       {gameState === 'story-mode' &&
@@ -226,7 +218,6 @@ function GameContent() {
           </>
         ))}
 
-
       {/* HNEFATAFL LAUAMÄNG – SEOTUD TEIE PÄRIS KOMPONENTIDEGA */}
       {gameState === 'hnefatafl-local' && (
         <BoardGameScreen onBack={() => setGameState('mode-select')} />
@@ -236,7 +227,6 @@ function GameContent() {
       {showGuideModal && (
         <TutorialModal onClose={() => setShowGuideModal(false)} />
       )}
-
 
       {/* Settings Modal */}
       <AnimatePresence>
@@ -259,8 +249,6 @@ function GameContent() {
             </span>
           </div>
 
-
-
           <button
             onClick={() => setShowSettingsModal(true)}
             className="w-12 h-12 bg-gradient-to-br from-[#8b6f47] to-[#6b5437] hover:from-[#6b5437] hover:to-[#8b6f47] rounded-full border-3 border-[#f4ede1] shadow-2xl flex items-center justify-center transition-all hover:scale-110"
@@ -270,18 +258,17 @@ function GameContent() {
           </button>
         </div>
       )}
-
-
     </div>
   );
 }
-
 
 export default function App() {
   return (
     <AuthProvider>
       <LanguageProvider>
-        <GameContent />
+        <AudioProvider> {/* ← ADDED: Wraps GameContent with AudioProvider */}
+          <GameContent />
+        </AudioProvider>
       </LanguageProvider>
     </AuthProvider>
   );
