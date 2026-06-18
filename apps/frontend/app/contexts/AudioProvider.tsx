@@ -10,7 +10,7 @@ const GameAudioContext = createContext<{
 
 export function AudioProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef(new Audio(audioFile));
-  const [volume, setVolume] = useState(0.8);
+  const [volume, setVolume] = useState(0.5);
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {

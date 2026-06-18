@@ -26,6 +26,15 @@ export function MainMenuScreen({ onPlay, onGuide, onSettings }: MainMenuScreenPr
 
   return (
     <div className="relative size-full min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Settings button */}
+      <button
+        onClick={onSettings}
+        aria-label={t.mainMenu.settings}
+        className="fixed top-4 right-4 z-40 w-12 h-12 bg-gradient-to-br from-[#8b6f47] to-[#6b5437] hover:from-[#6b5437] hover:to-[#8b6f47] rounded-full border-3 border-[#f4ede1] shadow-2xl flex items-center justify-center transition-all hover:scale-110"
+      >
+        <Settings className="w-6 h-6 text-white" />
+      </button>
+
       {/* Animated ocean background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#4a90a4] via-[#2a5c6f] to-[#1e4d5f]">
         <motion.div
