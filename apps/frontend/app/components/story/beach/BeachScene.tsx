@@ -210,17 +210,11 @@ export function BeachScene({ onExitBeach, onBackToMenu, onRewardCollect }: Beach
         <div className="beach-dunes" aria-hidden="true" />
 
         <div className="beach-ship" aria-hidden="true">
-          <div className="ship-hull" />
-          <div className="ship-mast" />
-          <div className="ship-sail" />
-          <div className="ship-shields">
-            <span>🛡️</span>
-            <span>🛡️</span>
-            <span>🛡️</span>
-            <span>🛡️</span>
-          </div>
-        </div>
-
+          <img
+                className="beach-ship"
+                src="../character/VikingShip.png"
+                alt="Vikingship"
+                />
         <img
           src={sprites[direction][frameIndex]}
           alt="Björn"
