@@ -6,7 +6,7 @@ export const ISLAND_QUESTIONS: Record<'rootsi' | 'gotland' | 'saaremaa', Questio
   rootsi: [
     {
       question: "Kes olid viikingid?",
-      answers: ["Keldi hõimud", "Keskaegse mungad", "Skandinaavia meresõitjad", "Rooma sõdurid"],
+      answers: ["Keldi hõimud", "Keskaegsed mungad", "Skandinaavia meresõitjad", "Rooma sõdurid"],
       correct: 2,
     },
     {
@@ -50,12 +50,12 @@ export const ISLAND_QUESTIONS: Record<'rootsi' | 'gotland' | 'saaremaa', Questio
   gotland: [
     {
       question: "Mis oli kõige kuulsam viikingite laeva tüüp?",
-      answers: ["Knarr", "Pikalaev", "Karve", "Faering"],
+      answers: ["Knarr", "Pikklaev", "Karve", "Faering"],
       correct: 1,
     },
     {
       question: "Kuidas navigeerisid viikingid merel?",
-      answers: ["Kompassiga", "Päikivikivi ja tähtedega", "Ainult kaartidega", "Lindude järgi"],
+      answers: ["Kompassiga", "Päikesekivi ja tähtedega", "Ainult kaartidega", "Lindude järgi"],
       correct: 1,
     },
     {
@@ -119,7 +119,7 @@ export const ISLAND_QUESTIONS: Record<'rootsi' | 'gotland' | 'saaremaa', Questio
     },
     {
       question: "Mida leidsid arheoloogid Salme haudadest?",
-      answers: ["Kullatäis kiste", "Relvi ja sõdalaste varustust", "Palju keraamikat", "Viljaga laevu"],
+      answers: ["Kullatäis kirste", "Relvi ja sõdalaste varustust", "Palju keraamikat", "Viljaga laevu"],
       correct: 1,
     },
     {
@@ -129,7 +129,7 @@ export const ISLAND_QUESTIONS: Record<'rootsi' | 'gotland' | 'saaremaa', Questio
     },
     {
       question: "Mida näitavad Salme leiud viikingite kohta?",
-      answers: ["Nad olid oskuslikud põllumehed", "Nad vältsid sõjategevust", "Nad ei lahkunud Skandinaaviast", "Nad olid aktiivsed varem kui varem arvati"],
+      answers: ["Nad olid oskuslikud põllumehed", "Nad vältisid sõjategevust", "Nad ei lahkunud Skandinaaviast", "Nad olid aktiivsemad varem, kui arvati"],
       correct: 3,
     },
   ],
