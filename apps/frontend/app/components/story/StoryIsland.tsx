@@ -47,6 +47,12 @@ type Marker = {
 
 const VikingShipPos = { left: '92%', top: '35%' };
 
+/* Camera: on small (mobile) viewports the map zooms in and follows the
+   character instead of shrinking to fit. On desktop it stays fit-to-screen. */
+const CAMERA_BREAKPOINT = 960; // viewport width (px) below which the camera engages (mobile/tablet)
+const ISLAND_MOBILE_ZOOM = 1.6;
+const ZOOM_LERP = 0.08; // per-frame easing for the intro zoom-in after a scene swap
+
 interface StoryIslandProps {
   currentIsland: StoryIsland;
   completedBeachIslands?: Set<StoryIsland>;
@@ -226,7 +232,9 @@ export function StoryIsland({
 
   const island = storyIslandData[currentIsland];
 
-  const [mapScale, setMapScale] = useState(1);
+  const cameraScaleRef = useRef(1);   // current (animated) scale
+  const targetScaleRef = useRef(1);   // final camera scale
+  const fitScaleRef = useRef(1);      // unzoomed (whole-map) scale — intro start
   /* While a scene/island swap is fading, pause character rendering so DOM
      writes don't yank the still-visible (exiting) sprite to the new start. */
   const isTransitioningRef = useRef(false);
@@ -240,9 +248,29 @@ export function StoryIsland({
   const markerTriggeredRef = useRef(false);
   const checkpointCountRef = useRef(initialCheckpointCount);
 
-  /* Scale the map stage uniformly to fit its container (letterbox), leaving
-     all internal sizes/offsets untouched so %-coords stay aligned. Measure
-     the stage's natural box via offsetWidth/Height (transform-independent). */
+  /* Apply the camera transform: scale the stage and translate it so the
+     character is centred, clamped to the map edges. When the scaled stage is
+     smaller than the viewport on an axis it is centred instead (fit mode).
+     %-coords stay valid because everything lives inside this stage. */
+  const applyCamera = useCallback(() => {
+    const container = containerRef.current;
+    const map = mapRef.current;
+    if (!container || !map) return;
+    const cw = container.clientWidth;
+    const ch = container.clientHeight;
+    const s = cameraScaleRef.current;
+    const stageW = island.designW * s;
+    const stageH = island.designH * s;
+    const charX = (xRef.current / 100) * stageW;
+    const charY = (yRef.current / 100) * stageH;
+    const tx = stageW <= cw ? (cw - stageW) / 2 : Math.min(0, Math.max(cw - stageW, cw / 2 - charX));
+    const ty = stageH <= ch ? (ch - stageH) / 2 : Math.min(0, Math.max(ch - stageH, ch / 2 - charY));
+    map.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
+  }, [island.designW, island.designH]);
+
+  /* Compute the camera scale: fit-to-screen on desktop, zoomed on small
+     (mobile) viewports so the map/character are readable and the camera
+     follows. Recomputed on container resize. */
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -250,14 +278,21 @@ export function StoryIsland({
       const cw = container.clientWidth;
       const ch = container.clientHeight;
       if (!cw || !ch) return;
-      const s = Math.min(cw / island.designW, ch / island.designH);
-      setMapScale(s > 0 ? s : 1);
+      const fit = Math.min(cw / island.designW, ch / island.designH);
+      const cover = Math.max(cw / island.designW, ch / island.designH);
+      const small = window.innerWidth < CAMERA_BREAKPOINT;
+      // Mobile: zoom + follow, but never less than cover (fills the viewport
+      // edge-to-edge on both axes, no letterbox bands).
+      const target = small ? Math.max(fit * ISLAND_MOBILE_ZOOM, cover) : fit;
+      fitScaleRef.current = fit > 0 ? fit : 1;
+      targetScaleRef.current = target > 0 ? target : 1;
+      applyCamera();
     };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(container);
     return () => ro.disconnect();
-  }, [island.designW, island.designH]);
+  }, [island.designW, island.designH, applyCamera]);
 
   const xRef = useRef(island.startX);
   const yRef = useRef(island.startY);
@@ -306,6 +341,9 @@ export function StoryIsland({
        until that fade-in completes (cleared in the map-fade onAnimationComplete).
        The sprite mounts at startX/startY declaratively, so no teleport. */
     isTransitioningRef.current = true;
+    // Start the camera unzoomed (whole map visible), then ease into the
+    // target zoom in the game loop so the player sees the full area first.
+    cameraScaleRef.current = fitScaleRef.current;
   }, [currentIsland, island.startX, island.startY, sprites, initialCheckpointCount]);
 
   const isWalkable = (testX: number, testY: number) => {
@@ -361,6 +399,7 @@ export function StoryIsland({
 
   useEffect(() => {
     renderCharacter();
+    applyCamera();
 
     const handleKeyDown = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
@@ -513,6 +552,11 @@ export function StoryIsland({
 
 
       renderCharacter();
+      // Ease the camera scale toward its target (intro zoom-in after a swap).
+      const cur = cameraScaleRef.current;
+      const tgt = targetScaleRef.current;
+      cameraScaleRef.current = Math.abs(tgt - cur) > 0.002 ? cur + (tgt - cur) * ZOOM_LERP : tgt;
+      applyCamera();
 
       const shipX = parseFloat(VikingShipPos.left);
       const shipY = parseFloat(VikingShipPos.top);
@@ -551,7 +595,7 @@ export function StoryIsland({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [sprites, currentIsland, island, completedBeachIslands, onGoToBeach, onCheckpointComplete]);
+  }, [sprites, currentIsland, island, completedBeachIslands, onGoToBeach, onCheckpointComplete, applyCamera]);
 
   const handleMarkerClick = (index: number) => {
     if (index !== currentMarkerIndex) return;
@@ -784,11 +828,12 @@ export function StoryIsland({
                 className={island.mapWrapClassName}
                 onClick={handleMapClick}
                 style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
                   width: `${island.designW}px`,
                   height: `${island.designH}px`,
-                  flex: 'none',
-                  transform: `scale(${mapScale})`,
-                  transformOrigin: 'center center',
+                  transformOrigin: '0 0',
                 }}
               >
                 <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />

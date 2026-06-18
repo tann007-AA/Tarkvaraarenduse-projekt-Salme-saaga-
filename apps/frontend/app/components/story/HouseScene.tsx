@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './level.css';
 
 import HouseImage from './character/Interior.svg';
@@ -39,6 +39,14 @@ type Zone = {
   maxY: number;
 };
 
+/* Longhouse camera: the room stage is zoomed in slightly and follows the
+   player, clamped to the room edges (centred on an axis when it fits). */
+const HOUSE_DESIGN_W = 1414; // room coordinate space (297:210 aspect)
+const HOUSE_DESIGN_H = 1000;
+const HOUSE_ZOOM = 1.75; // desktop zoom-in
+const HOUSE_CAMERA_BREAKPOINT = 960; // viewport width (px) below which the room fills the screen + follows
+const HOUSE_ZOOM_LERP = 0.08; // per-frame easing for the intro zoom-in on entry
+
 interface HouseSceneProps {
   onExitHouse: () => void;
   onBackToMenu: () => void;
@@ -54,6 +62,39 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
   const [targetPos, setTargetPos] = useState<{ x: number; y: number } | null>(null);
   const [direction, setDirection] = useState<Direction>('front');
   const [frameIndex, setFrameIndex] = useState(0);
+
+  const houseMapRef = useRef<HTMLDivElement | null>(null);
+  const houseStageRef = useRef<HTMLDivElement | null>(null);
+  const houseScaleRef = useRef(0); // current (animated) scale; 0 = not yet measured
+  const playerPosRef = useRef({ x: 48.5, y: 43 });
+
+  /* Camera transform applied imperatively each frame (so the per-frame React
+     re-renders from playerPos don't overwrite it). Zooms the room and follows
+     the player, clamped to edges; the scale eases from unzoomed (whole room)
+     to the target on entry so the player sees the full area first. */
+  const applyHouseCamera = useCallback(() => {
+    const container = houseMapRef.current;
+    const stage = houseStageRef.current;
+    if (!container || !stage) return;
+    const cw = container.clientWidth;
+    const ch = container.clientHeight;
+    if (!cw || !ch) return;
+    const fit = Math.min(cw / HOUSE_DESIGN_W, ch / HOUSE_DESIGN_H);
+    const cover = Math.max(cw / HOUSE_DESIGN_W, ch / HOUSE_DESIGN_H);
+    const target = window.innerWidth < HOUSE_CAMERA_BREAKPOINT ? cover : fit * HOUSE_ZOOM;
+    if (houseScaleRef.current <= 0) houseScaleRef.current = fit; // start unzoomed (intro)
+    const cur = houseScaleRef.current;
+    houseScaleRef.current = Math.abs(target - cur) > 0.002 ? cur + (target - cur) * HOUSE_ZOOM_LERP : target;
+    const s = houseScaleRef.current;
+    const stageW = HOUSE_DESIGN_W * s;
+    const stageH = HOUSE_DESIGN_H * s;
+    const px = (playerPosRef.current.x / 100) * stageW;
+    const py = (playerPosRef.current.y / 100) * stageH;
+    const tx = stageW <= cw ? (cw - stageW) / 2 : Math.min(0, Math.max(cw - stageW, cw / 2 - px));
+    const ty = stageH <= ch ? (ch - stageH) / 2 : Math.min(0, Math.max(ch - stageH, ch / 2 - py));
+    stage.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
+    stage.style.visibility = 'visible';
+  }, []);
 
   const [isCookingOpen, setIsCookingOpen] = useState(false);
   const [isLonghouseOpen, setIsLonghouseOpen] = useState(false);
@@ -410,6 +451,7 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
         return updatedPos;
       });
 
+      applyHouseCamera();
       animationFrameRef.current = requestAnimationFrame(gameLoop);
     };
 
@@ -433,7 +475,23 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
     hasTriggeredInteraction,
     hasTriggeredExit,
     onExitHouse,
+    applyHouseCamera,
   ]);
+
+  // Keep a ref copy of the player position for the (imperative) camera.
+  useEffect(() => {
+    playerPosRef.current = playerPos;
+  }, [playerPos]);
+
+  const houseStageStyle: React.CSSProperties = {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: `${HOUSE_DESIGN_W}px`,
+    height: `${HOUSE_DESIGN_H}px`,
+    transformOrigin: '0 0',
+    visibility: 'hidden', // revealed once applyHouseCamera sets the first transform
+  };
 
   return (
     <main className="house-scene-screen">
@@ -489,9 +547,11 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
       </button>
 
       <section className="house-scene-only">
-        <div className="house-scene-map">
+        <div className="house-scene-map" ref={houseMapRef}>
           <div
+            ref={houseStageRef}
             className={`house-scene-stage ${housePhase !== 'etapp1' ? 'dark-active' : ''}`}
+            style={houseStageStyle}
             onClick={handleHouseClick}
           >
             <img
@@ -535,9 +595,12 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
                 ?
               </div>
             )}
+          </div>
 
-            <CookingGame
-              isOpen={isCookingOpen}
+          {/* Overlays live OUTSIDE the camera-transformed stage so their
+              position:fixed modals are not scaled/translated by the camera. */}
+          <CookingGame
+            isOpen={isCookingOpen}
               onClose={() => setIsCookingOpen(false)}
               onComplete={() => {
                 setIsCookingOpen(false);
@@ -623,7 +686,6 @@ export function HouseScene({ onExitHouse, onBackToMenu, onRewardCollect, onDialo
                 // Dialoog süsteem jätkub automaatselt järgmise stseeni kaudu
               }}
             />
-          </div>
         </div>
       </section>
     </main>
