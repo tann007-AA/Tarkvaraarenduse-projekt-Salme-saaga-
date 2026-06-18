@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { Play, Book, Settings, Ship, LogOut, User as UserIcon } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useAudio } from '../contexts/AudioProvider'; // ← ADD THIS
 
 interface MainMenuScreenProps {
   onPlay: () => void;
@@ -12,9 +13,15 @@ interface MainMenuScreenProps {
 export function MainMenuScreen({ onPlay, onGuide, onSettings }: MainMenuScreenProps) {
   const { t } = useLanguage();
   const { user, logout, isAuthenticated } = useAuth();
+  const { resumeAudio } = useAudio(); // ← ADD THIS
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const handlePlay = () => {
+    resumeAudio(); // ← STARTS AUDIO ON FIRST CLICK
+    onPlay();
   };
 
   return (
@@ -91,7 +98,7 @@ export function MainMenuScreen({ onPlay, onGuide, onSettings }: MainMenuScreenPr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08, duration: 0.3, ease: 'easeOut' }}
             whileHover={{ scale: 1.04 }}
-            onClick={onPlay}
+            onClick={handlePlay} // ← CHANGED from onPlay
             className="group relative w-full px-8 py-5 bg-gradient-to-b from-[#d4a574] to-[#b8860b] rounded-xl border-4 border-[#8b6f47] shadow-2xl hover:shadow-[#d4a574]/50 transition-[box-shadow,background-color] duration-300"
           >
             <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 rounded-lg transition-all duration-300" />
