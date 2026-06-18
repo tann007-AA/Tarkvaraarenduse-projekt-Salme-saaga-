@@ -40,7 +40,7 @@ const SUPPLY_CRATES: SupplyCrate[] = [
     icon: '🎲',
     title: 'Mängunuppude kirst',
     dialogueId: DIALOGUE_TRIGGERS.supplyGaming,
-    weight: 2,
+    weight: 3,
     correctZone: ['port', 'starboard', 'stern', 'center'],
   },
   {
