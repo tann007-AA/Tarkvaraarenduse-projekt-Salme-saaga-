@@ -16,11 +16,19 @@ export function OrmarEncounter({ onComplete, onRewardCollect }: OrmarEncounterPr
       <div className="ormar-scene">
         <div className="ormar-figures" aria-hidden="true">
           <div className="ormar-character">
-            <span className="ormar-emoji">🧔‍♂️</span>
+            <img
+                className="ormar"
+                src="../character/Ormar.png"
+                alt="Bearded man"
+                />
             <span className="ormar-name">Ormar Raudhabe</span>
           </div>
           <div className="garm-character">
-            <span className="garm-emoji">🐕‍🦺</span>
+            <img
+                className="garm"
+                src="../character/Garm.png"
+                alt="Dog"
+                />
             <span className="garm-name">Garm</span>
           </div>
         </div>
