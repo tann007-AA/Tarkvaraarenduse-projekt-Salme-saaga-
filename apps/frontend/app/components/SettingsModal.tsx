@@ -3,8 +3,6 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Accessibility, Home, Volume2, X } from 'lucide-react';
 import { toast } from "sonner"
 
-const { volume, setVolume } = useContext(AudioContext);
-
 interface SettingsModalProps {
   onClose: () => void;
   onReturnToMenu?: () => void;
@@ -86,11 +84,13 @@ export function SettingsModal({
           </div>
 
           <input
-              type="range"
-              min={0}
-              max={100}
-              value={volume * 100}
-              onChange={(e) => setVolume(Number(e.target.value) / 100)}
+            type="range"
+            min={0}
+            max={100}
+            value={volume}
+            onChange={(e) =>
+              setVolume(Number(e.target.value))
+            }
             className="w-full h-2 bg-[#3a2a1a] rounded-lg appearance-none cursor-pointer accent-[#dfb15b]"
           />
         </div>
