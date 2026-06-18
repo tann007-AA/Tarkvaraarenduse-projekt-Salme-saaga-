@@ -45,7 +45,7 @@ type Marker = {
   top: string;
 };
 
-const VikingShipPos = { left: '87%', top: '18%' };
+const VikingShipPos = { left: '92%', top: '35%' };
 
 interface StoryIslandProps {
   currentIsland: StoryIsland;
@@ -54,6 +54,8 @@ interface StoryIslandProps {
   onGoToIsland?: (island: StoryIsland) => void;
   onCompleteIsland?: (nextIsland: StoryIsland) => void;
   onGoToBeach?: () => void;
+  initialCheckpointCount?: number;
+  onCheckpointComplete?: (island: StoryIsland, count: number) => void;
   isPaused?: boolean;
   points?: number;
   onOpenSettings?: () => void;
@@ -197,6 +199,8 @@ export function StoryIsland({
   onGoToIsland,
   onCompleteIsland,
   onGoToBeach,
+  initialCheckpointCount = 0,
+  onCheckpointComplete,
   isPaused = false,
   onOpenSettings,
   onOpenShop,
@@ -223,15 +227,15 @@ export function StoryIsland({
   const island = storyIslandData[currentIsland];
 
   const [mapScale, setMapScale] = useState(1);
-  const [currentMarkerIndex, setCurrentMarkerIndex] = useState(0);
-  const [checkpointCount, setCheckpointCount] = useState(0);
+  const [currentMarkerIndex, setCurrentMarkerIndex] = useState(initialCheckpointCount);
+  const [checkpointCount, setCheckpointCount] = useState(initialCheckpointCount);
   const [activeDialogueId, setActiveDialogueId] = useState<string | null>(null);
   const [pendingIsland, setPendingIsland] = useState<StoryIsland | null>(null);
   const [activeQuestion, setActiveQuestion] = useState<Question | null>(null);
   const [isQuestionOpen, setIsQuestionOpen] = useState(false);
-  const currentMarkerIndexRef = useRef(0);
+  const currentMarkerIndexRef = useRef(initialCheckpointCount);
   const markerTriggeredRef = useRef(false);
-  const checkpointCountRef = useRef(0);
+  const checkpointCountRef = useRef(initialCheckpointCount);
 
   /* Scale the map stage uniformly to fit its container (letterbox), leaving
      all internal sizes/offsets untouched so %-coords stay aligned. Measure
@@ -281,9 +285,9 @@ export function StoryIsland({
   useEffect(() => {
     xRef.current = island.startX;
     yRef.current = island.startY;
-    setCurrentMarkerIndex(0);
-    setCheckpointCount(0);
-    currentMarkerIndexRef.current = 0;
+    setCurrentMarkerIndex(initialCheckpointCount);
+    setCheckpointCount(initialCheckpointCount);
+    currentMarkerIndexRef.current = initialCheckpointCount;
     markerTriggeredRef.current = false;
     currentDirectionRef.current = 'front';
     currentFrameRef.current = 0;
@@ -300,7 +304,7 @@ export function StoryIsland({
       characterRef.current.style.top = `${yRef.current}%`;
       characterRef.current.src = sprites.front[0];
     }
-  }, [currentIsland, island.startX, island.startY, sprites]);
+  }, [currentIsland, island.startX, island.startY, sprites, initialCheckpointCount]);
 
   const isWalkable = (testX: number, testY: number) => {
     return island.walkableZones.some((zone) => {
@@ -472,9 +476,16 @@ export function StoryIsland({
             setCurrentMarkerIndex(nextIndex);
             setCheckpointCount(nextIndex);
             markerTriggeredRef.current = false;
-            if (nextIndex >= island.markers.length && island.nextIsland) {
-              if (currentIsland === 'rootsi') setActiveDialogueId(DIALOGUE_TRIGGERS.ormarArrival);
-              setPendingIsland(island.nextIsland);
+            onCheckpointComplete?.(currentIsland, nextIndex);
+            if (nextIndex >= island.markers.length) {
+              if (island.nextIsland) {
+                if (currentIsland === 'rootsi') setActiveDialogueId(DIALOGUE_TRIGGERS.ormarArrival);
+                setPendingIsland(island.nextIsland);
+              } else if (currentIsland === 'saaremaa') {
+                // Final island completion
+                setActiveDialogueId(DIALOGUE_TRIGGERS.nightWatch);
+                setPendingIsland('end' as any);
+              }
             }
           }
         } else if (dist >= 5) {
@@ -522,7 +533,7 @@ export function StoryIsland({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [sprites, currentIsland, island, completedBeachIslands, onGoToBeach]);
+  }, [sprites, currentIsland, island, completedBeachIslands, onGoToBeach, onCheckpointComplete]);
 
   const handleMarkerClick = (index: number) => {
     if (index !== currentMarkerIndex) return;
@@ -535,24 +546,34 @@ export function StoryIsland({
       }
     } else {
       const nextIndex = index + 1;
+      currentMarkerIndexRef.current = nextIndex;
+      checkpointCountRef.current = nextIndex;
+      markerTriggeredRef.current = false;
       setCurrentMarkerIndex(nextIndex);
       setCheckpointCount(nextIndex);
-      if (nextIndex >= island.markers.length && island.nextIsland) {
-        const nextIsland = island.nextIsland;
-        if (currentIsland === 'rootsi') setActiveDialogueId(DIALOGUE_TRIGGERS.ormarArrival);
-        setPendingIsland(nextIsland);
+      onCheckpointComplete?.(currentIsland, nextIndex);
+      if (nextIndex >= island.markers.length) {
+        if (island.nextIsland) {
+          const nextIsland = island.nextIsland;
+          if (currentIsland === 'rootsi') setActiveDialogueId(DIALOGUE_TRIGGERS.ormarArrival);
+          setPendingIsland(nextIsland);
+        } else if (currentIsland === 'saaremaa') {
+          setActiveDialogueId(DIALOGUE_TRIGGERS.nightWatch);
+          setPendingIsland('end' as any);
+        }
       }
     }
   };
 
-  const isIslandUnlocked = (id: StoryIsland) => {
+  const isIslandUnlocked = (id: StoryIsland | 'end') => {
     if (id === 'rootsi') return true;
     if (id === 'gotland') return completedBeachIslands.has('rootsi');
     if (id === 'saaremaa') return completedBeachIslands.has('gotland');
     return false;
   };
 
-  const canNavigateTo = (id: StoryIsland) => {
+  const canNavigateTo = (id: StoryIsland | 'end') => {
+    if (id === 'end') return false;
     return id === currentIsland || isIslandUnlocked(id);
   };
 
@@ -572,10 +593,16 @@ export function StoryIsland({
           <aside className="level-info-card">
             <h1>{island.title}</h1>
             <p className="level-topic">Viking Journeys</p>
+
             {island.markers.length > 0 && (
-              <p className="level-progress">
-                {checkpointCount} / {island.markers.length} Checkpoints
-              </p>
+              <div className="level-progress">
+                <div className="text-2xl font-bold mb-1">
+                  {checkpointCount}/{island.markers.length}
+                </div>
+                <div className="text-sm text-gray-500">
+                  küsimust vastatud
+                </div>
+              </div>
             )}
           </aside>
 
@@ -727,83 +754,123 @@ export function StoryIsland({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, ease: 'easeInOut' }}
             >
-            <div
-              ref={mapRef}
-              className={island.mapWrapClassName}
-              onClick={handleMapClick}
-              style={{
-                width: `${island.designW}px`,
-                height: `${island.designH}px`,
-                flex: 'none',
-                transform: `scale(${mapScale})`,
-                transformOrigin: 'center center',
-              }}
-            >
-              <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
+              <div
+                ref={mapRef}
+                className={island.mapWrapClassName}
+                onClick={handleMapClick}
+                style={{
+                  width: `${island.designW}px`,
+                  height: `${island.designH}px`,
+                  flex: 'none',
+                  transform: `scale(${mapScale})`,
+                  transformOrigin: 'center center',
+                }}
+              >
+                <img src={island.mapImage} alt={island.mapAlt} className={island.mapClassName} />
 
-              <img
-                ref={characterRef}
-                id="character"
-                src={Front01}
-                alt="Character"
-                className="character"
-              />
+                <img
+                  ref={characterRef}
+                  id="character"
+                  src={Front01}
+                  alt="Character"
+                  className="character"
+                />
 
-              {currentIsland === 'rootsi' && (
-                <div
-                  className="ship-wrapper"
-                  style={{
-                    position: 'absolute',
-                    left: VikingShipPos.left,
-                    top: VikingShipPos.top,
-                    width: '150px',
-                  }}
-                >
-                  <div className="ship-splash" aria-hidden="true">
-                    <span className="splash-pixel p1" />
-                    <span className="splash-pixel p2" />
-                    <span className="splash-pixel p3" />
-                    <span className="splash-pixel p4" />
-                    <span className="splash-pixel p5" />
-                    <span className="splash-pixel p6" />
-                    <span className="splash-pixel p7" />
-                    <span className="splash-pixel p8" />
-                    <span className="wave-ring r1" />
-                    <span className="wave-ring r2" />
+                {currentIsland === 'rootsi' && (
+                  <div
+                    className="ship-wrapper"
+                    style={{
+                      position: 'absolute',
+                      left: `${parseFloat(VikingShipPos.left) - 7}%`,
+                      top: `${parseFloat(VikingShipPos.top) - 15}%`,
+                      width: '150px',
+                    }}
+                  >
+                    <div className="ship-splash" aria-hidden="true">
+                      <span className="splash-pixel p1" />
+                      <span className="splash-pixel p2" />
+                      <span className="splash-pixel p3" />
+                      <span className="splash-pixel p4" />
+                      <span className="splash-pixel p5" />
+                      <span className="splash-pixel p6" />
+                      <span className="splash-pixel p7" />
+                      <span className="splash-pixel p8" />
+                      <span className="wave-ring r1" />
+                      <span className="wave-ring r2" />
+                    </div>
+                    <img
+                      src={VikingShip}
+                      alt="Viking Ship"
+                      className="character ship-bob"
+                      style={{ width: '150px', height: 'auto', position: 'relative', zIndex: 2 }}
+                    />
                   </div>
-                  <img
-                    src={VikingShip}
-                    alt="Viking Ship"
-                    className="character ship-bob"
-                    style={{ width: '150px', height: 'auto', position: 'relative', zIndex: 2 }}
-                  />
-                </div>
-              )}
+                )}
 
-              {island.markers.map((marker, index) => (
-                <button
-                  key={index}
-                  className={`question-marker ${index === currentMarkerIndex ? 'active' : ''}`}
-                  data-index={index}
-                  style={{ left: marker.left, top: marker.top }}
-                  onClick={(e) => {
-                    if (activeDialogueId) return;
-                    e.stopPropagation();
-                    if (index !== currentMarkerIndex) return;
-                    const m = island.markers[index];
-                    clickTargetRef.current = { x: parseFloat(m.left), y: parseFloat(m.top) };
-                    clickMovingRef.current = true;
-                  }}
-                >
-                  <img
-                    src="pics/investigation.png"
-                    alt="Quest Marker"
-                    className="w-full h-full object-contain"
-                  />
-                </button>
-              ))}
+                {island.markers.map((marker, index) => (
+                  <React.Fragment key={index}>
+                    {/* Debug Marker Zone (5% radius) */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: marker.left,
+                        top: marker.top,
+                        width: '10%',
+                        height: '10%',
+                        /*
+                        backgroundColor: 'rgba(0, 0, 255, 0.2)',
+                        border: '2px dashed blue',
+                    borderRadius: '50%',
+                    */
+                        transform: 'translate(-50%, -50%)',
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                      }}
+                    />
+                    <button
+                      className={`question-marker ${index === currentMarkerIndex ? 'active' : ''}`}
+                      data-index={index}
+                      style={{ left: marker.left, top: marker.top }}
+                      onClick={(e) => {
+                        if (activeDialogueId) return;
+                        e.stopPropagation();
+                        if (index !== currentMarkerIndex) return;
+                        const m = island.markers[index];
+                        clickTargetRef.current = { x: parseFloat(m.left), y: parseFloat(m.top) };
+                        clickMovingRef.current = true;
+                      }}
+                    >
+                      <img
+                        src="pics/investigation.png"
+                        alt="Quest Marker"
+                        className="w-full h-full object-contain"
+                      />
+                    </button>
+                  </React.Fragment>
+                ))}
 
-            </div>
+                {/* Debug Ship Trigger Zone (10% radius) */}
+                {currentIsland === 'rootsi' && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: VikingShipPos.left,
+                      top: VikingShipPos.top,
+                      width: '20%',
+                      height: '20%',
+                      /*
+                      backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                      border: '2px dashed red',
+                      borderRadius: '50%',
+                      */
+                      transform: 'translate(-50%, -50%)',
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                    }}
+                  />
+                )}
+
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -820,11 +887,17 @@ export function StoryIsland({
             markerTriggeredRef.current = false;
             setCurrentMarkerIndex(nextIndex);
             setCheckpointCount(nextIndex);
-            if (nextIndex >= island.markers.length && island.nextIsland) {
-              const nextIsland = island.nextIsland;
-              if (currentIsland === 'gotland') setActiveDialogueId(DIALOGUE_TRIGGERS.openSea);
-              else if (currentIsland === 'saaremaa') setActiveDialogueId(DIALOGUE_TRIGGERS.nightWatch);
-              setPendingIsland(nextIsland);
+            onCheckpointComplete?.(currentIsland, nextIndex);
+            if (nextIndex >= island.markers.length) {
+              if (island.nextIsland) {
+                const nextIsland = island.nextIsland;
+                if (currentIsland === 'gotland') setActiveDialogueId(DIALOGUE_TRIGGERS.openSea);
+                else if (currentIsland === 'saaremaa') setActiveDialogueId(DIALOGUE_TRIGGERS.nightWatch);
+                setPendingIsland(nextIsland);
+              } else if (currentIsland === 'saaremaa') {
+                setActiveDialogueId(DIALOGUE_TRIGGERS.nightWatch);
+                setPendingIsland('end' as any);
+              }
             }
           }}
           onClose={() => {

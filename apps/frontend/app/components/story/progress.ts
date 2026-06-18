@@ -13,6 +13,7 @@ export interface StoryProgress {
   housePhase: HousePhase;
   currentStoryIsland?: StoryIsland;
   completedBeachIslands?: StoryIsland[];
+  completedMarkers?: Record<string, number>;
 }
 
 const STORAGE_KEY = 'pell-story-progress';
@@ -43,6 +44,27 @@ export function patchStoryProgress(patch: Partial<StoryProgress>) {
     const current = loadStoryProgress() || { housePhase: 'etapp1' };
     const updated = { ...current, ...patch };
     saveStoryProgress(updated);
+  } catch {
+    // ignore
+  }
+}
+
+export function getIslandCheckpointCount(island: StoryIsland): number {
+  if (typeof window === 'undefined') return 0;
+  try {
+    const current = loadStoryProgress();
+    return current?.completedMarkers?.[island] ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function updateIslandCheckpoint(island: StoryIsland, count: number) {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = loadStoryProgress() || { housePhase: 'etapp1' };
+    const completedMarkers = { ...(current.completedMarkers ?? {}), [island]: count };
+    saveStoryProgress({ ...current, completedMarkers });
   } catch {
     // ignore
   }

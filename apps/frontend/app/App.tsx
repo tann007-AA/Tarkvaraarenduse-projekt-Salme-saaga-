@@ -12,7 +12,8 @@ import { StoryLevel } from './components/story/StoryIsland';
 import { BoardGameScreen } from './components/board-game/BoardGameScreen';
 import { HouseScene } from './components/story/HouseScene';
 import { BeachScene } from './components/story/beach/BeachScene';
-import { loadStoryProgress, saveStoryProgress, resetStoryProgress, patchStoryProgress } from './components/story/progress';
+import { EndCredits } from './components/story/EndCredits';
+import { loadStoryProgress, saveStoryProgress, resetStoryProgress, patchStoryProgress, getIslandCheckpointCount, updateIslandCheckpoint } from './components/story/progress';
 
 // Island story type
 type StoryIsland = 'rootsi' | 'gotland' | 'saaremaa';
@@ -54,6 +55,7 @@ function GameContent() {
     return new Set(saved?.completedBeachIslands ?? []);
   });
   const [storyRewards, setStoryRewards] = useState<string[]>([]);
+  const [showEndCredits, setShowEndCredits] = useState(false);
 
   const handleStoryRewardCollect = (rewardId: string) => {
     setStoryRewards((current) =>
@@ -68,6 +70,10 @@ function GameContent() {
     });
   };
 
+  const handleCheckpointComplete = useCallback((island: StoryIsland, count: number) => {
+    updateIslandCheckpoint(island, count);
+  }, []);
+
   const handleGuideClick = () => {
     setShowGuideModal(true);
   };
@@ -80,6 +86,7 @@ function GameContent() {
   const handleReturnToMenu = () => {
     setGameState('menu');
     setShowBeachScene(false);
+    setShowEndCredits(false);
   };
 
   const handleResetProgress = () => {
@@ -87,6 +94,7 @@ function GameContent() {
     setCurrentStoryIsland('rootsi');
     setShowHouseScene(true);
     setShowBeachScene(false);
+    setShowEndCredits(false);
     setCompletedBeachIslands(new Set());
     setStoryRewards([]);
     setPoints(0);
@@ -165,11 +173,17 @@ function GameContent() {
                 saveIslandProgress(island, completedBeachIslands);
               }}
               onCompleteIsland={(island) => {
-                setCurrentStoryIsland(island);
-                saveIslandProgress(island, completedBeachIslands);
+                if ((island as string) === 'end') {
+                  setShowEndCredits(true);
+                } else {
+                  setCurrentStoryIsland(island);
+                  saveIslandProgress(island, completedBeachIslands);
+                }
               }}
               onGoToBeach={onGoToBeach}
-              isPaused={showBeachScene}
+              initialCheckpointCount={getIslandCheckpointCount(currentStoryIsland)}
+              onCheckpointComplete={handleCheckpointComplete}
+              isPaused={showBeachScene || showEndCredits}
               storyRewards={storyRewards}
               onStoryRewardCollect={handleStoryRewardCollect}
               onOpenSettings={() => setShowSettingsModal(true)}
@@ -197,6 +211,12 @@ function GameContent() {
                   onRewardCollect={handleStoryRewardCollect}
                 />
               </div>
+            )}
+            {showEndCredits && (
+              <EndCredits onComplete={() => {
+                setShowEndCredits(false);
+                setGameState('menu');
+              }} />
             )}
           </>
         ))}
