@@ -215,6 +215,7 @@ export function BeachScene({ onExitBeach, onBackToMenu, onRewardCollect }: Beach
                 src="../character/VikingShip.png"
                 alt="Vikingship"
                 />
+              </div>
         <img
           src={sprites[direction][frameIndex]}
           alt="Björn"
